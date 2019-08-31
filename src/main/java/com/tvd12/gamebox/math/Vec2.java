@@ -1,0 +1,75 @@
+package com.tvd12.gamebox.math;
+
+import com.tvd12.ezyfox.util.EzyEquals;
+import com.tvd12.ezyfox.util.EzyHashCodes;
+
+public class Vec2 {
+
+	public double x;
+	public double y;
+	
+	public static final Vec2 ZERO = new Vec2();
+	
+	public Vec2() {
+		this(0.0F, 0.0F);
+	}
+	
+	public Vec2(Vec2 v) {
+		this.x = v.x;
+		this.y = v.y;
+	}
+	
+	public Vec2(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public Vec2(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public void set(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public void set(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public void multiple(float a) {
+		this.x *= a;
+		this.y *= a;
+	}
+	
+	public Vec2 multipleNew(float a) {
+		return new Vec2(this.x * a, this.y * a);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return new EzyEquals<Vec2>()
+				.function(t -> t.x)
+				.function(t -> t.y)
+				.isEquals(this, obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return new EzyHashCodes()
+				.append(x, y)
+				.toHashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return new StringBuilder()
+				.append("(")
+					.append(x).append(", ")
+					.append(y)
+				.append(")")
+				.toString();
+	}
+}

@@ -32,9 +32,9 @@ public class LocatedRoomTest {
 		LocatedPlayer player3 = new LocatedPlayer("player3");
 		room.addUser(user3, player3);
 		
-		room.getLocatedPlayerManager().setMaster(player2);
+		room.getPlayerManager().setMaster(player2);
 		
-		System.out.println("\n\nnext master is: " + room.getLocatedPlayerManager().setNewMaster() + "\n\n");
+		System.out.println("\n\nnext master is: " + room.getPlayerManager().setNewMaster() + "\n\n");
 	}
 	
 }

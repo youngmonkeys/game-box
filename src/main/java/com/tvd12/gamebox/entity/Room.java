@@ -24,20 +24,12 @@ public class Room {
 	@Setter
 	protected IRoomStatus status;
 	
-	protected Room(long id, String name, EzyUserManager userManager) {
-		if(name == null)
-			throw new NullPointerException("room name can not be null");
-		this.id = id;
-		this.name = name;
-		this.userManager = userManager;
-	}
+	protected final static String NAME_PREFIX = "Room#";
 	
 	protected Room(Builder<?> builder) {
-		this(
-			builder.id,
-			builder.name, 
-			builder.userManager
-		);
+		this.id = builder.id;
+		this.name = builder.name;
+		this.userManager = builder.userManager;
 	}
 	
 	@Override
@@ -101,6 +93,8 @@ public class Room {
 		public Room build() {
 			if(id == null)
 				this.id = ID_GENTOR.incrementAndGet();
+			if(name == null)
+				this.name = NAME_PREFIX + id;
 			preBuild();
 			return newProduct();
 		}
