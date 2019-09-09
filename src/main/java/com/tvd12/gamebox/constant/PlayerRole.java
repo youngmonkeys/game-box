@@ -6,6 +6,7 @@ import lombok.Getter;
 
 public enum PlayerRole implements IPlayerRole {
 
+	NULL(0),
 	MASTER(1),
 	SPECTATOR(2),
 	PLAYER(3),

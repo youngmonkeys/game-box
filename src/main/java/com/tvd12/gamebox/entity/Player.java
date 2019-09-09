@@ -3,13 +3,20 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyEquals;
 import com.tvd12.ezyfox.util.EzyHashCodes;
+import com.tvd12.gamebox.constant.IPlayerRole;
+import com.tvd12.gamebox.constant.IPlayerStatus;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class Player {
 
 	protected final String name;
+	@Setter
+	protected IPlayerRole role;
+	@Setter
+	protected IPlayerStatus status;
 	
 	public Player(String name) {
 		this.name = name;

@@ -95,6 +95,8 @@ public class Room {
 				this.id = ID_GENTOR.incrementAndGet();
 			if(name == null)
 				this.name = NAME_PREFIX + id;
+			if(userManager == null)
+				this.userManager = new EzyDefaultUserManager(999);
 			preBuild();
 			return newProduct();
 		}

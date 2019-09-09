@@ -4,6 +4,7 @@ import lombok.Getter;
 
 public enum PlayerStatus implements IPlayerStatus {
 
+	NULL(0),
 	VIEWING(1),
 	PLAYING(2),
 	SPEAKING(3);

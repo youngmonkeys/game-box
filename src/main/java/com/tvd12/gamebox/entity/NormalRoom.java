@@ -25,7 +25,7 @@ public class NormalRoom extends Room {
 		userManager.addUser(user);
 	}
 	
-	public void removePlayer(LocatedPlayer player) {
+	public void removePlayer(Player player) {
 		userManager.removeUser(player.getName());
 		playerManager.removePlayer(player.getName());
 	}

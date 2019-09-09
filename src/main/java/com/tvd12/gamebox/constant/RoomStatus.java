@@ -7,8 +7,10 @@ import lombok.Getter;
 public enum RoomStatus implements IRoomStatus {
 
 	WAITING(1),
-	PLAYING(2),
-	FINISHING(3);
+	STARTABLE(2),
+	PLAYING(3),
+	FINISHING(4),
+	FINISHED(5);
 	
 	@Getter
 	private int id;
