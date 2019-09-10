@@ -8,6 +8,7 @@ import com.tvd12.ezyfox.util.EzyHashCodes;
 import com.tvd12.ezyfoxserver.wrapper.EzyDefaultUserManager;
 import com.tvd12.ezyfoxserver.wrapper.EzyUserManager;
 import com.tvd12.gamebox.constant.IRoomStatus;
+import com.tvd12.gamebox.constant.RoomStatus;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class Room {
 	@Setter
 	protected String password;
 	@Setter
-	protected IRoomStatus status;
+	protected IRoomStatus status = RoomStatus.WAITING;
 	
 	protected final static String NAME_PREFIX = "Room#";
 	

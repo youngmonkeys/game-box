@@ -5,6 +5,8 @@ import com.tvd12.ezyfox.util.EzyEquals;
 import com.tvd12.ezyfox.util.EzyHashCodes;
 import com.tvd12.gamebox.constant.IPlayerRole;
 import com.tvd12.gamebox.constant.IPlayerStatus;
+import com.tvd12.gamebox.constant.PlayerRole;
+import com.tvd12.gamebox.constant.PlayerStatus;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,9 +16,9 @@ public class Player {
 
 	protected final String name;
 	@Setter
-	protected IPlayerRole role;
+	protected IPlayerRole role = PlayerRole.NULL;
 	@Setter
-	protected IPlayerStatus status;
+	protected IPlayerStatus status = PlayerStatus.NULL;
 	
 	public Player(String name) {
 		this.name = name;
