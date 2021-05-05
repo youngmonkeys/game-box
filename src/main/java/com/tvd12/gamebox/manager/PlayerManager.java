@@ -96,6 +96,7 @@ public interface PlayerManager<P extends Player> {
 	 * Remove player
 	 * 
 	 * @param player the player
+	 * @return removed player
 	 */
 	P removePlayer(P player);
 	
@@ -163,7 +164,6 @@ public interface PlayerManager<P extends Player> {
 	 * add player
 	 * 
 	 * @param player player to add
-	 * @param failIfAdded throw an exception if player has added
 	 */
 	default void addPlayer(P player) {
 		addPlayer(player, true);
@@ -173,7 +173,6 @@ public interface PlayerManager<P extends Player> {
 	 * add players
 	 * 
 	 * @param players players to add
-	 * @param failIfAdded throw an exception if player has added
 	 */
 	default void addPlayers(Collection<P> players) {
 		addPlayers(players, true);
@@ -183,6 +182,7 @@ public interface PlayerManager<P extends Player> {
 	 * Remove player by name
 	 * 
 	 * @param username the player name
+	 * @return the removed player
 	 */
 	default P removePlayer(String username) {
 		return removePlayer(getPlayer(username));
