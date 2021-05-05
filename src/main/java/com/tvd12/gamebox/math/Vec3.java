@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class Vec3 {
-	public double x;
-	public double y;
-	public double z;
+	public float x;
+	public float y;
+	public float z;
 	
 	public static final Vec3 ZERO = new Vec3();
 
@@ -18,11 +18,11 @@ public class Vec3 {
 		this(v.x, v.y, v.z);
 	}
 
-	public Vec3(double[] array) {
+	public Vec3(float[] array) {
 		this(array[0], array[1], array[2]);
 	}
 
-	public Vec3(double x, double y, double z) {
+	public Vec3(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -58,15 +58,15 @@ public class Vec3 {
 	}
 	
 	public void set(double xx, double yy, double zz) {
-		this.x = xx;
-		this.y = yy;
-		this.z = zz;
+		this.x = (float)xx;
+		this.y = (float)yy;
+		this.z = (float)zz;
 	}
 
 	public void set(double[] array) {
-		x = array[0];
-		y = array[1];
-		z = array[2];
+		x = (float)array[0];
+		y = (float)array[1];
+		z = (float)array[2];
 	}
 
 	public void set(Vec3 v) {

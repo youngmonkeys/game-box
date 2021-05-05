@@ -2,10 +2,10 @@ package com.tvd12.gamebox.math;
 
 public class Rect {
 
-	public double x;
-	public double y;
-	public double width;
-	public double height;
+	public float x;
+	public float y;
+	public float width;
+	public float height;
 	
 	public Rect() {
 	}
@@ -17,20 +17,20 @@ public class Rect {
 		this.height = r.height;
 	}
 	
-	public Rect(double x, double y, double width, double height) {
+	public Rect(float x, float y, float width, float height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 	}
 	
-	public double getTopY() {
-		double value = y + height;
+	public float getTopY() {
+		float value = y + height;
 		return value;
 	}
 	
-	public double getRightX() {
-		double value = x + width;
+	public float getRightX() {
+		float value = x + width;
 		return value;
 	}
 	
