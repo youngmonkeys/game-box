@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.tvd12.gamebox.entity.Player;
 
@@ -16,6 +17,15 @@ public interface PlayerManager<P extends Player> {
 	 * @return the player
 	 */
 	P getPlayer(String username);
+	
+	/**
+	 * Get player by id
+	 * 
+	 * @param username the player's name
+	 * @param playerSupplier if the player's not existed, we will create a new one
+	 * @return the player
+	 */
+	P getPlayer(String username, Supplier<P> playerSupplier);
 	
 	/**
 	 * Get player by index
@@ -59,7 +69,7 @@ public interface PlayerManager<P extends Player> {
 	 * 
 	 * @return the max players count
 	 */
-	int getMaxPlayers();
+	int getMaxPlayer();
 	
 	/**
 	 * available to add player or not

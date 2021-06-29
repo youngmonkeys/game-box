@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.tvd12.gamebox.entity.Player;
 
@@ -13,6 +14,10 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 
 	@Getter
 	protected final Object synchronizedLock = new Object();
+	
+	public SynchronizedPlayerManager() {
+		this(999999999);
+	}
     
     public SynchronizedPlayerManager(int maxPlayer) {
         super(maxPlayer);
@@ -27,7 +32,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		synchronized (synchronizedLock) {
 			return super.getPlayer(username);
 		}
-        
+    }
+    
+    @Override
+    public P getPlayer(String username, Supplier<P> playerSupplier) {
+    	synchronized (synchronizedLock) {
+    		return super.getPlayer(username, playerSupplier);
+		}
     }
     
     @Override

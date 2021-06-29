@@ -1,8 +1,8 @@
 package com.tvd12.gamebox.manager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -24,7 +24,9 @@ public class DefaultLocatedPlayerManager
 	@Getter
 	@Setter
 	protected LocatedPlayer speakinger;
-	protected Map<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
+	protected final LinkedList<LocatedPlayer> playerList = new LinkedList<>();
+	protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
+	protected final Map<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
 	
 	@Override
 	public LocatedPlayer getPlayer(int location) {
@@ -34,8 +36,7 @@ public class DefaultLocatedPlayerManager
 	
 	@Override
 	public List<LocatedPlayer> getPlayerList() {
-		List<LocatedPlayer> list = new ArrayList<>(playersByLocation.values());
-		return list;
+		return playerList;
 	}
 
 	@Override
@@ -44,11 +45,17 @@ public class DefaultLocatedPlayerManager
 		if(current != null)
 			throw new LocationNotAvailableException("location: " + location + " has owned by: " + current.getName());
 		playersByLocation.put(location, player);
+		playersByName.put(player.getName(), player);
+		playerList.add(player);
 	}
 
 	@Override
 	public void removePlayer(int location) {
-		playersByLocation.remove(location);
+		LocatedPlayer removed = playersByLocation.remove(location);
+		if(removed != null) {
+			playerList.remove(removed);
+			playersByName.remove(removed.getName());
+		}
 	}
 	
 	@Override
@@ -61,7 +68,6 @@ public class DefaultLocatedPlayerManager
 	public LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
 		if(player == null) 
 			return null;
-		Collection<LocatedPlayer> playerList = playersByLocation.values();
 		int maxInt = Integer.MAX_VALUE;
 		int maxDistance = 0;
 		int minDistance = -maxInt;
@@ -96,6 +102,30 @@ public class DefaultLocatedPlayerManager
 		return answer;
 	}
 	
+	@Override
+	public List<String> getPlayerNames() {
+		return new ArrayList<>(playersByName.keySet());
+	}
+	
+	@Override
+	public int getPlayerCount() {
+		return playersByLocation.size();
+	}
+
+	@Override
+	public boolean containsPlayer(String username) {
+		return playersByName.containsKey(username);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return playersByLocation.isEmpty();
+	}
+	
+    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
+		return new HashMap<>();
+	}
+	
 	protected Map<Integer, LocatedPlayer> newPlayersByLocationsMap() {
 		return new HashMap<>();
 	}
@@ -110,5 +140,5 @@ public class DefaultLocatedPlayerManager
 				.append(")")
 				.toString();
 	}
-	
+
 }

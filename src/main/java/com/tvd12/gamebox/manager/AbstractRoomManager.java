@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
@@ -112,6 +113,15 @@ public abstract class AbstractRoomManager<R extends Room>
 	public R getRoom(String name) {
 		R room = roomsByName.get(name);
 		return room;
+	}
+	
+	@Override
+	public R getRoom(Predicate<R> predicate) {
+		for(R room : roomsByName.values()) {
+			if(predicate.test(room))
+				return room;
+		}
+		return null;
 	}
 
 	@Override

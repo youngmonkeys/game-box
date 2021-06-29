@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 public class LocatedRoom extends Room {
 
-	protected int maxSlots;
+	protected final int maxSlot;
 	@Setter(AccessLevel.NONE)
 	protected Queue<Integer> slots; 
 	@Setter(AccessLevel.NONE)
@@ -23,22 +23,19 @@ public class LocatedRoom extends Room {
 	
 	public LocatedRoom(Builder<?> builder) {
 		super(builder);
+		this.maxSlot = builder.maxSlot;
 		this.playerManager = builder.playerManager;
-	}
-	
-	public void setMaxSlots(int maxSlots) {
-		this.maxSlots = maxSlots;
-		this.slots = newSlots(maxSlots);
+		this.slots = newSlots(builder.maxSlot);
 	}
 	
 	public int addUser(EzyUser user, LocatedPlayer player) {
 		if(slots.isEmpty())
 			throw new NoSlotException("has no available slot");
-		int localtion = slots.poll();
-		player.setLocation(localtion);
+		int location = slots.poll();
+		player.setLocation(location);
 		userManager.addUser(user);
-		playerManager.addPlayer(player, localtion);
-		return localtion;
+		playerManager.addPlayer(player, location);
+		return location;
 	}
 	
 	public void removePlayer(LocatedPlayer player) {
@@ -61,7 +58,13 @@ public class LocatedRoom extends Room {
 	@SuppressWarnings("unchecked")
 	public static class Builder<B extends Builder<B>> extends Room.Builder<B> {
 		
+		protected int maxSlot;
 		protected LocatedPlayerManager playerManager;
+		
+		public B maxSlot(int maxSlot) {
+			this.maxSlot = maxSlot;
+			return (B)this;
+		}
 		
 		public B playerManager(LocatedPlayerManager playerManager) {
 			this.playerManager = playerManager;
@@ -72,6 +75,8 @@ public class LocatedRoom extends Room {
 		protected void preBuild() {
 			if(playerManager == null)
 				playerManager = new DefaultLocatedPlayerManager();
+			if(maxSlot == 0)
+				maxSlot = userManager.getMaxUsers();
 		}
 		
 		@Override

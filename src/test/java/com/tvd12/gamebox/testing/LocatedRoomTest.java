@@ -16,7 +16,6 @@ public class LocatedRoomTest {
 				.defaultUserManager(5)
 				.name("room")
 				.build();
-		room.setMaxSlots(5);
 		EzyUser user1 = new EzySimpleUser();
 		((EzyNameAware)(user1)).setName("user1");
 		LocatedPlayer player1 = new LocatedPlayer("player1");

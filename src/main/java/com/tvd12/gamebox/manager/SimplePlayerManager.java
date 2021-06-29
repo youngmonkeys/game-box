@@ -7,6 +7,10 @@ import java.util.concurrent.locks.Lock;
 import com.tvd12.gamebox.entity.Player;
 
 public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager<P> {
+	
+	public SimplePlayerManager() {
+		this(999999999);
+	}
 
     public SimplePlayerManager(int maxPlayer) {
         super(maxPlayer);

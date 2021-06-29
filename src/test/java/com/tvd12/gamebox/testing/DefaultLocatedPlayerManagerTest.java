@@ -4,6 +4,7 @@ import org.testng.annotations.Test;
 
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
+import com.tvd12.test.assertion.Asserts;
 
 public class DefaultLocatedPlayerManagerTest {
 
@@ -25,6 +26,21 @@ public class DefaultLocatedPlayerManagerTest {
 		System.out.println(manager);
 		
 		System.out.println(manager.nextOf(c, p -> p != b));
+		
+	}
+	
+	@Test
+	public void justOne() {
+		DefaultLocatedPlayerManager manager = new DefaultLocatedPlayerManager();
+		LocatedPlayer a = new LocatedPlayer("a");
+		manager.setMaster(a);
+		manager.addPlayer(a, 1);
+		
+		a.setLocation(1);
+		
+		System.out.println(manager);
+		
+		Asserts.assertEquals(manager.nextOf(a), null);
 		
 	}
 	

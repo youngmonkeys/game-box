@@ -19,6 +19,8 @@ public class Player {
 	protected IPlayerRole role = PlayerRole.NULL;
 	@Setter
 	protected IPlayerStatus status = PlayerStatus.NULL;
+	@Setter
+	protected long currentRoomId;
 	
 	public Player(String name) {
 		this.name = name;

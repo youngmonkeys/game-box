@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>game-box</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<packaging>jar</packaging>
 
 	<name>game-box</name>
@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-server-core</artifactId>
-			<version>1.1.5</version>
+			<version>1.1.9</version>
 		</dependency>
 	</dependencies>
 </project>

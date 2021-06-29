@@ -28,6 +28,14 @@ public interface LocatedPlayerManager {
 	
 	LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 	
+	List<String> getPlayerNames();
+
+	boolean containsPlayer(String username);
+	
+	int getPlayerCount();
+	
+	boolean isEmpty();
+	
 	default LocatedPlayer nextOf(LocatedPlayer player) {
 		return nextOf(player, EzyPredicates.alwayTrue());
 	}

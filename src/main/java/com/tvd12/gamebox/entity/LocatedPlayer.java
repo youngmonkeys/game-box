@@ -28,6 +28,11 @@ public class LocatedPlayer extends Player {
 			return new LocatedPlayer(this);
 		}
 		
+		@Override
+		public LocatedPlayer build() {
+			return (LocatedPlayer)super.build();
+		}
+		
 	}
 	
 }

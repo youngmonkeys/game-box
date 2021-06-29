@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.function.EzyFunctions;
@@ -24,23 +25,28 @@ public abstract class AbstractPlayerManager<P extends Player>
 		implements PlayerManager<P> {
 
 	@Getter
-	protected final int maxPlayers;
+	protected final int maxPlayer;
     protected final Map<String, Lock> locks = newLockMap();
     protected final List<P> playerList = new LinkedList<>();
     protected final Map<String, P> playersByName = newPlayersByNameMap();
     
     public AbstractPlayerManager(int maxPlayer) {
-        this.maxPlayers = maxPlayer;
+        this.maxPlayer = maxPlayer;
     }
     
     protected AbstractPlayerManager(Builder<?, ?> builder) {
-        this.maxPlayers = builder.maxPlayers;
+        this.maxPlayer = builder.maxPlayer;
     }
     
     @Override
     public P getPlayer(String username) {
         P player = playersByName.get(username);
         return player;
+    }
+    
+    @Override
+    public P getPlayer(String username, Supplier<P> playerSupplier) {
+    	return playersByName.computeIfAbsent(username, k -> playerSupplier.get());
     }
     
     @Override
@@ -85,8 +91,8 @@ public abstract class AbstractPlayerManager<P extends Player>
     
     protected void addPlayer0(P player, boolean failIfAdded) {
 		int count = playersByName.size();
-		if(count >= maxPlayers)
-			throw new MaxPlayerException(player.getName(), count, maxPlayers);
+		if(count >= maxPlayer)
+			throw new MaxPlayerException(player.getName(), count, maxPlayer);
 		if(playersByName.containsKey(player.getName()) && failIfAdded)
 			throw new PlayerExistsException(player.getName());
 		addPlayer0(player);
@@ -101,8 +107,8 @@ public abstract class AbstractPlayerManager<P extends Player>
     protected void addPlayers0(Collection<P> players, boolean failIfAdded) {
 		int count = playersByName.size();
 		int nextCount = count + players.size();
-		if(nextCount > maxPlayers)
-			throw new MaxPlayerException(players.size(), count, maxPlayers);
+		if(nextCount > maxPlayer)
+			throw new MaxPlayerException(players.size(), count, maxPlayer);
 		for(P player : players) {
 			if(playersByName.containsKey(player.getName()) && failIfAdded)
     			throw new PlayerExistsException(player.getName());
@@ -153,7 +159,7 @@ public abstract class AbstractPlayerManager<P extends Player>
     
     @Override
     public boolean available() {
-        boolean available = playersByName.size() < maxPlayers;
+        boolean available = playersByName.size() < maxPlayer;
         return available;
     }
     
@@ -169,7 +175,7 @@ public abstract class AbstractPlayerManager<P extends Player>
     
     @Override
     public boolean isEmpty() {
-    		return playersByName.isEmpty();
+    	return playersByName.isEmpty();
     }
     
     @Override
@@ -210,11 +216,11 @@ public abstract class AbstractPlayerManager<P extends Player>
     public static abstract class Builder<U extends Player, B extends Builder<U, B>> 
             implements EzyBuilder<PlayerManager<U>> {
         
-        protected int maxPlayers = 999999;
+        protected int maxPlayer = 999999;
         
         @SuppressWarnings("unchecked")
-        public B maxPlayers(int maxPlayers) {
-            this.maxPlayers = maxPlayers;
+        public B maxPlayer(int maxPlayer) {
+            this.maxPlayer = maxPlayer;
             return (B)this;
         }
         
