@@ -3,3 +3,6 @@
 .settings/
 target/
 test-output/
+.DS_Store
+.idea/*
+game-box.iml
