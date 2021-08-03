@@ -3,29 +3,61 @@ package com.tvd12.gamebox.testing;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.mock;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MMOPlayerTest {
 	
 	@Test
-	public void test() {
-		MMOPlayer a = new MMOPlayer("a");
-		a.setPosition(mock(Vec3.class));
-		a.setRotation(mock(Vec3.class));
+	public void setPositionTest() {
+		// given
+		Vec3 position = TestHelper.randomVec3();
+		MMOPlayer sut = new MMOPlayer("a");
 		
-		MMOPlayer b = new MMOPlayer("b");
-		b.setPosition(mock(Vec3.class));
-		b.setRotation(mock(Vec3.class));
+		// when
+		sut.setPosition(position);
 		
-		a.addNearbyPlayer(b);
-		b.addNearbyPlayer(a);
+		// then
+		Asserts.assertEquals(position, sut.getPosition());
+	}
+	
+	@Test
+	public void setRotationTest() {
+		// given
+		Vec3 rotation = TestHelper.randomVec3();
+		MMOPlayer sut = new MMOPlayer("a");
 		
-		Asserts.assertEquals(a.getNearbyPlayers().size(), 1);
-		Asserts.assertEquals(b.getNearbyPlayers().size(), 1);
+		// when
+		sut.setRotation(rotation);
 		
-		b.removeNearByPlayer(a);
-		Asserts.assertEquals(b.getNearbyPlayers().size(), 0);
+		// then
+		Asserts.assertEquals(rotation, sut.getRotation());
+	}
+	
+	@Test
+	public void addNearbyPlayersTest() {
+		// given
+		int nearbyPlayerCount = RandomUtil.randomSmallInt();
+		MMOPlayer sut = new MMOPlayer("a");
+		List<MMOPlayer> nearbyPlayers = new ArrayList<>();
+		for (int i = 0; i < nearbyPlayerCount; i++) {
+			nearbyPlayers.add(new MMOPlayer("player#" + i));
+		}
+		
+		// when
+		nearbyPlayers.forEach(sut::addNearbyPlayer);
+		
+		// then
+		List<String> buffer = new ArrayList<>();
+		sut.getNearbyPlayerNames(buffer);
+		buffer.sort(String::compareTo);
+		Asserts.assertEquals(
+				nearbyPlayers.stream().map(MMOPlayer::getName).collect(Collectors.toList()),
+				buffer
+		);
 	}
 }

@@ -1,11 +1,14 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.gamebox.math.Vec3;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Getter
 public class MMOPlayer extends Player {
@@ -16,20 +19,30 @@ public class MMOPlayer extends Player {
 	@Setter
 	protected Vec3 rotation;
 	
-	protected List<MMOPlayer> nearbyPlayers;
+	@Getter(AccessLevel.NONE)
+	protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
 	
 	public MMOPlayer(String name) {
 		super(name);
-		
-		nearbyPlayers = new ArrayList<>();
 	}
 	
 	public void addNearbyPlayer(MMOPlayer otherPlayer) {
-		this.nearbyPlayers.add(otherPlayer);
+		this.nearbyPlayers.put(otherPlayer.getName(), otherPlayer);
 	}
 	
 	public void removeNearByPlayer(MMOPlayer otherPlayer) {
-		this.nearbyPlayers.remove(otherPlayer);
+		this.nearbyPlayers.remove(otherPlayer.getName());
+	}
+	
+	/**
+	 * To be used after onRoomUpdated to sync neighbor's positions for current player
+	 *
+	 * @param buffer initialized only once to maintain performance
+	 */
+	public void getNearbyPlayerNames(List<String> buffer) {
+		List<String> playerNames = nearbyPlayers.values().stream()
+				.map(MMOPlayer::getName).collect(Collectors.toList());
+		buffer.addAll(playerNames);
 	}
 	
 	protected MMOPlayer(Builder<?> builder) {
