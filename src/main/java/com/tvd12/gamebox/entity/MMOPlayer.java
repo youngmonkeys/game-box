@@ -40,9 +40,7 @@ public class MMOPlayer extends Player {
 	 * @param buffer initialized only once to maintain performance
 	 */
 	public void getNearbyPlayerNames(List<String> buffer) {
-		List<String> playerNames = nearbyPlayers.values().stream()
-				.map(MMOPlayer::getName).collect(Collectors.toList());
-		buffer.addAll(playerNames);
+		buffer.addAll(nearbyPlayers.keySet());
 	}
 	
 	protected MMOPlayer(Builder<?> builder) {
