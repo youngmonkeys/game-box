@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Getter
 public class MMOPlayer extends Player {
@@ -26,11 +25,11 @@ public class MMOPlayer extends Player {
 		super(name);
 	}
 	
-	public void addNearbyPlayer(MMOPlayer otherPlayer) {
+	void addNearbyPlayer(MMOPlayer otherPlayer) {
 		this.nearbyPlayers.put(otherPlayer.getName(), otherPlayer);
 	}
 	
-	public void removeNearByPlayer(MMOPlayer otherPlayer) {
+	void removeNearByPlayer(MMOPlayer otherPlayer) {
 		this.nearbyPlayers.remove(otherPlayer.getName());
 	}
 	
@@ -43,15 +42,15 @@ public class MMOPlayer extends Player {
 		buffer.addAll(nearbyPlayers.keySet());
 	}
 	
-	protected MMOPlayer(Builder<?> builder) {
+	protected MMOPlayer(Builder builder) {
 		super(builder);
 	}
 	
-	public static Builder<?> builder() {
-		return new Builder<>();
+	public static Builder builder() {
+		return new Builder();
 	}
 	
-	public static class Builder<B extends Builder<B>> extends Player.Builder<B> {
+	public static class Builder extends Player.Builder<Builder> {
 		
 		@Override
 		protected Player newProduct() {

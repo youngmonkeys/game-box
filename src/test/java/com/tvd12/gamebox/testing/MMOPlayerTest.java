@@ -3,6 +3,7 @@ package com.tvd12.gamebox.testing;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.reflect.ReflectMethodUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
@@ -49,7 +50,9 @@ public class MMOPlayerTest {
 		}
 		
 		// when
-		nearbyPlayers.forEach(sut::addNearbyPlayer);
+		nearbyPlayers.forEach((nearbyPlayer) -> {
+			ReflectMethodUtil.invokeMethod("addNearbyPlayer", sut, nearbyPlayer);
+		});
 		
 		// then
 		List<String> buffer = new ArrayList<>();

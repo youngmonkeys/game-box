@@ -6,6 +6,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.Player;
 
 public interface PlayerManager<P extends Player> {
@@ -41,6 +42,13 @@ public interface PlayerManager<P extends Player> {
 	 * @return the player as list
 	 */
 	List<P> getPlayerList();
+	
+	/**
+	 * Get player list to buffer
+	 *
+	 * @param buffer buffer to get player list
+	 */
+	void getPlayerList(List<P> buffer);
 	
 	/**
 	 * Get players as list
@@ -197,5 +205,4 @@ public interface PlayerManager<P extends Player> {
 	default P removePlayer(String username) {
 		return removePlayer(getPlayer(username));
 	}
-	
 }
