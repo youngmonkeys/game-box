@@ -1,25 +1,31 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.gamebox.manager.PlayerManager;
+import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class MMORoom extends NormalRoom {
 	
-	protected final List<MMORoomUpdateFinishedHandler> updateFinishedHandlers;
+	protected final List<MMOPlayer> playersBuffer;
+	protected final List<MMORoomUpdateHandler> roomUpdatedHandlers;
 	protected final double distanceOfInterest;
 	
-	public MMORoom(Builder<?> builder) {
+	public MMORoom(Builder builder) {
 		super(builder);
-		this.updateFinishedHandlers = builder.updateFinishedHandlers;
+		this.playersBuffer = new ArrayList<>();
+		this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
 		this.distanceOfInterest = builder.distanceOfInterest;
 	}
 	
 	public void update() {
-		List<MMOPlayer> playerList = playerManager.getPlayerList();
+		playersBuffer.clear();
+		playerManager.getPlayerList(playersBuffer);
 		
-		for (MMOPlayer player : playerList) {
-			for (MMOPlayer other : playerList) {
+		for (MMOPlayer player : playersBuffer) {
+			for (MMOPlayer other : playersBuffer) {
 				if (!other.equals(player)) {
 					double distance = player.getPosition().distance(other.getPosition());
 					if (distance <= this.distanceOfInterest) {
@@ -31,31 +37,57 @@ public class MMORoom extends NormalRoom {
 			}
 		}
 		
-		notifyUpdateFinishedHandlers();
+		notifyUpdatedHandlers();
 	}
 	
-	private void notifyUpdateFinishedHandlers() {
-		for (MMORoomUpdateFinishedHandler handler : this.updateFinishedHandlers) {
+	private void notifyUpdatedHandlers() {
+		for (MMORoomUpdateHandler handler : this.roomUpdatedHandlers) {
 			handler.onRoomUpdated(this);
 		}
 	}
 	
-	public static Builder<?> builder() {
-		return new Builder<>();
+	public static Builder builder() {
+		return new Builder();
 	}
 	
-	public static class Builder<B extends Builder<B>> extends NormalRoom.Builder<B> {
-		protected List<MMORoomUpdateFinishedHandler> updateFinishedHandlers = new ArrayList<>();
+	public static class Builder extends NormalRoom.Builder<Builder> {
+		protected List<MMORoomUpdateHandler> roomUpdatedHandlers = new ArrayList<>();
 		protected double distanceOfInterest;
 		
-		public B addRoomUpdateFinishedHandler(MMORoomUpdateFinishedHandler handler) {
-			this.updateFinishedHandlers.add(handler);
-			return (B) this;
+		public Builder() {
+			this.roomUpdatedHandlers = new ArrayList<>();
 		}
 		
-		public B distanceOfInterest(double distance) {
+		public Builder addRoomUpdatedHandler(MMORoomUpdateHandler handler) {
+			this.roomUpdatedHandlers.add(handler);
+			return this;
+		}
+		
+		public Builder distanceOfInterest(double distance) {
 			this.distanceOfInterest = distance;
-			return (B) this;
+			return this;
+		}
+		
+		@Override
+		public Builder defaultPlayerManager(int maxPlayer) {
+			this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
+			return this;
+		}
+		
+		@Override
+		public Builder playerManager(PlayerManager playerManager) {
+			if (playerManager instanceof SynchronizedPlayerManager) {
+				return super.playerManager(playerManager);
+			}
+			throw new IllegalArgumentException("playerManager must be SynchronizedPlayerManager");
+		}
+		
+		@Override
+		protected void preBuild() {
+			if (playerManager == null) {
+				playerManager = new SynchronizedPlayerManager<>();
+			}
+			super.preBuild();
 		}
 		
 		@Override

@@ -60,8 +60,13 @@ public abstract class AbstractPlayerManager<P extends Player>
     public List<P> getPlayerList() {
         return playerList;
     }
-    
-    @Override
+	
+	@Override
+	public void getPlayerList(List<P> buffer) {
+		buffer = this.playerList;
+	}
+	
+	@Override
     public List<P> getPlayerList(Predicate<P> predicate) {
 		List<P> list = new ArrayList<>();
 		for(P player : playerList) {

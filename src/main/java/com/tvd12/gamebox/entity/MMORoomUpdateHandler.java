@@ -1,5 +1,5 @@
 package com.tvd12.gamebox.entity;
 
-public interface MMORoomUpdateFinishedHandler {
+public interface MMORoomUpdateHandler {
 	void onRoomUpdated(MMORoom room);
 }
