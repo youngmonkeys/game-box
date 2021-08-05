@@ -25,5 +25,10 @@
 			<artifactId>ezyfox-server-core</artifactId>
 			<version>1.1.9</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.tvd12</groupId>
+            <artifactId>ezyfox-server-support</artifactId>
+            <version>1.1.9</version>
+        </dependency>
+    </dependencies>
 </project>

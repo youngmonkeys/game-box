@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.gamebox.handler.MMORoomUpdateHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 

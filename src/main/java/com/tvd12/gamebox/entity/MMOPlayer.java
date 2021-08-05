@@ -8,15 +8,14 @@ import lombok.Setter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
 public class MMOPlayer extends Player {
 	
-	@Setter
-	protected Vec3 position;
-	
-	@Setter
-	protected Vec3 rotation;
+	protected Vec3 position = Vec3.ZERO;
+	protected Vec3 rotation = Vec3.ZERO;
+	protected AtomicBoolean stateChanged = new AtomicBoolean(false);
 	
 	@Getter(AccessLevel.NONE)
 	protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
@@ -31,6 +30,24 @@ public class MMOPlayer extends Player {
 	
 	void removeNearByPlayer(MMOPlayer otherPlayer) {
 		this.nearbyPlayers.remove(otherPlayer.getName());
+	}
+	
+	public void setPosition(Vec3 position) {
+		this.position.set(position);
+		this.stateChanged.set(true);
+	}
+	
+	public void setRotation(Vec3 rotation) {
+		this.rotation.set(rotation);
+		this.stateChanged.set(true);
+	}
+	
+	public void setStateChanged(boolean state) {
+		this.stateChanged.set(state);
+	}
+	
+	public boolean getStateChanged() {
+		return this.stateChanged.get();
 	}
 	
 	/**
