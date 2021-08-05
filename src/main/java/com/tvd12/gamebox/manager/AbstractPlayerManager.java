@@ -63,7 +63,7 @@ public abstract class AbstractPlayerManager<P extends Player>
 	
 	@Override
 	public void getPlayerList(List<P> buffer) {
-		buffer = this.playerList;
+		buffer.addAll(playerList);
 	}
 	
 	@Override
