@@ -75,6 +75,7 @@ public class MMORoom extends NormalRoom {
 			return this;
 		}
 		
+		@SuppressWarnings("rawtypes")
 		@Override
 		public Builder playerManager(PlayerManager playerManager) {
 			if (playerManager instanceof SynchronizedPlayerManager) {
