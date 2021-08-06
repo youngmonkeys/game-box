@@ -82,6 +82,7 @@ public class MMORoomTest {
 		
 		MMORoom room = MMORoom.builder()
 				.name("room")
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
 				.addRoomUpdatedHandler(aInstance1)
 				.addRoomUpdatedHandler(aInstance2)
 				.build();

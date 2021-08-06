@@ -51,6 +51,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		
 		MMORoom room = MMORoom.builder()
 				.name(RandomUtil.randomShortAlphabetString())
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
 				.build();
 		
 		MMOPlayer player = new MMOPlayer(playerName);
