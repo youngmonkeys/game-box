@@ -21,6 +21,8 @@ public interface RoomManager<R extends Room> {
 	
 	List<R> getRoomList();
 	
+	void getRoomList(List<R> buffer);
+	
 	int getRoomCount();
 	
 	boolean containsRoom(long id);
