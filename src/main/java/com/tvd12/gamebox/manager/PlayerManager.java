@@ -6,7 +6,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.Player;
 
 public interface PlayerManager<P extends Player> {
