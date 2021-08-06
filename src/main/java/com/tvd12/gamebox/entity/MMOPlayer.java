@@ -3,20 +3,18 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
 public class MMOPlayer extends Player {
 	
-	@Setter
-	protected Vec3 position;
-	
-	@Setter
-	protected Vec3 rotation;
+	protected Vec3 position = new Vec3();
+	protected Vec3 rotation = new Vec3();
+	protected AtomicBoolean stateChanged = new AtomicBoolean(false);
 	
 	@Getter(AccessLevel.NONE)
 	protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
@@ -31,6 +29,32 @@ public class MMOPlayer extends Player {
 	
 	void removeNearByPlayer(MMOPlayer otherPlayer) {
 		this.nearbyPlayers.remove(otherPlayer.getName());
+	}
+	
+	public void setPosition(Vec3 position) {
+		this.setPosition(position.x, position.y, position.z);
+	}
+	
+	public void setPosition(double x, double y, double z) {
+		this.position.set(x, y, z);
+		this.stateChanged.set(true);
+	}
+	
+	public void setRotation(Vec3 rotation) {
+		this.setRotation(rotation.x, rotation.y, rotation.z);
+	}
+	
+	public void setRotation(double x, double y, double z) {
+		this.rotation.set(x, y, z);
+		this.stateChanged.set(true);
+	}
+	
+	public void setStateChanged(boolean changed) {
+		this.stateChanged.set(changed);
+	}
+	
+	public boolean isStateChanged() {
+		return this.stateChanged.get();
 	}
 	
 	/**

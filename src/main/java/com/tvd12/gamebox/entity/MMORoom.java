@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 
@@ -10,7 +11,7 @@ import java.util.List;
 public class MMORoom extends NormalRoom {
 	
 	protected final List<MMOPlayer> playersBuffer;
-	protected final List<MMORoomUpdateHandler> roomUpdatedHandlers;
+	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
 	protected final double distanceOfInterest;
 	
 	public MMORoom(Builder builder) {
@@ -41,7 +42,7 @@ public class MMORoom extends NormalRoom {
 	}
 	
 	private void notifyUpdatedHandlers() {
-		for (MMORoomUpdateHandler handler : this.roomUpdatedHandlers) {
+		for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
 			handler.onRoomUpdated(this);
 		}
 	}
@@ -51,14 +52,14 @@ public class MMORoom extends NormalRoom {
 	}
 	
 	public static class Builder extends NormalRoom.Builder<Builder> {
-		protected List<MMORoomUpdateHandler> roomUpdatedHandlers = new ArrayList<>();
+		protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 		protected double distanceOfInterest;
 		
 		public Builder() {
 			this.roomUpdatedHandlers = new ArrayList<>();
 		}
 		
-		public Builder addRoomUpdatedHandler(MMORoomUpdateHandler handler) {
+		public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
 			this.roomUpdatedHandlers.add(handler);
 			return this;
 		}
