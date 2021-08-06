@@ -88,6 +88,10 @@ public class MMORoom extends NormalRoom {
 			if (playerManager == null) {
 				playerManager = new SynchronizedPlayerManager<>();
 			}
+			
+			if (distanceOfInterest <= 0.0f) {
+				throw new IllegalArgumentException("distanceOfInterest must be set!");
+			}
 			super.preBuild();
 		}
 		
