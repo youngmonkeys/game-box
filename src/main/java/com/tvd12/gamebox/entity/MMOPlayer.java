@@ -3,7 +3,6 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -13,8 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Getter
 public class MMOPlayer extends Player {
 	
-	protected Vec3 position = Vec3.ZERO;
-	protected Vec3 rotation = Vec3.ZERO;
+	protected Vec3 position = new Vec3();
+	protected Vec3 rotation = new Vec3();
 	protected AtomicBoolean stateChanged = new AtomicBoolean(false);
 	
 	@Getter(AccessLevel.NONE)
@@ -33,20 +32,28 @@ public class MMOPlayer extends Player {
 	}
 	
 	public void setPosition(Vec3 position) {
-		this.position.set(position);
+		this.setPosition(position.x, position.y, position.z);
+	}
+	
+	public void setPosition(double x, double y, double z) {
+		this.position.set(x, y, z);
 		this.stateChanged.set(true);
 	}
 	
 	public void setRotation(Vec3 rotation) {
-		this.rotation.set(rotation);
+		this.setRotation(rotation.x, rotation.y, rotation.z);
+	}
+	
+	public void setRotation(double x, double y, double z) {
+		this.rotation.set(x, y, z);
 		this.stateChanged.set(true);
 	}
 	
-	public void setStateChanged(boolean state) {
-		this.stateChanged.set(state);
+	public void setStateChanged(boolean changed) {
+		this.stateChanged.set(changed);
 	}
 	
-	public boolean getStateChanged() {
+	public boolean isStateChanged() {
 		return this.stateChanged.get();
 	}
 	

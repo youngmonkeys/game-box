@@ -1,54 +1,82 @@
 package com.tvd12.gamebox.testing;
 
-import com.tvd12.ezyfox.util.EzyNameAware;
-import com.tvd12.ezyfoxserver.entity.EzySimpleUser;
-import com.tvd12.ezyfoxserver.entity.EzyUser;
+import com.tvd12.ezyfoxserver.support.command.EzyArrayResponse;
+import com.tvd12.ezyfoxserver.support.factory.EzyResponseFactory;
+import com.tvd12.gamebox.constant.Commands;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.handler.SyncPositionRoomUpdatedHandler;
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.math.Vec3s;
+import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
 public class SyncPositionRoomUpdatedHandlerTest {
 	
+	@SuppressWarnings("unchecked")
 	@Test
-	public void test() {
+	public void casePlayerChangeStateTest() {
 		// given
-		SyncPositionRoomUpdatedHandler instance1 = new SyncPositionRoomUpdatedHandler();
-		SyncPositionRoomUpdatedHandler instance2 = new SyncPositionRoomUpdatedHandler();
+		String playerName = RandomUtil.randomShortAlphabetString();
+		
+		int nearbyPlayerCount = RandomUtil.randomSmallInt();
+		Set<String> nearbyPlayerNames = RandomUtil.randomSet(nearbyPlayerCount, String.class);
+		List<String> nearbyPlayerNameList = new ArrayList<>(nearbyPlayerNames);
+		
+		Vec3 position = TestHelper.randomVec3();
+		Vec3 rotation = TestHelper.randomVec3();
+		
+		EzyArrayResponse arrayResponse = mock(EzyArrayResponse.class);
+		when(arrayResponse.udpTransport()).thenReturn(arrayResponse);
+		when(arrayResponse.command(Commands.SYNC_POSITION)).thenReturn(arrayResponse);
+		when(arrayResponse.param(playerName)).thenReturn(arrayResponse);
+		when(arrayResponse.param(Vec3s.toArray(position))).thenReturn(arrayResponse);
+		when(arrayResponse.param(Vec3s.toArray(rotation))).thenReturn(arrayResponse);
+		when(arrayResponse.usernames(nearbyPlayerNameList)).thenReturn(arrayResponse);
+		doNothing().when(arrayResponse).execute();
+		
+		EzyResponseFactory responseFactory = mock(EzyResponseFactory.class);
+		when(responseFactory.newArrayResponse()).thenReturn(arrayResponse);
+		
+		SyncPositionRoomUpdatedHandler sut = new SyncPositionRoomUpdatedHandler();
+		sut.setResponseFactory(responseFactory);
 		
 		MMORoom room = MMORoom.builder()
-				.name("room")
-				.distanceOfInterest(100.0D)
-				.addRoomUpdatedHandler(instance1)
-				.addRoomUpdatedHandler(instance2)
+				.name(RandomUtil.randomShortAlphabetString())
 				.build();
 		
-		EzyUser user1 = new EzySimpleUser();
-		((EzyNameAware) user1).setName("user1");
-		MMOPlayer player1 = new MMOPlayer("player1");
-		player1.setPosition(new Vec3(0, 0, 0));
-		room.addUser(user1, player1);
+		MMOPlayer player = new MMOPlayer(playerName);
+		player.setPosition(position);
+		player.setRotation(rotation);
 		
-		EzyUser user2 = new EzySimpleUser();
-		((EzyNameAware) user2).setName("user2");
-		MMOPlayer player2 = new MMOPlayer("player2");
-		player2.setPosition(new Vec3(1, 1, 1));
-		room.addUser(user2, player2);
-		
-		EzyUser user3 = new EzySimpleUser();
-		((EzyNameAware) user3).setName("user3");
-		MMOPlayer player3 = new MMOPlayer("player3");
-		player3.setPosition(new Vec3(2, 2, 2));
-		room.addUser(user3, player3);
+		Map<String, MMOPlayer> nearbyPlayers = FieldUtil.getFieldValue(player, "nearbyPlayers");
+		nearbyPlayerNames.forEach(name -> {
+			MMOPlayer nearbyPlayer = new MMOPlayer(name);
+			nearbyPlayers.put(name, nearbyPlayer);
+			room.getPlayerManager().addPlayer(nearbyPlayer);
+		});
+		room.getPlayerManager().addPlayer(player);
 		
 		// when
-		room.update();
+		sut.onRoomUpdated(room);
 		
 		// then
+		verify(responseFactory, times(1)).newArrayResponse();
+		verify(arrayResponse, times(1)).udpTransport();
+		verify(arrayResponse, times(1)).command(Commands.SYNC_POSITION);
+		verify(arrayResponse, times(1)).param(playerName);
+		verify(arrayResponse, times(1)).param(Vec3s.toArray(position));
+		verify(arrayResponse, times(1)).param(Vec3s.toArray(rotation));
+		verify(arrayResponse, times(1)).usernames(nearbyPlayerNameList);
+		verify(arrayResponse, times(1)).execute();
 	}
 	
 }

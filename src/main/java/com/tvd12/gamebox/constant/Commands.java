@@ -1,7 +1,8 @@
 package com.tvd12.gamebox.constant;
 
-public class Commands {
+public final class Commands {
 	
-	public static final String SYNC_POSITION = "sync_position";
+	private Commands() {}
 	
+	public static final String SYNC_POSITION = "s";
 }

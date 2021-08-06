@@ -5,7 +5,7 @@ import com.tvd12.ezyfoxserver.entity.EzySimpleUser;
 import com.tvd12.ezyfoxserver.entity.EzyUser;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
-import com.tvd12.gamebox.handler.MMORoomUpdateHandler;
+import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.FieldUtil;
@@ -102,7 +102,7 @@ public class MMORoomTest {
 		verify(aInstance2, times(2)).onRoomUpdated(room);
 	}
 	
-	public class A implements MMORoomUpdateHandler {
+	public class A implements MMORoomUpdatedHandler {
 		@Override
 		public void onRoomUpdated(MMORoom room) {
 		}
