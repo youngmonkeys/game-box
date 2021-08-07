@@ -47,7 +47,6 @@ public class MMORoomGroup extends EzyLoggable {
 		this.roomManager.getRoomList(roomsBuffer);
 		for (MMORoom room : roomsBuffer) {
 			try {
-				
 				room.update();
 			} catch (Exception e) {
 				logger.warn("Update room: {} error", room, e);
