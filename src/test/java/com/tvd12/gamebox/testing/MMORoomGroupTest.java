@@ -1,25 +1,20 @@
 package com.tvd12.gamebox.testing;
 
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.testng.annotations.Test;
-
 import com.tvd12.ezyfox.util.EzyWrap;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.entity.MMORoomGroup;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.FieldUtil;
+import com.tvd12.test.util.RandomUtil;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.mockito.Mockito.*;
 
 public class MMORoomGroupTest {
 	
@@ -31,8 +26,7 @@ public class MMORoomGroupTest {
 		doAnswer(invocation -> {
 			roomGroupThreadName.setValue(Thread.currentThread().getName());
 			return null;
-		})
-		.when(room).update();
+		}).when(room).update();
 		
 		// when
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
@@ -52,10 +46,10 @@ public class MMORoomGroupTest {
 		// given
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
 		MMORoom room = mock(MMORoom.class);
-		sut.addRoom(room);
 		doNothing().when(room).update();
 		
 		// when
+		sut.addRoom(room);
 		Thread.sleep(300);
 		
 		// then
@@ -66,18 +60,18 @@ public class MMORoomGroupTest {
 	public void removeRoomTest() throws InterruptedException {
 		// given
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
-		MMORoom room1 = mock(MMORoom.class);
-		MMORoom room2 = mock(MMORoom.class);
+		MMORoom room1 = MMORoom.builder()
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
+				.name("room1")
+				.build();
 		
-		when(room1.getName()).thenReturn("room1");
-		when(room1.getId()).thenReturn(0L);
-		when(room2.getName()).thenReturn("room2");
-		when(room1.getId()).thenReturn(1L);
+		MMORoom room2 = MMORoom.builder()
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
+				.name("room2")
+				.build();
 		
 		sut.addRoom(room1);
 		sut.addRoom(room2);
-		doNothing().when(room1).update();
-		doNothing().when(room2).update();
 		
 		Thread.sleep(300);
 		
@@ -86,12 +80,11 @@ public class MMORoomGroupTest {
 		
 		// then
 		RoomManager<MMORoom> roomManager = FieldUtil.getFieldValue(sut, "roomManager");
+		List<MMORoom> roomsBuffer = new ArrayList<>();
+		roomManager.getRoomList(roomsBuffer);
 		
 		List<MMORoom> expectedRoomList = new ArrayList<>();
 		expectedRoomList.add(room2);
-		
-		List<MMORoom> roomsBuffer = new ArrayList<>();
-		roomManager.getRoomList(roomsBuffer);
 		
 		Asserts.assertEquals(expectedRoomList, roomsBuffer);
 	}
@@ -104,8 +97,7 @@ public class MMORoomGroupTest {
 		doAnswer(invocation -> {
 			roomGroupThreadName.setValue(Thread.currentThread().getName());
 			return null;
-		})
-		.when(room).update();
+		}).when(room).update();
 		
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
 		sut.addRoom(room);
