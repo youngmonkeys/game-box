@@ -54,8 +54,15 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     		return super.getPlayerList(predicate);
     	}
     }
-    
-    @Override
+	
+	@Override
+	public void getPlayerList(List<P> buffer) {
+		synchronized (synchronizedLock) {
+			super.getPlayerList(buffer);
+		}
+	}
+	
+	@Override
     public List<String> getPlayerNames() {
     	synchronized (synchronizedLock) {
 			return super.getPlayerNames();
@@ -148,7 +155,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		return new Builder<>();
     }
     
-    public static class Builder<U extends Player, B extends Builder<U, B>> 
+    public static class Builder<U extends Player, B extends Builder<U, B>>
         extends AbstractPlayerManager.Builder<U, B> {
         
 		@Override

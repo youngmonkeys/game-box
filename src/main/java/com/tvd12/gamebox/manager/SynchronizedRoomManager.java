@@ -65,6 +65,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 	}
 	
 	@Override
+	public void getRoomList(List<R> buffer) {
+		synchronized (synchronizedLock) {
+			super.getRoomList(buffer);
+		}
+	}
+	
+	@Override
 	public int getRoomCount() {
 		synchronized (synchronizedLock) {
 			return super.getRoomCount();
