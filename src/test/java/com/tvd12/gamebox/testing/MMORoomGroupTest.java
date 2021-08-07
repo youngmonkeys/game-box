@@ -115,4 +115,20 @@ public class MMORoomGroupTest {
 				.collect(Collectors.toSet());
 		Asserts.assertFalse(threadNames.contains(roomGroupThreadName.getValue()));
 	}
+	
+	@Test
+	public void roomExceptionTest() throws InterruptedException {
+		// given
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoom room = mock(MMORoom.class);
+		doAnswer(invocation -> {
+			throw new IllegalArgumentException("Exception when room.update()");
+		}).when(room).update();
+		
+		// when
+		sut.addRoom(room);
+		Thread.sleep(300);
+		
+		// then
+	}
 }
