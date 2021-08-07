@@ -121,14 +121,13 @@ public class MMORoomGroupTest {
 		// given
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
 		MMORoom room = mock(MMORoom.class);
-		doAnswer(invocation -> {
-			throw new Exception("Exception when room.update()");
-		}).when(room).update();
+		doThrow(InterruptedException.class).when(room).update();
 		
 		// when
 		sut.addRoom(room);
 		Thread.sleep(300);
 		
 		// then
+		verify(room, atLeastOnce()).update();
 	}
 }
