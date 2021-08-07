@@ -122,7 +122,7 @@ public class MMORoomGroupTest {
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
 		MMORoom room = mock(MMORoom.class);
 		doAnswer(invocation -> {
-			throw new IllegalArgumentException("Exception when room.update()");
+			throw new Exception("Exception when room.update()");
 		}).when(room).update();
 		
 		// when
