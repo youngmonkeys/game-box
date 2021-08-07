@@ -131,6 +131,11 @@ public abstract class AbstractRoomManager<R extends Room>
 	}
 	
 	@Override
+	public void getRoomList(List<R> buffer) {
+		buffer.addAll(roomsByName.values());
+	}
+	
+	@Override
 	public int getRoomCount() {
 		int count = roomsByName.size();
 		return count;
