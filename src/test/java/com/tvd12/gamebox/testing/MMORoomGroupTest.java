@@ -1,36 +1,50 @@
 package com.tvd12.gamebox.testing;
 
-import com.tvd12.gamebox.entity.MMORoom;
-import com.tvd12.gamebox.entity.MMORoomGroup;
-import com.tvd12.gamebox.manager.RoomManager;
-import com.tvd12.test.assertion.Asserts;
-import com.tvd12.test.reflect.FieldUtil;
-import org.testng.annotations.Test;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.mockito.Mockito.*;
+import org.testng.annotations.Test;
+
+import com.tvd12.ezyfox.util.EzyWrap;
+import com.tvd12.gamebox.entity.MMORoom;
+import com.tvd12.gamebox.entity.MMORoomGroup;
+import com.tvd12.gamebox.manager.RoomManager;
+import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.reflect.FieldUtil;
 
 public class MMORoomGroupTest {
 	
 	@Test
 	public void createMMORoomGroupTest() throws InterruptedException {
 		// given
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoom room = mock(MMORoom.class);
+		EzyWrap<String> roomGroupThreadName = new EzyWrap<>();
+		doAnswer(invocation -> {
+			roomGroupThreadName.setValue(Thread.currentThread().getName());
+			return null;
+		})
+		.when(room).update();
 		
 		// when
-		Set<Thread> threads = Thread.getAllStackTraces().keySet();
-		List<String> threadNames = threads.stream().map(Thread::getName).collect(Collectors.toList());
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
 		
 		// then
+		sut.addRoom(room);
 		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "timeTickMillis"));
 		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "roomsBuffer"));
 		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "roomManager"));
 		
-		Asserts.assertEquals(threadNames.contains("game-box-mmo-room-group-1"), true);
+		Thread.sleep(300);
+		Asserts.assertNotEquals(Thread.currentThread().getName(), roomGroupThreadName.getValue());
 	}
 	
 	@Test
@@ -42,7 +56,7 @@ public class MMORoomGroupTest {
 		doNothing().when(room).update();
 		
 		// when
-		Thread.sleep(1000);
+		Thread.sleep(300);
 		
 		// then
 		verify(room, atLeastOnce()).update();
@@ -65,7 +79,7 @@ public class MMORoomGroupTest {
 		doNothing().when(room1).update();
 		doNothing().when(room2).update();
 		
-		Thread.sleep(1000);
+		Thread.sleep(300);
 		
 		// when
 		sut.removeRoom(room1);
@@ -85,13 +99,28 @@ public class MMORoomGroupTest {
 	@Test
 	public void destroyGroupTest() throws InterruptedException {
 		// given
+		MMORoom room = mock(MMORoom.class);
+		EzyWrap<String> roomGroupThreadName = new EzyWrap<>();
+		doAnswer(invocation -> {
+			roomGroupThreadName.setValue(Thread.currentThread().getName());
+			return null;
+		})
+		.when(room).update();
+		
 		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		sut.addRoom(room);
 		
 		// when
-		Thread.sleep(1000);
 		sut.destroy();
+		Thread.sleep(300);
 		
 		// then
 		Asserts.assertEquals(FieldUtil.getFieldValue(sut, "active"), false);
+		
+		Set<String> threadNames = Thread.getAllStackTraces().keySet()
+				.stream()
+				.map(Thread::getName)
+				.collect(Collectors.toSet());
+		Asserts.assertFalse(threadNames.contains(roomGroupThreadName.getValue()));
 	}
 }
