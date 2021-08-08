@@ -1,8 +1,6 @@
-package com.tvd12.gamebox.testing;
+package com.tvd12.gamebox.entity;
 
 import com.tvd12.ezyfox.util.EzyWrap;
-import com.tvd12.gamebox.entity.MMORoom;
-import com.tvd12.gamebox.entity.MMORoomGroup;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.FieldUtil;
@@ -29,7 +27,7 @@ public class MMORoomGroupTest {
 		}).when(room).update();
 		
 		// when
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
 		
 		// then
 		sut.addRoom(room);
@@ -44,7 +42,7 @@ public class MMORoomGroupTest {
 	@Test
 	public void addRoomTest() throws InterruptedException {
 		// given
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
 		MMORoom room = mock(MMORoom.class);
 		doNothing().when(room).update();
 		
@@ -59,7 +57,7 @@ public class MMORoomGroupTest {
 	@Test
 	public void removeRoomTest() throws InterruptedException {
 		// given
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
 		MMORoom room1 = MMORoom.builder()
 				.distanceOfInterest(RandomUtil.randomSmallDouble())
 				.name("room1")
@@ -99,7 +97,7 @@ public class MMORoomGroupTest {
 			return null;
 		}).when(room).update();
 		
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
 		sut.addRoom(room);
 		
 		// when
@@ -119,7 +117,7 @@ public class MMORoomGroupTest {
 	@Test
 	public void roomExceptionTest() throws InterruptedException {
 		// given
-		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillies(100).build();
+		MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
 		MMORoom room = mock(MMORoom.class);
 		doThrow(InterruptedException.class).when(room).update();
 		
