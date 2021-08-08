@@ -14,20 +14,19 @@ public class MMOVirtualWorld extends EzyLoggable {
 	private final int timeTickMillis;
 	private final int maxRoomCount;
 	
-	public MMOVirtualWorld(Builder builder) {
+	protected MMOVirtualWorld(Builder builder) {
 		this.roomGroupCount = builder.roomGroupCount;
 		this.timeTickMillis = builder.timeTickMillis;
 		this.maxRoomCount = builder.maxRoomCount;
-		roomGroups = this.createRoomGroups();
+		this.roomGroups = this.createRoomGroups();
 	}
 	
 	private MMORoomGroup[] createRoomGroups() {
 		MMORoomGroup[] groups = new MMORoomGroup[this.roomGroupCount];
 		for (int i = 0; i < roomGroupCount; i++) {
-			MMORoomGroup group = MMORoomGroup.builder()
+			groups[i] = MMORoomGroup.builder()
 					.timeTickMillis(timeTickMillis)
 					.build();
-			groups[i] = group;
 		}
 		return groups;
 	}
@@ -57,7 +56,8 @@ public class MMOVirtualWorld extends EzyLoggable {
 	}
 	
 	public int getRoomCount() {
-		return Arrays.stream(roomGroups).map(MMORoomGroup::getRoomCount)
+		return Arrays.stream(roomGroups)
+				.map(MMORoomGroup::getRoomCount)
 				.reduce(0, Integer::sum);
 	}
 	
