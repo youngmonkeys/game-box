@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MMORoomGroup extends EzyLoggable {
+class MMORoomGroup extends EzyLoggable {
 	
 	private volatile boolean active;
 	private final int timeTickMillis;
@@ -18,14 +18,14 @@ public class MMORoomGroup extends EzyLoggable {
 	private final static AtomicInteger COUNTER = new AtomicInteger();
 	
 	protected MMORoomGroup(Builder builder) {
-		this.timeTickMillis = builder.timeTickMillies;
+		this.timeTickMillis = builder.timeTickMillis;
 		this.roomsBuffer = new ArrayList<>();
 		this.roomManager = new SynchronizedRoomManager<>();
 		this.start();
 	}
 	
 	private void start() {
-		Thread newThread = new Thread(() -> loop());
+		Thread newThread = new Thread(this::loop);
 		newThread.setName("game-box-mmo-room-group-" + COUNTER.incrementAndGet());
 		newThread.start();
 	}
@@ -62,6 +62,14 @@ public class MMORoomGroup extends EzyLoggable {
 		this.roomManager.removeRoom(room);
 	}
 	
+	public MMORoom getRoom(long roomId) {
+		return this.roomManager.getRoom(roomId);
+	}
+	
+	public MMORoom getRoom(String roomName) {
+		return this.roomManager.getRoom(roomName);
+	}
+	
 	public void destroy() {
 		this.active = false;
 	}
@@ -71,10 +79,10 @@ public class MMORoomGroup extends EzyLoggable {
 	}
 	
 	public static class Builder implements EzyBuilder<MMORoomGroup> {
-		private int timeTickMillies;
+		private int timeTickMillis;
 		
-		public Builder timeTickMillies(int timeTickMillies) {
-			this.timeTickMillies = timeTickMillies;
+		public Builder timeTickMillis(int timeTickMillis) {
+			this.timeTickMillis = timeTickMillis;
 			return this;
 		}
 		
