@@ -70,6 +70,10 @@ class MMORoomGroup extends EzyLoggable {
 		return this.roomManager.getRoom(roomName);
 	}
 	
+	public int getRoomCount() {
+		return this.roomManager.getRoomCount();
+	}
+	
 	public void destroy() {
 		this.active = false;
 	}

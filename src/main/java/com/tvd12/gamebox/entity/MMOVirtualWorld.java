@@ -2,35 +2,46 @@ package com.tvd12.gamebox.entity;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.gamebox.exception.MaxRoomException;
+
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MMOVirtualWorld extends EzyLoggable {
 	
 	private final MMORoomGroup[] roomGroups;
-	private final int mmoRoomGroupCount;
+	private final int roomGroupCount;
 	private final int timeTickMillis;
+	private final int maxRoomCount;
 	
 	public MMOVirtualWorld(Builder builder) {
-		this.mmoRoomGroupCount = builder.mmoRoomGroupCount;
+		this.roomGroupCount = builder.roomGroupCount;
 		this.timeTickMillis = builder.timeTickMillis;
-		roomGroups = new MMORoomGroup[this.mmoRoomGroupCount];
-		this.start();
+		this.maxRoomCount = builder.maxRoomCount;
+		roomGroups = this.createRoomGroups();
 	}
 	
-	private void start() {
-		for (int i = 0; i < mmoRoomGroupCount; i++) {
+	private MMORoomGroup[] createRoomGroups() {
+		MMORoomGroup[] groups = new MMORoomGroup[this.roomGroupCount];
+		for (int i = 0; i < roomGroupCount; i++) {
 			MMORoomGroup group = MMORoomGroup.builder()
 					.timeTickMillis(timeTickMillis)
 					.build();
-			roomGroups[i] = group;
+			groups[i] = group;
 		}
+		return groups;
 	}
 	
 	private MMORoomGroup getRoomGroupByRoomId(long roomId) {
-		int roomGroupIndex = (int) (roomId % mmoRoomGroupCount);
+		int roomGroupIndex = (int) (roomId % roomGroupCount);
 		return roomGroups[roomGroupIndex];
 	}
 	
 	public void addRoom(MMORoom room) {
+		if (getRoomCount() >= maxRoomCount) {
+			throw new MaxRoomException(room.toString(), getRoomCount(), maxRoomCount);
+		}
+		
 		MMORoomGroup group = getRoomGroupByRoomId(room.getId());
 		group.addRoom(room);
 	}
@@ -45,16 +56,27 @@ public class MMOVirtualWorld extends EzyLoggable {
 		return group.getRoom(roomId);
 	}
 	
+	public int getRoomCount() {
+		return Arrays.stream(roomGroups).map(MMORoomGroup::getRoomCount)
+				.reduce(0, Integer::sum);
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
 	public static class Builder implements EzyBuilder<MMOVirtualWorld> {
-		private Integer timeTickMillis;
-		private Integer mmoRoomGroupCount;
+		private int timeTickMillis = 100;
+		private int roomGroupCount = 2 * Runtime.getRuntime().availableProcessors();
+		private int maxRoomCount = 10000;
 		
-		public Builder mmoRoomGroupCount(int mmoRoomGroupCount) {
-			this.mmoRoomGroupCount = mmoRoomGroupCount;
+		public Builder maxRoomCount(int maxRoomCount) {
+			this.maxRoomCount = maxRoomCount;
+			return this;
+		}
+		
+		public Builder roomGroupCount(int roomGroupCount) {
+			this.roomGroupCount = roomGroupCount;
 			return this;
 		}
 		
@@ -63,20 +85,8 @@ public class MMOVirtualWorld extends EzyLoggable {
 			return this;
 		}
 		
-		protected void preBuild() {
-			if (this.mmoRoomGroupCount == null) {
-				this.mmoRoomGroupCount = 2 * Runtime.getRuntime().availableProcessors();
-			}
-			
-			if (this.timeTickMillis == null) {
-				this.timeTickMillis = 100;
-			}
-		}
-		
 		@Override
 		public MMOVirtualWorld build() {
-			preBuild();
-			
 			return new MMOVirtualWorld(this);
 		}
 		
