@@ -1,11 +1,10 @@
 package com.tvd12.gamebox.entity;
 
+import java.util.Arrays;
+
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.exception.MaxRoomException;
-
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MMOVirtualWorld extends EzyLoggable {
 	
