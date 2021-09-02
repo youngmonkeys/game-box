@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>com.tvd12</groupId>
 		<artifactId>ezyfox-server</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</parent>
 
 	<artifactId>game-box</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.4a</version>
 	<packaging>jar</packaging>
 
 	<name>game-box</name>
@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<ezy.server.version>1.1.9</ezy.server.version>
+		<ezy.server.version>1.2.0</ezy.server.version>
 	</properties>
 
 	<dependencies>
