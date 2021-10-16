@@ -40,6 +40,7 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
 						.param(player.getName())
 						.param(Vec3s.toArray(player.getPosition()))
 						.param(Vec3s.toArray(player.getRotation()))
+						.param(player.getClientTimeTick())
 						.usernames(nearbyPlayerNamesBuffer)
 						.execute();
 				

@@ -27,13 +27,11 @@ public class MMORoom extends NormalRoom {
 		
 		for (MMOPlayer player : playersBuffer) {
 			for (MMOPlayer other : playersBuffer) {
-				if (!other.equals(player)) {
-					double distance = player.getPosition().distance(other.getPosition());
-					if (distance <= this.distanceOfInterest) {
-						player.addNearbyPlayer(other);
-					} else {
-						player.removeNearByPlayer(other);
-					}
+				double distance = player.getPosition().distance(other.getPosition());
+				if (distance <= this.distanceOfInterest) {
+					player.addNearbyPlayer(other);
+				} else {
+					player.removeNearByPlayer(other);
 				}
 			}
 		}

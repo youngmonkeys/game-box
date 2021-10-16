@@ -33,6 +33,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		
 		Vec3 position = TestHelper.randomVec3();
 		Vec3 rotation = TestHelper.randomVec3();
+		int clientTimeTick = RandomUtil.randomInt();
 		
 		EzyArrayResponse arrayResponse = mock(EzyArrayResponse.class);
 		when(arrayResponse.udpTransport()).thenReturn(arrayResponse);
@@ -40,6 +41,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		when(arrayResponse.param(playerName)).thenReturn(arrayResponse);
 		when(arrayResponse.param(Vec3s.toArray(position))).thenReturn(arrayResponse);
 		when(arrayResponse.param(Vec3s.toArray(rotation))).thenReturn(arrayResponse);
+		when(arrayResponse.param(clientTimeTick)).thenReturn(arrayResponse);
 		when(arrayResponse.usernames(nearbyPlayerNameList)).thenReturn(arrayResponse);
 		doNothing().when(arrayResponse).execute();
 		
@@ -57,6 +59,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		MMOPlayer player = new MMOPlayer(playerName);
 		player.setPosition(position);
 		player.setRotation(rotation);
+		player.setClientTimeTick(clientTimeTick);
 		
 		Map<String, MMOPlayer> nearbyPlayers = FieldUtil.getFieldValue(player, "nearbyPlayers");
 		nearbyPlayerNames.forEach(name -> {

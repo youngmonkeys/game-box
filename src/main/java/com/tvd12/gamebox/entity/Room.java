@@ -1,24 +1,20 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyEquals;
 import com.tvd12.ezyfox.util.EzyHashCodes;
-import com.tvd12.ezyfoxserver.wrapper.EzyDefaultUserManager;
-import com.tvd12.ezyfoxserver.wrapper.EzyUserManager;
 import com.tvd12.gamebox.constant.IRoomStatus;
 import com.tvd12.gamebox.constant.RoomStatus;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
 public class Room {
 	
 	protected final long id;
 	protected final String name;
-	protected final EzyUserManager userManager;
 	
 	@Setter
 	protected String password;
@@ -30,7 +26,6 @@ public class Room {
 	protected Room(Builder<?> builder) {
 		this.id = builder.id;
 		this.name = builder.name;
-		this.userManager = builder.userManager;
 	}
 	
 	@Override
@@ -66,7 +61,6 @@ public class Room {
 
 		protected Long id;
 		protected String name;
-		protected EzyUserManager userManager;
 		
 		protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
 		
@@ -80,24 +74,12 @@ public class Room {
 			return (B)this;
 		}
 		
-		public B defaultUserManager(int maxUser) {
-			this.userManager = new EzyDefaultUserManager(maxUser);
-			return (B)this;
-		}
-		
-		public B userManager(EzyUserManager userManager) {
-			this.userManager = userManager;
-			return (B)this;
-		}
-		
 		@Override
 		public Room build() {
 			if(id == null)
 				this.id = ID_GENTOR.incrementAndGet();
 			if(name == null)
 				this.name = NAME_PREFIX + id;
-			if(userManager == null)
-				this.userManager = new EzyDefaultUserManager(999);
 			preBuild();
 			return newProduct();
 		}
