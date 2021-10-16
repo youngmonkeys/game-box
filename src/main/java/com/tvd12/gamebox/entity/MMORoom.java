@@ -26,6 +26,7 @@ public class MMORoom extends NormalRoom {
 		playerManager.getPlayerList(playersBuffer);
 		
 		for (MMOPlayer player : playersBuffer) {
+			player.clearNearByPlayers();
 			for (MMOPlayer other : playersBuffer) {
 				double distance = player.getPosition().distance(other.getPosition());
 				if (distance <= this.distanceOfInterest) {

@@ -34,6 +34,10 @@ public class MMOPlayer extends Player {
 		this.nearbyPlayers.remove(otherPlayer.getName());
 	}
 	
+	void clearNearByPlayers() {
+		this.nearbyPlayers.clear();
+	}
+	
 	public void setPosition(Vec3 position) {
 		this.setPosition(position.x, position.y, position.z);
 	}
