@@ -1,5 +1,7 @@
 package com.tvd12.gamebox.math;
 
+import com.tvd12.ezyfox.entity.EzyArray;
+import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import lombok.Getter;
 
 @Getter
@@ -9,6 +11,12 @@ public class Vec3 {
 	public float z;
 	
 	public static final Vec3 ZERO = new Vec3();
+	public static final Vec3 up = new Vec3(0.0f, 1f, 0.0f);
+	public static final Vec3 down = new Vec3(0.0f, -1f, 0.0f);
+	public static final Vec3 left = new Vec3(-1f, 0.0f, 0.0f);
+	public static final Vec3 right = new Vec3(1f, 0.0f, 0.0f);
+	public static final Vec3 forward = new Vec3(0.0f, 0.0f, 1f);
+	public static final Vec3 backward = new Vec3(0.0f, 0.0f, -1f);
 
 	public Vec3() {
 		this(0.0f, 0.0f, 0.0f);
@@ -97,5 +105,12 @@ public class Vec3 {
 				.append(")")
 				.toString();
 	}
-
+	
+	public static EzyArray toArray(Vec3 value) {
+		EzyArray array = EzyEntityFactory.newArray();
+		array.add(value.getX());
+		array.add(value.getY());
+		array.add(value.getZ());
+		return array;
+	}
 }
