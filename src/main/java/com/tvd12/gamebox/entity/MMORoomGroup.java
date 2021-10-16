@@ -5,6 +5,8 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.gamebox.manager.SynchronizedRoomManager;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 class MMORoomGroup extends EzyLoggable {
 	
 	private volatile boolean active;
-	private final int timeTickMillis;
+	private final long timeTickMillis;
 	private final List<MMORoom> roomsBuffer;
 	private final RoomManager<MMORoom> roomManager;
 	private final static AtomicInteger COUNTER = new AtomicInteger();
@@ -34,8 +36,13 @@ class MMORoomGroup extends EzyLoggable {
 		this.active = true;
 		while (active) {
 			try {
+				Instant start = Instant.now();
 				this.updateRooms();
-				Thread.sleep(timeTickMillis);
+				Instant end = Instant.now();
+				long timeElapsed = Duration.between(start, end).toMillis();
+				if (timeElapsed < timeTickMillis) {
+					Thread.sleep(timeTickMillis - timeElapsed);
+				}
 			} catch (Exception e) {
 				logger.error("Room group loop error: ", e);
 			}
@@ -83,7 +90,7 @@ class MMORoomGroup extends EzyLoggable {
 	}
 	
 	public static class Builder implements EzyBuilder<MMORoomGroup> {
-		private int timeTickMillis;
+		private long timeTickMillis;
 		
 		public Builder timeTickMillis(int timeTickMillis) {
 			this.timeTickMillis = timeTickMillis;
