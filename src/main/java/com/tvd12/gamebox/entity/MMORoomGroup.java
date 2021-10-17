@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 class MMORoomGroup extends EzyLoggable {
 	
 	private volatile boolean active;
-	private final int timeTickMillis;
+	private final long timeTickMillis;
 	private final List<MMORoom> roomsBuffer;
 	private final RoomManager<MMORoom> roomManager;
 	private final static AtomicInteger COUNTER = new AtomicInteger();
@@ -34,8 +34,13 @@ class MMORoomGroup extends EzyLoggable {
 		this.active = true;
 		while (active) {
 			try {
+				long start = System.currentTimeMillis();
 				this.updateRooms();
-				Thread.sleep(timeTickMillis);
+				long end = System.currentTimeMillis();
+				long timeElapsed = end - start;
+				if (timeElapsed < timeTickMillis) {
+					Thread.sleep(timeTickMillis - timeElapsed);
+				}
 			} catch (Exception e) {
 				logger.error("Room group loop error: ", e);
 			}
@@ -83,7 +88,7 @@ class MMORoomGroup extends EzyLoggable {
 	}
 	
 	public static class Builder implements EzyBuilder<MMORoomGroup> {
-		private int timeTickMillis;
+		private long timeTickMillis;
 		
 		public Builder timeTickMillis(int timeTickMillis) {
 			this.timeTickMillis = timeTickMillis;

@@ -1,23 +1,21 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
-import com.tvd12.ezyfoxserver.entity.EzyUser;
 import com.tvd12.gamebox.exception.NoSlotException;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
 import com.tvd12.gamebox.manager.LocatedPlayerManager;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 @Getter
 public class LocatedRoom extends Room {
 
 	protected final int maxSlot;
 	@Setter(AccessLevel.NONE)
-	protected Queue<Integer> slots; 
+	protected Queue<Integer> slots;
 	@Setter(AccessLevel.NONE)
 	protected final LocatedPlayerManager playerManager;
 	
@@ -28,18 +26,16 @@ public class LocatedRoom extends Room {
 		this.slots = newSlots(builder.maxSlot);
 	}
 	
-	public int addUser(EzyUser user, LocatedPlayer player) {
+	public int addPlayer(LocatedPlayer player) {
 		if(slots.isEmpty())
 			throw new NoSlotException("has no available slot");
 		int location = slots.poll();
 		player.setLocation(location);
-		userManager.addUser(user);
 		playerManager.addPlayer(player, location);
 		return location;
 	}
 	
 	public void removePlayer(LocatedPlayer player) {
-		userManager.removeUser(player.getName());
 		playerManager.removePlayer(player.getLocation());
 		slots.add(player.getLocation());
 	}
@@ -58,7 +54,7 @@ public class LocatedRoom extends Room {
 	@SuppressWarnings("unchecked")
 	public static class Builder<B extends Builder<B>> extends Room.Builder<B> {
 		
-		protected int maxSlot;
+		protected int maxSlot = 999;
 		protected LocatedPlayerManager playerManager;
 		
 		public B maxSlot(int maxSlot) {
@@ -75,8 +71,6 @@ public class LocatedRoom extends Room {
 		protected void preBuild() {
 			if(playerManager == null)
 				playerManager = new DefaultLocatedPlayerManager();
-			if(maxSlot == 0)
-				maxSlot = userManager.getMaxUsers();
 		}
 		
 		@Override

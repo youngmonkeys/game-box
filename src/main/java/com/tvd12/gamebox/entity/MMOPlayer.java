@@ -3,6 +3,7 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ public class MMOPlayer extends Player {
 	protected Vec3 position = new Vec3();
 	protected Vec3 rotation = new Vec3();
 	protected AtomicBoolean stateChanged = new AtomicBoolean(false);
+	@Setter
+	protected int clientTimeTick;
 	
 	@Getter(AccessLevel.NONE)
 	protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
@@ -29,6 +32,10 @@ public class MMOPlayer extends Player {
 	
 	void removeNearByPlayer(MMOPlayer otherPlayer) {
 		this.nearbyPlayers.remove(otherPlayer.getName());
+	}
+	
+	void clearNearByPlayers() {
+		this.nearbyPlayers.clear();
 	}
 	
 	public void setPosition(Vec3 position) {

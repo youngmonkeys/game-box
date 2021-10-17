@@ -1,10 +1,8 @@
 package com.tvd12.gamebox.testing;
 
-import com.tvd12.ezyfox.util.EzyNameAware;
-import com.tvd12.ezyfoxserver.entity.EzySimpleUser;
-import com.tvd12.ezyfoxserver.entity.EzyUser;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
+import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
@@ -29,23 +27,17 @@ public class MMORoomTest {
 				.name("room")
 				.build();
 		
-		EzyUser user1 = new EzySimpleUser();
-		((EzyNameAware) user1).setName("user1");
 		MMOPlayer player1 = new MMOPlayer("player1");
 		player1.setPosition(new Vec3(0, 0, 0));
-		room.addUser(user1, player1);
+		room.addPlayer(player1);
 		
-		EzyUser user2 = new EzySimpleUser();
-		((EzyNameAware) user2).setName("user2");
 		MMOPlayer player2 = new MMOPlayer("player2");
 		player2.setPosition(new Vec3(1, 1, 1));
-		room.addUser(user2, player2);
+		room.addPlayer(player2);
 		
-		EzyUser user3 = new EzySimpleUser();
-		((EzyNameAware) user3).setName("user3");
 		MMOPlayer player3 = new MMOPlayer("player3");
 		player3.setPosition(new Vec3(2, 2, 2));
-		room.addUser(user3, player3);
+		room.addPlayer(player3);
 		
 		// when
 		room.update();
@@ -101,6 +93,29 @@ public class MMORoomTest {
 		// then
 		verify(aInstance1, times(2)).onRoomUpdated(room);
 		verify(aInstance2, times(2)).onRoomUpdated(room);
+	}
+	
+	@Test
+	public void maxPlayerTest() {
+		// given
+		MMORoom room = MMORoom.builder()
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
+				.maxPlayer(2)
+				.name("room")
+				.build();
+		
+		// when
+		MMOPlayer player1 = new MMOPlayer("player1");
+		room.addPlayer(player1);
+		
+		MMOPlayer player2 = new MMOPlayer("player2");
+		room.addPlayer(player2);
+		
+		MMOPlayer player3 = new MMOPlayer("player3");
+		Throwable e = Asserts.assertThrows(() -> room.addPlayer(player3));
+		
+		// then
+		Asserts.assertEquals(MaxPlayerException.class.toString(), e.getClass().toString());
 	}
 	
 	public class A implements MMORoomUpdatedHandler {

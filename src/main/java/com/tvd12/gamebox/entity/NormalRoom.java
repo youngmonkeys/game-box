@@ -1,9 +1,7 @@
 package com.tvd12.gamebox.entity;
 
-import com.tvd12.ezyfoxserver.entity.EzyUser;
 import com.tvd12.gamebox.manager.DefaultPlayerManager;
 import com.tvd12.gamebox.manager.PlayerManager;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,13 +18,11 @@ public class NormalRoom extends Room {
 		this.playerManager = builder.playerManager;
 	}
 	
-	public void addUser(EzyUser user, Player player) {
+	public void addPlayer(Player player) {
 		playerManager.addPlayer(player);
-		userManager.addUser(user);
 	}
 	
 	public void removePlayer(Player player) {
-		userManager.removeUser(player.getName());
 		playerManager.removePlayer(player.getName());
 	}
 	

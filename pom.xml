@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>game-box</artifactId>
-	<version>1.0.4a</version>
+	<version>1.0.5</version>
 	<packaging>jar</packaging>
 
 	<name>game-box</name>

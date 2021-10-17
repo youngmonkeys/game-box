@@ -3,6 +3,7 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +13,54 @@ public class MMORoom extends NormalRoom {
 	
 	protected final List<MMOPlayer> playersBuffer;
 	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
+	@Getter
 	protected final double distanceOfInterest;
+	@Getter
+	protected MMOPlayer master;
+	@Getter
+	protected int maxPlayer;
 	
 	public MMORoom(Builder builder) {
 		super(builder);
 		this.playersBuffer = new ArrayList<>();
 		this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
 		this.distanceOfInterest = builder.distanceOfInterest;
+		this.maxPlayer = builder.maxPlayer;
+	}
+	
+	@Override
+	public void addPlayer(Player player) {
+		if (!(player instanceof MMOPlayer)) {
+			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+		}
+		
+		if (playerManager.containsPlayer(player)) {
+			return;
+		}
+		
+		synchronized (this) {
+			if (playerManager.isEmpty()) {
+				master = (MMOPlayer) player;
+			}
+			super.addPlayer(player);
+		}
+	}
+	
+	@Override
+	public void removePlayer(Player player) {
+		if (!(player instanceof MMOPlayer)) {
+			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+		}
+		synchronized (this) {
+			super.removePlayer(player);
+			if (master == player && !playerManager.isEmpty()) {
+				master = (MMOPlayer) playerManager.getPlayerByIndex(0);
+			}
+		}
+	}
+	
+	public boolean isEmpty() {
+		return this.getPlayerManager().isEmpty();
 	}
 	
 	public void update() {
@@ -26,14 +68,13 @@ public class MMORoom extends NormalRoom {
 		playerManager.getPlayerList(playersBuffer);
 		
 		for (MMOPlayer player : playersBuffer) {
+			player.clearNearByPlayers();
 			for (MMOPlayer other : playersBuffer) {
-				if (!other.equals(player)) {
-					double distance = player.getPosition().distance(other.getPosition());
-					if (distance <= this.distanceOfInterest) {
-						player.addNearbyPlayer(other);
-					} else {
-						player.removeNearByPlayer(other);
-					}
+				double distance = player.getPosition().distance(other.getPosition());
+				if (distance <= this.distanceOfInterest) {
+					player.addNearbyPlayer(other);
+				} else {
+					player.removeNearByPlayer(other);
 				}
 			}
 		}
@@ -54,9 +95,9 @@ public class MMORoom extends NormalRoom {
 	public static class Builder extends NormalRoom.Builder<Builder> {
 		protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 		protected double distanceOfInterest;
+		protected int maxPlayer = 999;
 		
 		public Builder() {
-			this.roomUpdatedHandlers = new ArrayList<>();
 		}
 		
 		public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
@@ -66,6 +107,11 @@ public class MMORoom extends NormalRoom {
 		
 		public Builder distanceOfInterest(double distance) {
 			this.distanceOfInterest = distance;
+			return this;
+		}
+		
+		public Builder maxPlayer(int maxPlayer) {
+			this.maxPlayer = maxPlayer;
 			return this;
 		}
 		
@@ -87,7 +133,7 @@ public class MMORoom extends NormalRoom {
 		@Override
 		protected void preBuild() {
 			if (playerManager == null) {
-				playerManager = new SynchronizedPlayerManager<>();
+				playerManager = new SynchronizedPlayerManager<>(maxPlayer);
 			}
 			
 			if (distanceOfInterest <= 0.0f) {
