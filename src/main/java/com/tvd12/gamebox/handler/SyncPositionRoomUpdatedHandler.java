@@ -23,7 +23,7 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
 	@EzyAutoBind
 	private EzyResponseFactory responseFactory;
 	
-	private List<String> nearbyPlayerNamesBuffer = new ArrayList<>();
+	private final List<String> nearbyPlayerNamesBuffer = new ArrayList<>();
 	
 	@Override
 	public void onRoomUpdated(MMORoom room) {
