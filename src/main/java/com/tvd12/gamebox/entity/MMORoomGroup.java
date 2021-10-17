@@ -36,10 +36,10 @@ class MMORoomGroup extends EzyLoggable {
 		this.active = true;
 		while (active) {
 			try {
-				Instant start = Instant.now();
+				long start = System.currentTimeMillis();
 				this.updateRooms();
-				Instant end = Instant.now();
-				long timeElapsed = Duration.between(start, end).toMillis();
+				long end = System.currentTimeMillis();
+				long timeElapsed = end - start;
 				if (timeElapsed < timeTickMillis) {
 					Thread.sleep(timeTickMillis - timeElapsed);
 				}

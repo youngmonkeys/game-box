@@ -2,6 +2,7 @@ package com.tvd12.gamebox.testing;
 
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
+import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
@@ -92,6 +93,29 @@ public class MMORoomTest {
 		// then
 		verify(aInstance1, times(2)).onRoomUpdated(room);
 		verify(aInstance2, times(2)).onRoomUpdated(room);
+	}
+	
+	@Test
+	public void maxPlayerTest() {
+		// given
+		MMORoom room = MMORoom.builder()
+				.distanceOfInterest(RandomUtil.randomSmallDouble())
+				.maxPlayer(2)
+				.name("room")
+				.build();
+		
+		// when
+		MMOPlayer player1 = new MMOPlayer("player1");
+		room.addPlayer(player1);
+		
+		MMOPlayer player2 = new MMOPlayer("player2");
+		room.addPlayer(player2);
+		
+		MMOPlayer player3 = new MMOPlayer("player3");
+		Throwable e = Asserts.assertThrows(() -> room.addPlayer(player3));
+		
+		// then
+		Asserts.assertEquals(MaxPlayerException.class.toString(), e.getClass().toString());
 	}
 	
 	public class A implements MMORoomUpdatedHandler {
