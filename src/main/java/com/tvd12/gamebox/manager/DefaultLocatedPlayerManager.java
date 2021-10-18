@@ -1,18 +1,13 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.*;
+import java.util.function.Predicate;
 
 public class DefaultLocatedPlayerManager 
 		extends EzyLoggable 
@@ -26,7 +21,7 @@ public class DefaultLocatedPlayerManager
 	protected LocatedPlayer speakinger;
 	protected final LinkedList<LocatedPlayer> playerList = new LinkedList<>();
 	protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
-	protected final Map<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
+	protected final NavigableMap<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
 	
 	@Override
 	public LocatedPlayer getPlayer(int location) {
@@ -68,38 +63,41 @@ public class DefaultLocatedPlayerManager
 	public LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
 		if(player == null) 
 			return null;
-		int maxInt = Integer.MAX_VALUE;
-		int maxDistance = 0;
-		int minDistance = -maxInt;
-		int currentDistance = maxInt - player.getLocation();
-		LocatedPlayer answer = null;
-		for(LocatedPlayer p : playerList) {
-			LocatedPlayer beforeAnswer = answer;
-			int beforeMaxDistance = maxDistance;
-			int beforeMinDistance = minDistance;
-			if(player.equals(p))
-				continue;
-			LocatedPlayer accept = null;
-			int nextDistance = maxInt - p.getLocation();
-			int distance = nextDistance - currentDistance;
-			if(distance > 0) {
-				if(distance > maxDistance) {
-					accept = p;
-					maxDistance = distance;
+		
+		int currentLocation = player.getLocation();
+		Integer leftLocation = playersByLocation.lowerKey(currentLocation);
+		Integer rightLocation = playersByLocation.higherKey(currentLocation);
+		
+		while ((leftLocation != null) || (rightLocation != null)) {
+			LocatedPlayer leftPlayer = (leftLocation != null) ? playersByLocation.get(leftLocation) : null;
+			LocatedPlayer rightPlayer = (rightLocation != null) ? playersByLocation.get(rightLocation) : null;
+			
+			boolean isLeftCloser = (leftLocation != null) && (rightLocation != null) &&
+					((currentLocation - leftLocation) < (rightLocation - currentLocation));
+			
+			if ((leftLocation != null) && (rightLocation != null) &&
+					condition.test(leftPlayer) && condition.test(rightPlayer)) {
+				return isLeftCloser
+						? leftPlayer : rightPlayer;
+			}
+			if ((leftLocation != null) && condition.test(leftPlayer)) {
+				if (isLeftCloser || (rightLocation == null)) {
+					return leftPlayer;
 				}
+				rightLocation = playersByLocation.higherKey(rightLocation);
+				continue;
 			}
-			else if(distance > minDistance) {
-				accept = p;
-				minDistance = distance;
+			if ((rightLocation != null) && condition.test(rightPlayer)) {
+				if (!isLeftCloser || (leftLocation == null)) {
+					return rightPlayer;
+				}
+				leftLocation = playersByLocation.lowerKey(leftLocation);
+				continue;
 			}
-			if(accept != null && condition.test(accept))
-				answer = accept;
-			if(answer == beforeAnswer) {
-				maxDistance = beforeMaxDistance;
-				minDistance = beforeMinDistance;
-			}
+			if (leftLocation != null) leftLocation = playersByLocation.lowerKey(leftLocation);
+			if (rightLocation != null) rightLocation = playersByLocation.higherKey(rightLocation);
 		}
-		return answer;
+		return null;
 	}
 	
 	@Override
@@ -111,34 +109,34 @@ public class DefaultLocatedPlayerManager
 	public int getPlayerCount() {
 		return playersByLocation.size();
 	}
-
+	
 	@Override
 	public boolean containsPlayer(String username) {
 		return playersByName.containsKey(username);
 	}
-
+	
 	@Override
 	public boolean isEmpty() {
 		return playersByLocation.isEmpty();
 	}
 	
-    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
+	protected Map<String, LocatedPlayer> newPlayersByNameMap() {
 		return new HashMap<>();
 	}
 	
-	protected Map<Integer, LocatedPlayer> newPlayersByLocationsMap() {
-		return new HashMap<>();
+	protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
+		return new TreeMap<>();
 	}
 	
 	@Override
 	public String toString() {
 		return new StringBuilder()
 				.append("(")
-					.append("master: ").append(master).append(", ")
-					.append("speakinger: ").append(speakinger).append(", ")
-					.append("playersByLocation: ").append(playersByLocation)
+				.append("master: ").append(master).append(", ")
+				.append("speakinger: ").append(speakinger).append(", ")
+				.append("playersByLocation: ").append(playersByLocation)
 				.append(")")
 				.toString();
 	}
-
+	
 }
