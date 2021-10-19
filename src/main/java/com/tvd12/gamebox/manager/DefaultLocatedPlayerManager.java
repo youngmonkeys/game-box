@@ -1,18 +1,14 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class DefaultLocatedPlayerManager 
 		extends EzyLoggable 
@@ -26,7 +22,7 @@ public class DefaultLocatedPlayerManager
 	protected LocatedPlayer speakinger;
 	protected final LinkedList<LocatedPlayer> playerList = new LinkedList<>();
 	protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
-	protected final Map<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
+	protected final NavigableMap<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
 	
 	@Override
 	public LocatedPlayer getPlayer(int location) {
@@ -68,38 +64,29 @@ public class DefaultLocatedPlayerManager
 	public LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
 		if(player == null) 
 			return null;
-		int maxInt = Integer.MAX_VALUE;
-		int maxDistance = 0;
-		int minDistance = -maxInt;
-		int currentDistance = maxInt - player.getLocation();
-		LocatedPlayer answer = null;
-		for(LocatedPlayer p : playerList) {
-			LocatedPlayer beforeAnswer = answer;
-			int beforeMaxDistance = maxDistance;
-			int beforeMinDistance = minDistance;
-			if(player.equals(p))
-				continue;
-			LocatedPlayer accept = null;
-			int nextDistance = maxInt - p.getLocation();
-			int distance = nextDistance - currentDistance;
-			if(distance > 0) {
-				if(distance > maxDistance) {
-					accept = p;
-					maxDistance = distance;
-				}
-			}
-			else if(distance > minDistance) {
-				accept = p;
-				minDistance = distance;
-			}
-			if(accept != null && condition.test(accept))
-				answer = accept;
-			if(answer == beforeAnswer) {
-				maxDistance = beforeMaxDistance;
-				minDistance = beforeMinDistance;
-			}
+		
+		int currentLocation = player.getLocation();
+		LocatedPlayer leftPlayer = find(currentLocation, condition, playersByLocation::lowerEntry);
+		LocatedPlayer rightPlayer = find(currentLocation, condition, playersByLocation::higherEntry);
+		
+		return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
+	}
+	
+	private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
+		if (left == null && right == null) return null;
+		if (left == null) return right;
+		if (right == null) return left;
+		return (location - left.getLocation()) < (right.getLocation() - location) ?
+				left : right;
+	}
+	
+	private LocatedPlayer find(int currentLocation, Predicate<LocatedPlayer> condition,
+	                           Function<Integer, Map.Entry<Integer, LocatedPlayer>> function) {
+		Map.Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
+		while (next != null && !condition.test(next.getValue())) {
+			next = function.apply(next.getKey());
 		}
-		return answer;
+		return next != null ? next.getValue() : null;
 	}
 	
 	@Override
@@ -111,34 +98,34 @@ public class DefaultLocatedPlayerManager
 	public int getPlayerCount() {
 		return playersByLocation.size();
 	}
-
+	
 	@Override
 	public boolean containsPlayer(String username) {
 		return playersByName.containsKey(username);
 	}
-
+	
 	@Override
 	public boolean isEmpty() {
 		return playersByLocation.isEmpty();
 	}
 	
-    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
+	protected Map<String, LocatedPlayer> newPlayersByNameMap() {
 		return new HashMap<>();
 	}
 	
-	protected Map<Integer, LocatedPlayer> newPlayersByLocationsMap() {
-		return new HashMap<>();
+	protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
+		return new TreeMap<>();
 	}
 	
 	@Override
 	public String toString() {
 		return new StringBuilder()
 				.append("(")
-					.append("master: ").append(master).append(", ")
-					.append("speakinger: ").append(speakinger).append(", ")
-					.append("playersByLocation: ").append(playersByLocation)
+				.append("master: ").append(master).append(", ")
+				.append("speakinger: ").append(speakinger).append(", ")
+				.append("playersByLocation: ").append(playersByLocation)
 				.append(")")
 				.toString();
 	}
-
+	
 }
