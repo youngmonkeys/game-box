@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class DefaultLocatedPlayerManager 
@@ -65,39 +66,27 @@ public class DefaultLocatedPlayerManager
 			return null;
 		
 		int currentLocation = player.getLocation();
-		Integer leftLocation = playersByLocation.lowerKey(currentLocation);
-		Integer rightLocation = playersByLocation.higherKey(currentLocation);
+		LocatedPlayer leftPlayer = find(currentLocation, condition, playersByLocation::lowerEntry);
+		LocatedPlayer rightPlayer = find(currentLocation, condition, playersByLocation::higherEntry);
 		
-		while ((leftLocation != null) || (rightLocation != null)) {
-			LocatedPlayer leftPlayer = (leftLocation != null) ? playersByLocation.get(leftLocation) : null;
-			LocatedPlayer rightPlayer = (rightLocation != null) ? playersByLocation.get(rightLocation) : null;
-			
-			boolean isLeftCloser = (leftLocation != null) && (rightLocation != null) &&
-					((currentLocation - leftLocation) < (rightLocation - currentLocation));
-			
-			if ((leftLocation != null) && (rightLocation != null) &&
-					condition.test(leftPlayer) && condition.test(rightPlayer)) {
-				return isLeftCloser
-						? leftPlayer : rightPlayer;
-			}
-			if ((leftLocation != null) && condition.test(leftPlayer)) {
-				if (isLeftCloser || (rightLocation == null)) {
-					return leftPlayer;
-				}
-				rightLocation = playersByLocation.higherKey(rightLocation);
-				continue;
-			}
-			if ((rightLocation != null) && condition.test(rightPlayer)) {
-				if (!isLeftCloser || (leftLocation == null)) {
-					return rightPlayer;
-				}
-				leftLocation = playersByLocation.lowerKey(leftLocation);
-				continue;
-			}
-			if (leftLocation != null) leftLocation = playersByLocation.lowerKey(leftLocation);
-			if (rightLocation != null) rightLocation = playersByLocation.higherKey(rightLocation);
+		return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
+	}
+	
+	private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
+		if (left == null && right == null) return null;
+		if (left == null) return right;
+		if (right == null) return left;
+		return (location - left.getLocation()) < (right.getLocation() - location) ?
+				left : right;
+	}
+	
+	private LocatedPlayer find(int currentLocation, Predicate<LocatedPlayer> condition,
+	                           Function<Integer, Map.Entry<Integer, LocatedPlayer>> function) {
+		Map.Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
+		while (next != null && !condition.test(next.getValue())) {
+			next = function.apply(next.getKey());
 		}
-		return null;
+		return next != null ? next.getValue() : null;
 	}
 	
 	@Override
