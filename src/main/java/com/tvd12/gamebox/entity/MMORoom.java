@@ -33,7 +33,7 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		
 		synchronized (this) {
 			if (playerManager.isEmpty()) {
-				master = (MMOPlayer) player;
+				master = player;
 			}
 			super.addPlayer(player);
 		}

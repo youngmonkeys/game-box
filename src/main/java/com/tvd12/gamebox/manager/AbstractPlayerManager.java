@@ -9,6 +9,7 @@ import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
 import com.tvd12.gamebox.util.ReadOnlyCollection;
 import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.Getter;
 
 import java.util.*;
@@ -66,9 +67,9 @@ public abstract class AbstractPlayerManager<P extends Player>
 	}
 	
 	@Override
-	public List<String> getPlayerNames() {
-		return new ArrayList<>(playersByName.keySet());
-    }
+	public ReadOnlySet<String> getPlayerNames() {
+		return new ReadOnlySet<>(playersByName.keySet());
+	}
 
     @Override
     public boolean containsPlayer(String username) {

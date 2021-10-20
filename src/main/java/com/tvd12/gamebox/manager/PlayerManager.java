@@ -3,6 +3,7 @@ package com.tvd12.gamebox.manager;
 import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.util.ReadOnlyCollection;
 import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
 
 import java.util.Collection;
 import java.util.List;
@@ -57,7 +58,7 @@ public interface PlayerManager<P extends Player> {
 	 * 
 	 * @return the list of player name
 	 */
-	List<String> getPlayerNames();
+	ReadOnlySet<String> getPlayerNames();
 	
 	/**
 	 * Get count of players
