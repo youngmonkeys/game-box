@@ -8,21 +8,21 @@ import lombok.Setter;
 
 @Getter
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class NormalRoom extends Room {
+public class NormalRoom<P extends Player> extends Room {
 	
 	@Setter(AccessLevel.NONE)
-	protected final PlayerManager playerManager;
+	protected final PlayerManager<P> playerManager;
 	
 	public NormalRoom(Builder<?> builder) {
 		super(builder);
 		this.playerManager = builder.playerManager;
 	}
 	
-	public void addPlayer(Player player) {
+	public void addPlayer(P player) {
 		playerManager.addPlayer(player);
 	}
 	
-	public void removePlayer(Player player) {
+	public void removePlayer(P player) {
 		playerManager.removePlayer(player.getName());
 	}
 	

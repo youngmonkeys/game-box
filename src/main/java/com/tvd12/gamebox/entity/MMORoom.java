@@ -8,8 +8,7 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unchecked")
-public class MMORoom extends NormalRoom {
+public class MMORoom extends NormalRoom<MMOPlayer> {
 	
 	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
 	@Getter
@@ -27,11 +26,7 @@ public class MMORoom extends NormalRoom {
 	}
 	
 	@Override
-	public void addPlayer(Player player) {
-		if (!(player instanceof MMOPlayer)) {
-			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
-		}
-		
+	public void addPlayer(MMOPlayer player) {
 		if (playerManager.containsPlayer(player)) {
 			return;
 		}
@@ -45,14 +40,11 @@ public class MMORoom extends NormalRoom {
 	}
 	
 	@Override
-	public void removePlayer(Player player) {
-		if (!(player instanceof MMOPlayer)) {
-			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
-		}
+	public void removePlayer(MMOPlayer player) {
 		synchronized (this) {
 			super.removePlayer(player);
 			if (master == player && !playerManager.isEmpty()) {
-				master = (MMOPlayer) playerManager.getPlayerByIndex(0);
+				master = playerManager.getPlayerByIndex(0);
 			}
 		}
 	}
@@ -63,13 +55,13 @@ public class MMORoom extends NormalRoom {
 	
 	public void update() {
 		playerManager.getPlayerList().forEach(player -> {
-			((MMOPlayer) player).clearNearByPlayers();
+			player.clearNearByPlayers();
 			playerManager.getPlayerList().forEach(other -> {
-				double distance = ((MMOPlayer) player).getPosition().distance(((MMOPlayer) other).getPosition());
+				double distance = player.getPosition().distance(other.getPosition());
 				if (distance <= this.distanceOfInterest) {
-					((MMOPlayer) player).addNearbyPlayer((MMOPlayer) other);
+					player.addNearbyPlayer(other);
 				} else {
-					((MMOPlayer) player).removeNearByPlayer((MMOPlayer) other);
+					player.removeNearByPlayer(other);
 				}
 			});
 		});
@@ -112,7 +104,7 @@ public class MMORoom extends NormalRoom {
 		
 		@Override
 		public Builder defaultPlayerManager(int maxPlayer) {
-			this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
+			this.playerManager = new SynchronizedPlayerManager<MMOPlayer>(maxPlayer);
 			return this;
 		}
 		
