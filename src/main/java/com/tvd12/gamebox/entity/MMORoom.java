@@ -79,7 +79,7 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		return new Builder();
 	}
 	
-	public static class Builder extends NormalRoom.Builder<Builder> {
+	public static class Builder extends NormalRoom.Builder<MMOPlayer, Builder> {
 		protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 		protected double distanceOfInterest;
 		protected int maxPlayer = 999;
@@ -104,13 +104,12 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		
 		@Override
 		public Builder defaultPlayerManager(int maxPlayer) {
-			this.playerManager = new SynchronizedPlayerManager<MMOPlayer>(maxPlayer);
+			this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
 			return this;
 		}
 		
-		@SuppressWarnings("rawtypes")
 		@Override
-		public Builder playerManager(PlayerManager playerManager) {
+		public Builder playerManager(PlayerManager<MMOPlayer> playerManager) {
 			if (playerManager instanceof SynchronizedPlayerManager) {
 				return super.playerManager(playerManager);
 			}

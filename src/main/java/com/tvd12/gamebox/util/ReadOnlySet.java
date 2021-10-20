@@ -22,8 +22,8 @@ public class ReadOnlySet<E> {
 		return null;
 	}
 	
-	public void forEach(Consumer<E> var) {
-		set.forEach(var);
+	public void forEach(Consumer<E> var0) {
+		set.forEach(var0);
 	}
 	
 	public int size() {

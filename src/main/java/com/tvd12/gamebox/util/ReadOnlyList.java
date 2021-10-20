@@ -20,8 +20,8 @@ public class ReadOnlyList<E> {
 		return list.size();
 	}
 	
-	public void forEach(Consumer<E> var) {
-		list.forEach(var);
+	public void forEach(Consumer<E> var0) {
+		list.forEach(var0);
 	}
 	
 	public List<E> copyToList() {

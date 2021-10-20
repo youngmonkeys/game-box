@@ -26,8 +26,8 @@ public class ReadOnlyCollection<E> {
 		return collection.size();
 	}
 	
-	public void forEach(Consumer<E> var) {
-		collection.forEach(var);
+	public void forEach(Consumer<E> var0) {
+		collection.forEach(var0);
 	}
 	
 	public List<E> copyToList() {
