@@ -19,7 +19,6 @@ import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
 
 import com.tvd12.gamebox.util.ReadOnlyList;
-import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.Getter;
 
 public abstract class AbstractPlayerManager<P extends Player> 

@@ -1,6 +1,5 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,6 @@ import com.tvd12.gamebox.exception.MaxRoomException;
 import com.tvd12.gamebox.exception.RoomExistsException;
 
 import com.tvd12.gamebox.util.ReadOnlyCollection;
-import com.tvd12.gamebox.util.ReadOnlyList;
 import lombok.Getter;
 
 public abstract class AbstractRoomManager<R extends Room> 

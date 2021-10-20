@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 
 import com.tvd12.gamebox.entity.Room;
 import com.tvd12.gamebox.util.ReadOnlyCollection;
-import com.tvd12.gamebox.util.ReadOnlyList;
 
 public interface RoomManager<R extends Room> {
 	
