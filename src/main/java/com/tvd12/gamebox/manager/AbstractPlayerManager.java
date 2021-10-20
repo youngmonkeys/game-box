@@ -1,15 +1,5 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.function.EzyFunctions;
 import com.tvd12.ezyfox.io.EzyLists;
@@ -17,70 +7,69 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
-
+import com.tvd12.gamebox.util.ReadOnlyCollection;
+import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.Getter;
 
-public abstract class AbstractPlayerManager<P extends Player> 
-		extends EzyLoggable 
-		implements PlayerManager<P> {
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+public abstract class AbstractPlayerManager<P extends Player>
+		extends EzyLoggable
+		implements PlayerManager<P> {
+	
 	@Getter
 	protected final int maxPlayer;
-    protected final Map<String, Lock> locks = newLockMap();
-    protected final List<P> playerList = new LinkedList<>();
-    protected final Map<String, P> playersByName = newPlayersByNameMap();
-    
-    public AbstractPlayerManager(int maxPlayer) {
-        this.maxPlayer = maxPlayer;
-    }
-    
-    protected AbstractPlayerManager(Builder<?, ?> builder) {
-        this.maxPlayer = builder.maxPlayer;
-    }
-    
-    @Override
-    public P getPlayer(String username) {
-        P player = playersByName.get(username);
-        return player;
-    }
-    
-    @Override
-    public P getPlayer(String username, Supplier<P> playerSupplier) {
-    	return playersByName.computeIfAbsent(username, k -> playerSupplier.get());
-    }
-    
-    @Override
-    public P getPlayerByIndex(int index) {
-    	if(playerList.size() > index)
-    		return playerList.get(index);
-    	return null;
-    }
-    
-    @Override
-    public List<P> getPlayerList() {
-        return playerList;
-    }
+	protected final Map<String, Lock> locks = newLockMap();
+	protected final Map<String, P> playersByName = newPlayersByNameMap();
 	
-	@Override
-	public void getPlayerList(List<P> buffer) {
-		buffer.addAll(playerList);
+	public AbstractPlayerManager(int maxPlayer) {
+		this.maxPlayer = maxPlayer;
+	}
+	
+	protected AbstractPlayerManager(Builder<?, ?> builder) {
+		this.maxPlayer = builder.maxPlayer;
 	}
 	
 	@Override
-    public List<P> getPlayerList(Predicate<P> predicate) {
-		List<P> list = new ArrayList<>();
-		for(P player : playerList) {
-			boolean test = predicate.test(player);
-			if(test)
-				list.add(player);
-		}
-		return list;
-    }
-    
-    @Override
-    public List<String> getPlayerNames() {
-		return new ArrayList<>(playersByName.keySet());
-    }
+	public P getPlayer(String username) {
+		P player = playersByName.get(username);
+		return player;
+	}
+	
+	@Override
+	public P getPlayer(String username, Supplier<P> playerSupplier) {
+		return playersByName.computeIfAbsent(username, k -> playerSupplier.get());
+	}
+
+	@Override
+	public ReadOnlyCollection<P> getPlayerCollection() {
+		return new ReadOnlyCollection<P>(playersByName.values());
+	}
+	
+	@Override
+	public void getPlayerList(List<P> buffer) {
+		buffer.addAll(playersByName.values());
+	}
+	
+	@Override
+	public ReadOnlyList<P> getPlayerList(Predicate<P> predicate) {
+		return new ReadOnlyList<P>(
+				playersByName.values()
+						.stream()
+						.filter(predicate)
+						.collect(Collectors.toList())
+		);
+	}
+	
+	@Override
+	public ReadOnlySet<String> getPlayerNames() {
+		return new ReadOnlySet<>(playersByName.keySet());
+	}
 
     @Override
     public boolean containsPlayer(String username) {
@@ -119,10 +108,9 @@ public abstract class AbstractPlayerManager<P extends Player>
     			throw new PlayerExistsException(player.getName());
 		}
 		players.forEach(this::addPlayer0);
-    }
-    
-    protected void addPlayer0(P player) {
-    	playerList.add(player);
+	}
+	
+	protected void addPlayer0(P player) {
 		playersByName.put(player.getName(), player);
     }
 
@@ -141,7 +129,6 @@ public abstract class AbstractPlayerManager<P extends Player>
     
     protected void removePlayer1(P player) {
         locks.remove(player.getName());
-        playerList.remove(player);
         playersByName.remove(player.getName());
     }
     

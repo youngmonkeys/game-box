@@ -1,12 +1,15 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Player;
+import com.tvd12.gamebox.util.ReadOnlyCollection;
+import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import com.tvd12.gamebox.entity.Player;
 
 public interface PlayerManager<P extends Player> {
 
@@ -28,19 +31,11 @@ public interface PlayerManager<P extends Player> {
 	P getPlayer(String username, Supplier<P> playerSupplier);
 	
 	/**
-	 * Get player by index
+	 * Get players as a collection
 	 * 
-	 * @param index the player's index
-	 * @return the player
+	 * @return the player collection
 	 */
-	P getPlayerByIndex(int index);
-	
-	/**
-	 * Get players as list
-	 * 
-	 * @return the player as list
-	 */
-	List<P> getPlayerList();
+	ReadOnlyCollection<P> getPlayerCollection();
 	
 	/**
 	 * Get player list to buffer
@@ -49,20 +44,21 @@ public interface PlayerManager<P extends Player> {
 	 */
 	void getPlayerList(List<P> buffer);
 	
+	
 	/**
-	 * Get players as list
+	 * Get players as a ReadOnlyList
 	 * 
 	 * @param predicate the predicate to test
-	 * @return the player list
+	 * @return the read-only player list
 	 */
-	List<P> getPlayerList(Predicate<P> predicate);
+	ReadOnlyList<P> getPlayerList(Predicate<P> predicate);
 	
 	/**
 	 * Get list of player name
 	 * 
 	 * @return the list of player name
 	 */
-	List<String> getPlayerNames();
+	ReadOnlySet<String> getPlayerNames();
 	
 	/**
 	 * Get count of players

@@ -1,14 +1,16 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Player;
+import com.tvd12.gamebox.util.ReadOnlyCollection;
+import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
+import lombok.Getter;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import com.tvd12.gamebox.entity.Player;
-
-import lombok.Getter;
 
 public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerManager<P> {
 
@@ -42,14 +44,14 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     }
     
     @Override
-    public List<P> getPlayerList() {
+    public ReadOnlyCollection<P> getPlayerCollection() {
 		synchronized (synchronizedLock) {
-			return super.getPlayerList();
+			return super.getPlayerCollection();
 		}
     }
     
     @Override
-    public List<P> getPlayerList(Predicate<P> predicate) {
+    public ReadOnlyList<P> getPlayerList(Predicate<P> predicate) {
     	synchronized (synchronizedLock) {
     		return super.getPlayerList(predicate);
     	}
@@ -63,7 +65,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 	}
 	
 	@Override
-    public List<String> getPlayerNames() {
+    public ReadOnlySet<String> getPlayerNames() {
     	synchronized (synchronizedLock) {
 			return super.getPlayerNames();
 		}
@@ -151,7 +153,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     	}
     }
     
-    public static Builder<?, ?> builder() {
+    public static Builder builder() {
 		return new Builder<>();
     }
     

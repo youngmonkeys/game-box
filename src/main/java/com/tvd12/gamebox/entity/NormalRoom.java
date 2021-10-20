@@ -7,38 +7,38 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class NormalRoom extends Room {
+@SuppressWarnings({"unchecked"})
+public class NormalRoom<P extends Player> extends Room {
 	
 	@Setter(AccessLevel.NONE)
-	protected final PlayerManager playerManager;
+	protected final PlayerManager<P> playerManager;
 	
-	public NormalRoom(Builder<?> builder) {
+	public NormalRoom(Builder<P, ?> builder) {
 		super(builder);
 		this.playerManager = builder.playerManager;
 	}
 	
-	public void addPlayer(Player player) {
+	public void addPlayer(P player) {
 		playerManager.addPlayer(player);
 	}
 	
-	public void removePlayer(Player player) {
+	public void removePlayer(P player) {
 		playerManager.removePlayer(player.getName());
 	}
 	
-	public <T extends PlayerManager> T getPlayerManager() {
-		return (T)playerManager;
+	public <T extends P> PlayerManager<T> getPlayerManager() {
+		return (PlayerManager<T>) playerManager;
 	}
 	
-	public static Builder<?> builder() {
+	@SuppressWarnings("rawtypes")
+	public static Builder builder() {
 		return new Builder<>();
 	}
 	
-	public static class Builder<B extends Builder<B>> extends Room.Builder<B> {
+	public static class Builder<P extends Player, B extends Builder<P, B>> extends Room.Builder<B> {
+		protected PlayerManager<P> playerManager;
 		
-		protected PlayerManager playerManager;
-		
-		public B playerManager(PlayerManager playerManager) {
+		public B playerManager(PlayerManager<P> playerManager) {
 			this.playerManager = playerManager;
 			return (B)this;
 		}
@@ -55,13 +55,13 @@ public class NormalRoom extends Room {
 		}
 		
 		@Override
-		public NormalRoom build() {
-			return (NormalRoom) super.build();
+		public NormalRoom<P> build() {
+			return (NormalRoom<P>) super.build();
 		}
 		
 		@Override
-		protected NormalRoom newProduct() {
-			return new NormalRoom(this);
+		protected NormalRoom<P> newProduct() {
+			return new NormalRoom<>(this);
 		}
 	}
 }
