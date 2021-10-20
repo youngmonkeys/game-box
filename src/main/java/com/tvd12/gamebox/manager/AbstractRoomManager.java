@@ -200,7 +200,7 @@ public abstract class AbstractRoomManager<R extends Room>
 	public abstract static class Builder<R extends Room, B extends Builder<R, B>> 
 			implements EzyBuilder<RoomManager<R>> {
 
-		protected int maxRoom;
+		protected int maxRoom = 10000;
 		
 		public B maxRoom(int maxRoom) {
 			this.maxRoom = maxRoom;
