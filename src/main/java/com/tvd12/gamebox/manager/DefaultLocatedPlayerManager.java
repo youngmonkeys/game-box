@@ -3,6 +3,8 @@ package com.tvd12.gamebox.manager;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
+import com.tvd12.gamebox.util.ReadOnlyCollection;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +22,6 @@ public class DefaultLocatedPlayerManager
 	@Getter
 	@Setter
 	protected LocatedPlayer speakinger;
-	protected final LinkedList<LocatedPlayer> playerList = new LinkedList<>();
 	protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
 	protected final NavigableMap<Integer, LocatedPlayer> playersByLocation = newPlayersByLocationsMap();
 	
@@ -31,8 +32,8 @@ public class DefaultLocatedPlayerManager
 	}
 	
 	@Override
-	public List<LocatedPlayer> getPlayerList() {
-		return playerList;
+	public ReadOnlyCollection<LocatedPlayer> getPlayerCollection() {
+		return new ReadOnlyCollection<>(playersByLocation.values());
 	}
 
 	@Override
@@ -42,14 +43,12 @@ public class DefaultLocatedPlayerManager
 			throw new LocationNotAvailableException("location: " + location + " has owned by: " + current.getName());
 		playersByLocation.put(location, player);
 		playersByName.put(player.getName(), player);
-		playerList.add(player);
 	}
 
 	@Override
 	public void removePlayer(int location) {
 		LocatedPlayer removed = playersByLocation.remove(location);
 		if(removed != null) {
-			playerList.remove(removed);
 			playersByName.remove(removed.getName());
 		}
 	}
@@ -90,8 +89,8 @@ public class DefaultLocatedPlayerManager
 	}
 	
 	@Override
-	public List<String> getPlayerNames() {
-		return new ArrayList<>(playersByName.keySet());
+	public ReadOnlySet<String> getPlayerNames() {
+		return new ReadOnlySet<>(playersByName.keySet());
 	}
 	
 	@Override

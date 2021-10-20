@@ -1,10 +1,11 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.List;
-import java.util.function.Predicate;
-
 import com.tvd12.ezyfox.function.EzyPredicates;
 import com.tvd12.gamebox.entity.LocatedPlayer;
+import com.tvd12.gamebox.util.ReadOnlyCollection;
+import com.tvd12.gamebox.util.ReadOnlySet;
+
+import java.util.function.Predicate;
 
 public interface LocatedPlayerManager {
 
@@ -20,7 +21,7 @@ public interface LocatedPlayerManager {
 	
 	LocatedPlayer getPlayer(int location);
 	
-	List<LocatedPlayer> getPlayerList();
+	ReadOnlyCollection<LocatedPlayer> getPlayerCollection();
 	
 	void addPlayer(LocatedPlayer player, int location);
 	
@@ -28,7 +29,7 @@ public interface LocatedPlayerManager {
 	
 	LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 	
-	List<String> getPlayerNames();
+	ReadOnlySet<String> getPlayerNames();
 
 	boolean containsPlayer(String username);
 	
