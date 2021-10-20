@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -21,5 +22,9 @@ public class ReadOnlyList<E> {
 	
 	public void forEach(Consumer<E> var) {
 		list.forEach(var);
+	}
+	
+	public List<E> copyToList() {
+		return new ArrayList<>(list);
 	}
 }
