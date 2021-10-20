@@ -1,16 +1,13 @@
 package com.tvd12.gamebox.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tvd12.ezyfox.bean.annotation.EzyAutoBind;
 import com.tvd12.ezyfoxserver.support.factory.EzyResponseFactory;
 import com.tvd12.gamebox.constant.Commands;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.manager.PlayerManager;
-
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,16 +20,13 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
 	@EzyAutoBind
 	private EzyResponseFactory responseFactory;
 	
-	private final List<String> nearbyPlayerNamesBuffer = new ArrayList<>();
-	
 	@Override
 	public void onRoomUpdated(MMORoom room) {
 		PlayerManager<MMOPlayer> playerManager = room.getPlayerManager();
-		for (MMOPlayer player : playerManager.getPlayerList()) {
+		playerManager.getPlayerCollection().forEach(player -> {
 			// Check if player's position or rotation is updated
 			if (player.isStateChanged()) {
-				nearbyPlayerNamesBuffer.clear();
-				player.getNearbyPlayerNames(nearbyPlayerNamesBuffer);
+				ReadOnlySet<String> nearbyPlayerNames = player.getNearbyPlayerNames();
 				
 				responseFactory.newArrayResponse()
 						.udpTransport()
@@ -41,11 +35,11 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
 						.param(Vec3.toArray(player.getPosition()))
 						.param(Vec3.toArray(player.getRotation()))
 						.param(player.getClientTimeTick())
-						.usernames(nearbyPlayerNamesBuffer)
+						.usernames(nearbyPlayerNames.copyToList())
 						.execute();
 				
 				player.setStateChanged(false);
 			}
-		}
+		});
 	}
 }

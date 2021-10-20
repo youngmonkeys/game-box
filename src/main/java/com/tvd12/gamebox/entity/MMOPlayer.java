@@ -1,6 +1,7 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -71,6 +72,10 @@ public class MMOPlayer extends Player {
 	 */
 	public void getNearbyPlayerNames(List<String> buffer) {
 		buffer.addAll(nearbyPlayers.keySet());
+	}
+	
+	public ReadOnlySet<String> getNearbyPlayerNames() {
+		return new ReadOnlySet<>(nearbyPlayers.keySet());
 	}
 	
 	protected MMOPlayer(Builder builder) {
