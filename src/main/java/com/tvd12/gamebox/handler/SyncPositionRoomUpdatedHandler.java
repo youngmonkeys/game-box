@@ -23,7 +23,7 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
 	@Override
 	public void onRoomUpdated(MMORoom room) {
 		PlayerManager<MMOPlayer> playerManager = room.getPlayerManager();
-		playerManager.getPlayerList().forEach(player -> {
+		playerManager.getPlayerCollection().forEach(player -> {
 			// Check if player's position or rotation is updated
 			if (player.isStateChanged()) {
 				ReadOnlySet<String> nearbyPlayerNames = player.getNearbyPlayerNames();

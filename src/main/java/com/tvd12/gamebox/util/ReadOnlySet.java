@@ -9,23 +9,21 @@ import java.util.function.Consumer;
 public class ReadOnlySet<E> {
 	
 	private final Set<E> set;
-	private final Iterator<E> iterator;
 	
 	public ReadOnlySet(Set<E> set) {
 		this.set = set;
-		this.iterator = set.iterator();
 	}
 	
-	public boolean hasNext() {
-		return iterator.hasNext();
+	public E getFirst() {
+		Iterator<E> iter = set.iterator();
+		if (iter.hasNext()) {
+			return iter.next();
+		}
+		return null;
 	}
 	
-	public E next() {
-		return iterator.next();
-	}
-	
-	public void forEachRemaining(Consumer<E> var) {
-		iterator.forEachRemaining(var);
+	public void forEach(Consumer<E> var) {
+		set.forEach(var);
 	}
 	
 	public int size() {

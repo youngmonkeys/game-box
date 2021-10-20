@@ -44,7 +44,7 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		synchronized (this) {
 			super.removePlayer(player);
 			if (master == player && !playerManager.isEmpty()) {
-				master = playerManager.getPlayerByIndex(0);
+				master = playerManager.getPlayerCollection().getFirst();
 			}
 		}
 	}
@@ -54,9 +54,9 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 	}
 	
 	public void update() {
-		playerManager.getPlayerList().forEach(player -> {
+		playerManager.getPlayerCollection().forEach(player -> {
 			player.clearNearByPlayers();
-			playerManager.getPlayerList().forEach(other -> {
+			playerManager.getPlayerCollection().forEach(other -> {
 				double distance = player.getPosition().distance(other.getPosition());
 				if (distance <= this.distanceOfInterest) {
 					player.addNearbyPlayer(other);
