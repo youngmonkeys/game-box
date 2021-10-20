@@ -11,7 +11,6 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public class MMORoom extends NormalRoom {
 	
-	protected final List<MMOPlayer> playersBuffer;
 	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
 	@Getter
 	protected final double distanceOfInterest;
@@ -22,7 +21,6 @@ public class MMORoom extends NormalRoom {
 	
 	public MMORoom(Builder builder) {
 		super(builder);
-		this.playersBuffer = new ArrayList<>();
 		this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
 		this.distanceOfInterest = builder.distanceOfInterest;
 		this.maxPlayer = builder.maxPlayer;
@@ -64,20 +62,17 @@ public class MMORoom extends NormalRoom {
 	}
 	
 	public void update() {
-		playersBuffer.clear();
-		playerManager.getPlayerList(playersBuffer);
-		
-		for (MMOPlayer player : playersBuffer) {
-			player.clearNearByPlayers();
-			for (MMOPlayer other : playersBuffer) {
-				double distance = player.getPosition().distance(other.getPosition());
+		playerManager.getPlayerList().forEach(player -> {
+			((MMOPlayer) player).clearNearByPlayers();
+			playerManager.getPlayerList().forEach(other -> {
+				double distance = ((MMOPlayer) player).getPosition().distance(((MMOPlayer) other).getPosition());
 				if (distance <= this.distanceOfInterest) {
-					player.addNearbyPlayer(other);
+					((MMOPlayer) player).addNearbyPlayer((MMOPlayer) other);
 				} else {
-					player.removeNearByPlayer(other);
+					((MMOPlayer) player).removeNearByPlayer((MMOPlayer) other);
 				}
-			}
-		}
+			});
+		});
 		
 		notifyUpdatedHandlers();
 	}

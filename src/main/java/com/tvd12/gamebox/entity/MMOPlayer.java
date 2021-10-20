@@ -1,14 +1,18 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.util.ReadOnlyList;
+import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Getter
 public class MMOPlayer extends Player {
@@ -71,6 +75,10 @@ public class MMOPlayer extends Player {
 	 */
 	public void getNearbyPlayerNames(List<String> buffer) {
 		buffer.addAll(nearbyPlayers.keySet());
+	}
+	
+	public ReadOnlySet<String> getNearbyPlayerNames() {
+		return new ReadOnlySet<>(nearbyPlayers.keySet());
 	}
 	
 	protected MMOPlayer(Builder builder) {

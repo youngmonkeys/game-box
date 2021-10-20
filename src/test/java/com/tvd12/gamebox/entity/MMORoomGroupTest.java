@@ -32,7 +32,6 @@ public class MMORoomGroupTest {
 		// then
 		sut.addRoom(room);
 		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "timeTickMillis"));
-		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "roomsBuffer"));
 		Asserts.assertNotNull(FieldUtil.getFieldValue(sut, "roomManager"));
 		
 		Thread.sleep(300);

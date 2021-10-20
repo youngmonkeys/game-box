@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import com.tvd12.gamebox.entity.Player;
 
+import com.tvd12.gamebox.util.ReadOnlyList;
 import lombok.Getter;
 
 public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerManager<P> {
@@ -42,7 +43,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     }
     
     @Override
-    public List<P> getPlayerList() {
+    public ReadOnlyList<P> getPlayerList() {
 		synchronized (synchronizedLock) {
 			return super.getPlayerList();
 		}

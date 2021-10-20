@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.tvd12.gamebox.entity.Player;
+import com.tvd12.gamebox.util.ReadOnlyList;
 
 public interface PlayerManager<P extends Player> {
 
@@ -40,7 +41,7 @@ public interface PlayerManager<P extends Player> {
 	 * 
 	 * @return the player as list
 	 */
-	List<P> getPlayerList();
+	ReadOnlyList<P> getPlayerList();
 	
 	/**
 	 * Get player list to buffer
@@ -48,6 +49,7 @@ public interface PlayerManager<P extends Player> {
 	 * @param buffer buffer to get player list
 	 */
 	void getPlayerList(List<P> buffer);
+	
 	
 	/**
 	 * Get players as list

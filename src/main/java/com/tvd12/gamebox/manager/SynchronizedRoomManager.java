@@ -5,6 +5,7 @@ import java.util.List;
 import com.tvd12.gamebox.entity.Room;
 import com.tvd12.gamebox.exception.RoomExistsException;
 
+import com.tvd12.gamebox.util.ReadOnlyCollection;
 import lombok.Getter;
 
 public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager<R> {
@@ -58,7 +59,7 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 	}
 
 	@Override
-	public List<R> getRoomList() {
+	public ReadOnlyCollection<R> getRoomList() {
 		synchronized (synchronizedLock) {
 			return super.getRoomList();
 		}
