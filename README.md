@@ -10,17 +10,17 @@
 
 # Features
 Provide `Entities, Managers, Handlers, Maths` classes for many types of online games (Turn-based (Located), MMO, Normal):
-* **Entities**: MMOPlayer, LocatedPlayer, MMORoom, LocatedRoom, NormalRoom, MMOVirtualWorld...
+* **Entities**: MMOPlayer, LocatedPlayer, MMORoom, LocatedRoom, NormalRoom, MMOVirtualWorld
 * **Managers**: MMORoomManager, LocatedRoomManager, MMOPlayerManager, LocatedPlayerManager
-* **Handlers**: Synchroized position handler
+* **Handlers**: Synchronized Position Handler
 * **Maths**: Rect, Vec2, Vec3
 
 
 # Introduction
 
-To rapidly build online games, developers often have to use a game server engine like SmartFoxServer or Photon, but unfortunately, they come with really high price, especially when more and more users are engaging in our products. Therefore, we develop `game-box engine` based on the [EzyFox ecosystem](https://github.com/youngmonkeys/ezyfox-server) aiming to make everything free and open for everyone who are keen on building multi-players games.
+To rapidly build online games, developers often have to use a game server engine like SmartFoxServer or Photon, but unfortunately, they come with really high price, especially when more and more users are engaging in our products. Therefore, we develop `game-box engine` powered by the [EzyFox Ecosystem](https://github.com/youngmonkeys/ezyfox-server) aiming to make everything free and open for everyone who are keen on building scalable multi-players games.
 
-EzyFox ecosystem supports a wide range of most important components to develop an enterprise product including TCP, UDP, WebSocket protocols with SSL encryption, HTTP RESTful API, Remote procedure call RPC protocol, Database interaction, Memory caching, Message Queue.
+EzyFox Ecosystem supports a wide range of most important components to develop an enterprise product including TCP, UDP, WebSocket protocols with SSL encryption, HTTP RESTful API, Remote procedure call RPC protocol, Database interaction, Memory caching, Message Queue.
 
 # Get Started
 
