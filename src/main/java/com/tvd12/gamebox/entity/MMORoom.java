@@ -3,12 +3,13 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
+import com.tvd12.gamebox.util.ReadOnlyCollection;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MMORoom extends NormalRoom<MMOPlayer> {
+public class MMORoom extends NormalRoom {
 	
 	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
 	@Getter
@@ -26,25 +27,33 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 	}
 	
 	@Override
-	public void addPlayer(MMOPlayer player) {
+	public void addPlayer(Player player) {
+		if (!(player instanceof MMOPlayer)) {
+			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+		}
+		
 		if (playerManager.containsPlayer(player)) {
 			return;
 		}
 		
 		synchronized (this) {
 			if (playerManager.isEmpty()) {
-				master = player;
+				master = (MMOPlayer) player;
 			}
 			super.addPlayer(player);
 		}
 	}
 	
 	@Override
-	public void removePlayer(MMOPlayer player) {
+	public void removePlayer(Player player) {
+		if (!(player instanceof MMOPlayer)) {
+			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+		}
+		
 		synchronized (this) {
 			super.removePlayer(player);
 			if (master == player && !playerManager.isEmpty()) {
-				master = playerManager.getPlayerCollection().getFirst();
+				master = (MMOPlayer) playerManager.getPlayerCollection().getFirst();
 			}
 		}
 	}
@@ -54,9 +63,10 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 	}
 	
 	public void update() {
-		playerManager.getPlayerCollection().forEach(player -> {
+		ReadOnlyCollection<MMOPlayer> playerCollection = playerManager.getPlayerCollection();
+		playerCollection.forEach(player -> {
 			player.clearNearByPlayers();
-			playerManager.getPlayerCollection().forEach(other -> {
+			playerCollection.forEach(other -> {
 				double distance = player.getPosition().distance(other.getPosition());
 				if (distance <= this.distanceOfInterest) {
 					player.addNearbyPlayer(other);
@@ -79,7 +89,7 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		return new Builder();
 	}
 	
-	public static class Builder extends NormalRoom.Builder<MMOPlayer, Builder> {
+	public static class Builder extends NormalRoom.Builder<Builder> {
 		protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 		protected double distanceOfInterest;
 		protected int maxPlayer = 999;
@@ -109,7 +119,7 @@ public class MMORoom extends NormalRoom<MMOPlayer> {
 		}
 		
 		@Override
-		public Builder playerManager(PlayerManager<MMOPlayer> playerManager) {
+		public Builder playerManager(PlayerManager playerManager) {
 			if (playerManager instanceof SynchronizedPlayerManager) {
 				return super.playerManager(playerManager);
 			}
