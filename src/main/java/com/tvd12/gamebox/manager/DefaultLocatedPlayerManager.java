@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class DefaultLocatedPlayerManager 
 		extends EzyLoggable 
@@ -71,21 +72,24 @@ public class DefaultLocatedPlayerManager
 		return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
 	}
 	
-	private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
-		if (left == null && right == null) return null;
-		if (left == null) return right;
-		if (right == null) return left;
-		return (location - left.getLocation()) < (right.getLocation() - location) ?
-				left : right;
+	@Override
+	public LocatedPlayer rightOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
+		return findCircle(
+				player.getLocation(),
+				condition,
+				playersByLocation::higherEntry,
+				playersByLocation::firstEntry
+		);
 	}
 	
-	private LocatedPlayer find(int currentLocation, Predicate<LocatedPlayer> condition,
-	                           Function<Integer, Map.Entry<Integer, LocatedPlayer>> function) {
-		Map.Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
-		while (next != null && !condition.test(next.getValue())) {
-			next = function.apply(next.getKey());
-		}
-		return next != null ? next.getValue() : null;
+	@Override
+	public LocatedPlayer leftOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
+		return findCircle(
+				player.getLocation(),
+				condition,
+				playersByLocation::lowerEntry,
+				playersByLocation::lastEntry
+		);
 	}
 	
 	@Override
@@ -127,4 +131,66 @@ public class DefaultLocatedPlayerManager
 				.toString();
 	}
 	
+	/**
+	 * Determine whether `leftPlayer` or `rightPlayer` is closer to `location`
+	 *
+	 * @return closer player
+	 */
+	private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
+		if (left == null && right == null) return null;
+		if (left == null) return right;
+		if (right == null) return left;
+		return (location - left.getLocation()) < (right.getLocation() - location) ?
+				left : right;
+	}
+	
+	/**
+	 * Find the first player that is null or satisfies condition.
+	 * Use function to determine the jump direction
+	 *
+	 * @param currentLocation current considered location
+	 * @param condition       condition to test player
+	 * @param function        specify how to jump to next entry
+	 * @return the first player that satisfies condition or null
+	 */
+	private LocatedPlayer find(int currentLocation, Predicate<LocatedPlayer> condition,
+	                           Function<Integer, Map.Entry<Integer, LocatedPlayer>> function) {
+		Map.Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
+		while (next != null && !condition.test(next.getValue())) {
+			next = function.apply(next.getKey());
+		}
+		return next != null ? next.getValue() : null;
+	}
+	
+	/**
+	 * Find the first player that satisfies condition (in circle, not in current position)
+	 * Use jumpFunction to determine the jump direction.
+	 * Use anchorSupplier to determine which entry to go to when reaching the end.
+	 *
+	 * @param currentLocation current considered location
+	 * @param condition       condition to test player
+	 * @param jumpFunction    specify how to jump to next entry
+	 * @param anchorSupplier specify which entry to jump to when reaching the end (next entry = null)
+	 * @return the first player that satisfies condition (in circle, not in current position)
+	 */
+	private LocatedPlayer findCircle(int currentLocation, Predicate<LocatedPlayer> condition,
+	                                 Function<Integer, Map.Entry<Integer, LocatedPlayer>> jumpFunction,
+	                                 Supplier<Map.Entry<Integer, LocatedPlayer>> anchorSupplier) {
+		int nextLocation = currentLocation;
+		Map.Entry<Integer, LocatedPlayer> next;
+		while (true) {
+			next = jumpFunction.apply(nextLocation);
+			if (next == null) {
+				next = anchorSupplier.get();
+			}
+			if ((next == null) || (next.getKey() == currentLocation)) {
+				return null;
+			}
+			if (condition.test(next.getValue())) {
+				break;
+			}
+			nextLocation = next.getKey();
+		}
+		return next.getValue();
+	}
 }

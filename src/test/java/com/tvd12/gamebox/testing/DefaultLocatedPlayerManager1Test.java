@@ -6,7 +6,7 @@ import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
 import com.tvd12.test.assertion.Asserts;
 
-public class DefaultLocatedPlayerManagerTest {
+public class DefaultLocatedPlayerManager1Test {
 
 	@Test
 	public void test() {
