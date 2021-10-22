@@ -83,7 +83,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		synchronized (synchronizedLock) {
 			addPlayer0(player, failIfAdded);
 		}
-		logger.info("{} add player: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), player, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} add player: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    player,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     @Override
@@ -91,7 +97,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		synchronized (synchronizedLock) {
 			addPlayers0(players, failIfAdded);
 		}
-		logger.info("{} add players: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), players, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} add players: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    players,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     @Override
@@ -99,7 +111,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		synchronized (synchronizedLock) {
 			removePlayer0(player);
 		}
-        logger.info("{} remove player: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), player, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} remove player: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    player,
+			    locks.size(),
+			    playersByName.size()
+	    );
         return player;
     }
     
@@ -108,7 +126,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
 		synchronized (synchronizedLock) {
 			removePlayers0(players);
 		}
-		logger.info("{} remove players: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), players, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} remove players: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    players,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     @Override

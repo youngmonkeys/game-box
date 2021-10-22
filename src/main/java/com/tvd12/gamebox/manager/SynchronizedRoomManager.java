@@ -33,7 +33,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 		}
 		if(exists && failIfAdded)
 			throw new RoomExistsException(room.getName());
-		logger.info("{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), room, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				room,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 
 	@Override
@@ -41,7 +47,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 		synchronized (synchronizedLock) {
 			addRooms0(rooms, failIfAdded);
 		}
-		logger.info("{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), rooms, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				rooms,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 	
 	@Override
@@ -84,7 +96,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 		synchronized (synchronizedLock) {
 			removeRoom0(room);
 		}
-		logger.info("{} remove room: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), room, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				room,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 
 	@Override
@@ -106,7 +124,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 		synchronized (synchronizedLock) {
 			removeRooms0(rooms);
 		}
-		logger.info("{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), rooms, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				rooms,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 	
 	@Override
@@ -120,7 +144,7 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 		return new Builder<>();
 	}
 	
-	public static class Builder<R extends Room, B extends Builder<R, B>> 
+	public static class Builder<R extends Room, B extends Builder<R, B>>
 			extends AbstractRoomManager.Builder<R, B> {
 
 		@Override

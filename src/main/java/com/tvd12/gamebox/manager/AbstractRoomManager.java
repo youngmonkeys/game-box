@@ -43,7 +43,13 @@ public abstract class AbstractRoomManager<R extends Room>
 		boolean exists = addRoom0(room, failIfAdded);
 		if(exists && failIfAdded)
 			throw new RoomExistsException(room.getName());
-		logger.info("{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), room, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				room,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 	
 	protected boolean addRoom0(R room, boolean failIfAdded) {
@@ -65,7 +71,13 @@ public abstract class AbstractRoomManager<R extends Room>
 	@Override
 	public void addRooms(Iterable<R> rooms, boolean failIfAdded) {
 		addRooms0(rooms, failIfAdded);
-		logger.info("{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), rooms, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				rooms,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 	
 	protected void addRooms0(Iterable<R> rooms, boolean failIfAdded) {
@@ -143,7 +155,13 @@ public abstract class AbstractRoomManager<R extends Room>
 	@Override
 	public void removeRoom(R room) {
 		removeRoom0(room);
-		logger.info("{} remove room: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), room, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				room,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 
 	@Override
@@ -159,7 +177,13 @@ public abstract class AbstractRoomManager<R extends Room>
 	@Override
 	public void removeRooms(Iterable<R> rooms) {
 		removeRooms0(rooms);
-		logger.info("{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}", getMessagePrefix(), rooms, roomsByName.size(), roomsById.size());
+		logger.info(
+				"{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+				getMessagePrefix(),
+				rooms,
+				roomsByName.size(),
+				roomsById.size()
+		);
 	}
 	
 	protected void removeRooms0(Iterable<R> rooms) {

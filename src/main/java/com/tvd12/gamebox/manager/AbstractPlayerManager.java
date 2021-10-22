@@ -80,7 +80,13 @@ public abstract class AbstractPlayerManager<P extends Player>
     @Override
     public void addPlayer(P player, boolean failIfAdded) {
 		addPlayer0(player, failIfAdded);
-		logger.info("{} add player: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), player, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} add player: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    player,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     protected void addPlayer0(P player, boolean failIfAdded) {
@@ -95,7 +101,13 @@ public abstract class AbstractPlayerManager<P extends Player>
     @Override
     public void addPlayers(Collection<P> players, boolean failIfAdded) {
 		addPlayers0(players, failIfAdded);
-		logger.info("{} add players: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), players, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} add players: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    players,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     protected void addPlayers0(Collection<P> players, boolean failIfAdded) {
@@ -117,7 +129,13 @@ public abstract class AbstractPlayerManager<P extends Player>
     @Override
     public P removePlayer(P player) {
 		removePlayer0(player);
-        logger.info("{} remove player: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), player, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} remove player: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    player,
+			    locks.size(),
+			    playersByName.size()
+	    );
         return player;
     }
     
@@ -135,7 +153,13 @@ public abstract class AbstractPlayerManager<P extends Player>
     @Override
     public void removePlayers(Collection<P> players) {
 		removePlayers0(players);
-		logger.info("{} remove players: {}, locks.size = {}, playersByName.size = {}", getMessagePrefix(), players, locks.size(), playersByName.size());
+	    logger.info(
+			    "{} remove players: {}, locks.size = {}, playersByName.size = {}",
+			    getMessagePrefix(),
+			    players,
+			    locks.size(),
+			    playersByName.size()
+	    );
     }
     
     protected void removePlayers0(Collection<P> players) {

@@ -8,13 +8,17 @@ import com.tvd12.gamebox.util.ReadOnlySet;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class DefaultLocatedPlayerManager 
-		extends EzyLoggable 
+public class DefaultLocatedPlayerManager
+		extends EzyLoggable
 		implements LocatedPlayerManager {
 
 	@Getter
@@ -62,7 +66,7 @@ public class DefaultLocatedPlayerManager
 	
 	@Override
 	public LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
-		if(player == null) 
+		if(player == null)
 			return null;
 		
 		int currentLocation = player.getLocation();
@@ -140,8 +144,7 @@ public class DefaultLocatedPlayerManager
 		if (left == null && right == null) return null;
 		if (left == null) return right;
 		if (right == null) return left;
-		return (location - left.getLocation()) < (right.getLocation() - location) ?
-				left : right;
+		return (location - left.getLocation()) < (right.getLocation() - location) ? left : right;
 	}
 	
 	/**
@@ -153,9 +156,12 @@ public class DefaultLocatedPlayerManager
 	 * @param function        specify how to jump to next entry
 	 * @return the first player that satisfies condition or null
 	 */
-	private LocatedPlayer find(int currentLocation, Predicate<LocatedPlayer> condition,
-	                           Function<Integer, Map.Entry<Integer, LocatedPlayer>> function) {
-		Map.Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
+	private LocatedPlayer find(
+			int currentLocation,
+			Predicate<LocatedPlayer> condition,
+			Function<Integer, Entry<Integer, LocatedPlayer>> function
+	) {
+		Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
 		while (next != null && !condition.test(next.getValue())) {
 			next = function.apply(next.getKey());
 		}
@@ -170,14 +176,17 @@ public class DefaultLocatedPlayerManager
 	 * @param currentLocation current considered location
 	 * @param condition       condition to test player
 	 * @param jumpFunction    specify how to jump to next entry
-	 * @param anchorSupplier specify which entry to jump to when reaching the end (next entry = null)
+	 * @param anchorSupplier  specify which entry to jump to when reaching the end (next entry = null)
 	 * @return the first player that satisfies condition (in circle, not in current position)
 	 */
-	private LocatedPlayer findCircle(int currentLocation, Predicate<LocatedPlayer> condition,
-	                                 Function<Integer, Map.Entry<Integer, LocatedPlayer>> jumpFunction,
-	                                 Supplier<Map.Entry<Integer, LocatedPlayer>> anchorSupplier) {
+	private LocatedPlayer findCircle(
+			int currentLocation,
+			Predicate<LocatedPlayer> condition,
+			Function<Integer, Entry<Integer, LocatedPlayer>> jumpFunction,
+			Supplier<Entry<Integer, LocatedPlayer>> anchorSupplier
+	) {
 		int nextLocation = currentLocation;
-		Map.Entry<Integer, LocatedPlayer> next;
+		Entry<Integer, LocatedPlayer> next;
 		while (true) {
 			next = jumpFunction.apply(nextLocation);
 			if (next == null) {
