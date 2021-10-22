@@ -9,143 +9,144 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("AbbreviationAsWordInName")
 public class MMORoom extends NormalRoom {
-	
-	protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
-	@Getter
-	protected final double distanceOfInterest;
-	@Getter
-	protected MMOPlayer master;
-	@Getter
-	protected int maxPlayer;
-	
-	public MMORoom(Builder builder) {
-		super(builder);
-		this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
-		this.distanceOfInterest = builder.distanceOfInterest;
-		this.maxPlayer = builder.maxPlayer;
-	}
-	
-	@Override
-	public void addPlayer(Player player) {
-		if (!(player instanceof MMOPlayer)) {
-			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
-		}
-		
-		if (playerManager.containsPlayer(player)) {
-			return;
-		}
-		
-		synchronized (this) {
-			if (playerManager.isEmpty()) {
-				master = (MMOPlayer) player;
-			}
-			super.addPlayer(player);
-		}
-	}
-	
-	@Override
-	public void removePlayer(Player player) {
-		if (!(player instanceof MMOPlayer)) {
-			throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
-		}
-		
-		synchronized (this) {
-			super.removePlayer(player);
-			if (master == player && !playerManager.isEmpty()) {
-				master = (MMOPlayer) playerManager.getPlayerCollection().getFirst();
-			}
-		}
-	}
-	
-	public boolean isEmpty() {
-		return this.getPlayerManager().isEmpty();
-	}
-	
-	public void update() {
-		ReadOnlyCollection<MMOPlayer> playerCollection = playerManager.getPlayerCollection();
-		playerCollection.forEach(player -> {
-			player.clearNearByPlayers();
-			playerCollection.forEach(other -> {
-				double distance = player.getPosition().distance(other.getPosition());
-				if (distance <= this.distanceOfInterest) {
-					player.addNearbyPlayer(other);
-				} else {
-					player.removeNearByPlayer(other);
-				}
-			});
-		});
-		
-		notifyUpdatedHandlers();
-	}
-	
-	private void notifyUpdatedHandlers() {
-		for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
-			handler.onRoomUpdated(this);
-		}
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static class Builder extends NormalRoom.Builder<Builder> {
-		protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
-		protected double distanceOfInterest;
-		protected int maxPlayer = 999;
-		
-		public Builder() {
-		}
-		
-		public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
-			this.roomUpdatedHandlers.add(handler);
-			return this;
-		}
-		
-		public Builder distanceOfInterest(double distance) {
-			this.distanceOfInterest = distance;
-			return this;
-		}
-		
-		public Builder maxPlayer(int maxPlayer) {
-			this.maxPlayer = maxPlayer;
-			return this;
-		}
-		
-		@Override
-		public Builder defaultPlayerManager(int maxPlayer) {
-			this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
-			return this;
-		}
-		
-		@Override
-		public Builder playerManager(PlayerManager playerManager) {
-			if (playerManager instanceof SynchronizedPlayerManager) {
-				return super.playerManager(playerManager);
-			}
-			throw new IllegalArgumentException("playerManager must be SynchronizedPlayerManager");
-		}
-		
-		@Override
-		protected void preBuild() {
-			if (playerManager == null) {
-				playerManager = new SynchronizedPlayerManager<>(maxPlayer);
-			}
-			
-			if (distanceOfInterest <= 0.0f) {
-				throw new IllegalArgumentException("distanceOfInterest must be set!");
-			}
-			super.preBuild();
-		}
-		
-		@Override
-		public MMORoom build() {
-			return (MMORoom) super.build();
-		}
-		
-		@Override
-		protected MMORoom newProduct() {
-			return new MMORoom(this);
-		}
-	}
+
+    protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
+    @Getter
+    protected final double distanceOfInterest;
+    @Getter
+    protected MMOPlayer master;
+    @Getter
+    protected int maxPlayer;
+
+    public MMORoom(Builder builder) {
+        super(builder);
+        this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
+        this.distanceOfInterest = builder.distanceOfInterest;
+        this.maxPlayer = builder.maxPlayer;
+    }
+
+    @Override
+    public void addPlayer(Player player) {
+        if (!(player instanceof MMOPlayer)) {
+            throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+        }
+
+        if (playerManager.containsPlayer(player)) {
+            return;
+        }
+
+        synchronized (this) {
+            if (playerManager.isEmpty()) {
+                master = (MMOPlayer) player;
+            }
+            super.addPlayer(player);
+        }
+    }
+
+    @Override
+    public void removePlayer(Player player) {
+        if (!(player instanceof MMOPlayer)) {
+            throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
+        }
+
+        synchronized (this) {
+            super.removePlayer(player);
+            if (master == player && !playerManager.isEmpty()) {
+                master = (MMOPlayer) playerManager.getPlayerCollection().getFirst();
+            }
+        }
+    }
+
+    public boolean isEmpty() {
+        return this.getPlayerManager().isEmpty();
+    }
+
+    public void update() {
+        ReadOnlyCollection<MMOPlayer> playerCollection = playerManager.getPlayerCollection();
+        playerCollection.forEach(player -> {
+            player.clearNearByPlayers();
+            playerCollection.forEach(other -> {
+                double distance = player.getPosition().distance(other.getPosition());
+                if (distance <= this.distanceOfInterest) {
+                    player.addNearbyPlayer(other);
+                } else {
+                    player.removeNearByPlayer(other);
+                }
+            });
+        });
+
+        notifyUpdatedHandlers();
+    }
+
+    private void notifyUpdatedHandlers() {
+        for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
+            handler.onRoomUpdated(this);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder extends NormalRoom.Builder<Builder> {
+        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
+        protected double distanceOfInterest;
+        protected int maxPlayer = 999;
+
+        public Builder() {
+        }
+
+        public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
+            this.roomUpdatedHandlers.add(handler);
+            return this;
+        }
+
+        public Builder distanceOfInterest(double distance) {
+            this.distanceOfInterest = distance;
+            return this;
+        }
+
+        public Builder maxPlayer(int maxPlayer) {
+            this.maxPlayer = maxPlayer;
+            return this;
+        }
+
+        @Override
+        public Builder defaultPlayerManager(int maxPlayer) {
+            this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
+            return this;
+        }
+
+        @Override
+        public Builder playerManager(PlayerManager playerManager) {
+            if (playerManager instanceof SynchronizedPlayerManager) {
+                return super.playerManager(playerManager);
+            }
+            throw new IllegalArgumentException("playerManager must be SynchronizedPlayerManager");
+        }
+
+        @Override
+        protected void preBuild() {
+            if (playerManager == null) {
+                playerManager = new SynchronizedPlayerManager<>(maxPlayer);
+            }
+
+            if (distanceOfInterest <= 0.0f) {
+                throw new IllegalArgumentException("distanceOfInterest must be set!");
+            }
+            super.preBuild();
+        }
+
+        @Override
+        public MMORoom build() {
+            return (MMORoom) super.build();
+        }
+
+        @Override
+        protected MMORoom newProduct() {
+            return new MMORoom(this);
+        }
+    }
 }
