@@ -14,68 +14,68 @@ import lombok.Setter;
 @Getter
 public class Player {
 
-	protected final String name;
-	@Setter
-	protected IPlayerRole role = PlayerRole.NULL;
-	@Setter
-	protected IPlayerStatus status = PlayerStatus.NULL;
-	@Setter
-	protected long currentRoomId;
-	
-	public Player(String name) {
-		this.name = name;
-	}
-	
-	protected Player(Builder<?> builder) {
-		this(builder.name);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		return new EzyEquals<Player>()
-				.function(t -> t.name)
-				.isEquals(this, obj);
-	}
-	
-	@Override
-	public int hashCode() {
-		return new EzyHashCodes()
-				.append(name)
-				.toHashCode();
-	}
-	
-	@Override
-	public String toString() {
-		return name;
-	}
-	
-	public static Builder<?> builder() {
-		return new Builder<>();
-	}
+    protected final String name;
+    @Setter
+    protected IPlayerRole role = PlayerRole.NULL;
+    @Setter
+    protected IPlayerStatus status = PlayerStatus.NULL;
+    @Setter
+    protected long currentRoomId;
 
-	@SuppressWarnings("unchecked")
-	public static class Builder<B extends Builder<B>> implements EzyBuilder<Player> {
-		
-		protected String name;
-		
-		public B name(String name) {
-			this.name = name;
-			return (B)this;
-		}
-		
-		@Override
-		public Player build() {
-			preBuild();
-			return newProduct();
-		}
-		
-		protected void preBuild() {
-		}
-		
-		protected Player newProduct() {
-			return new Player(this);
-		}
-		
-	}
-	
+    public Player(String name) {
+        this.name = name;
+    }
+
+    protected Player(Builder<?> builder) {
+        this(builder.name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return new EzyEquals<Player>()
+                .function(t -> t.name)
+                .isEquals(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return new EzyHashCodes()
+                .append(name)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    public static Builder<?> builder() {
+        return new Builder<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static class Builder<B extends Builder<B>> implements EzyBuilder<Player> {
+
+        protected String name;
+
+        public B name(String name) {
+            this.name = name;
+            return (B) this;
+        }
+
+        @Override
+        public Player build() {
+            preBuild();
+            return newProduct();
+        }
+
+        protected void preBuild() {
+        }
+
+        protected Player newProduct() {
+            return new Player(this);
+        }
+
+    }
+
 }

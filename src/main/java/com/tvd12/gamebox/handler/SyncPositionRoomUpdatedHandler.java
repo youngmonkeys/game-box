@@ -15,31 +15,31 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
-	
-	@Setter
-	@EzyAutoBind
-	private EzyResponseFactory responseFactory;
-	
-	@Override
-	public void onRoomUpdated(MMORoom room) {
-		PlayerManager<MMOPlayer> playerManager = room.getPlayerManager();
-		playerManager.getPlayerCollection().forEach(player -> {
-			// Check if player's position or rotation is updated
-			if (player.isStateChanged()) {
-				ReadOnlySet<String> nearbyPlayerNames = player.getNearbyPlayerNames();
-				
-				responseFactory.newArrayResponse()
-						.udpTransport()
-						.command(Commands.SYNC_POSITION)
-						.param(player.getName())
-						.param(Vec3.toArray(player.getPosition()))
-						.param(Vec3.toArray(player.getRotation()))
-						.param(player.getClientTimeTick())
-						.usernames(nearbyPlayerNames.copyToList())
-						.execute();
-				
-				player.setStateChanged(false);
-			}
-		});
-	}
+
+    @Setter
+    @EzyAutoBind
+    private EzyResponseFactory responseFactory;
+
+    @Override
+    public void onRoomUpdated(MMORoom room) {
+        PlayerManager<MMOPlayer> playerManager = room.getPlayerManager();
+        playerManager.getPlayerCollection().forEach(player -> {
+            // Check if player's position or rotation is updated
+            if (player.isStateChanged()) {
+                ReadOnlySet<String> nearbyPlayerNames = player.getNearbyPlayerNames();
+
+                responseFactory.newArrayResponse()
+                        .udpTransport()
+                        .command(Commands.SYNC_POSITION)
+                        .param(player.getName())
+                        .param(Vec3.toArray(player.getPosition()))
+                        .param(Vec3.toArray(player.getRotation()))
+                        .param(player.getClientTimeTick())
+                        .usernames(nearbyPlayerNames.copyToList())
+                        .execute();
+
+                player.setStateChanged(false);
+            }
+        });
+    }
 }
