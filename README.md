@@ -1,4 +1,4 @@
-# game-box <img src="https://github.com/youngmonkeys/ezyfox-server/blob/master/logo.png" width="64" />
+# game-box <img src="https://github.com/youngmonkeys/game-box/blob/master/logo.png" width="72" />
 
 * [Features](#features)
 * [Introduction](#introduction)
