@@ -79,6 +79,8 @@ public class MMORoomTest {
 				.addRoomUpdatedHandler(aInstance2)
 				.build();
 		
+		List<MMOPlayer> players = FieldUtil.getFieldValue(room, "playerBuffer");
+		
 		// when
 		room.update();
 		
@@ -91,8 +93,8 @@ public class MMORoomTest {
 		room.update();
 		
 		// then
-		verify(aInstance1, times(2)).onRoomUpdated(room);
-		verify(aInstance2, times(2)).onRoomUpdated(room);
+		verify(aInstance1, times(2)).onRoomUpdated(room, players);
+		verify(aInstance2, times(2)).onRoomUpdated(room, players);
 	}
 	
 	@Test
@@ -120,7 +122,7 @@ public class MMORoomTest {
 	
 	public class A implements MMORoomUpdatedHandler {
 		@Override
-		public void onRoomUpdated(MMORoom room) {
+		public void onRoomUpdated(MMORoom room, List<MMOPlayer> players) {
 		}
 	}
 }

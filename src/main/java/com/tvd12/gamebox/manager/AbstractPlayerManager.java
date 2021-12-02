@@ -1,5 +1,15 @@
 package com.tvd12.gamebox.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.function.EzyFunctions;
 import com.tvd12.ezyfox.io.EzyLists;
@@ -7,16 +17,8 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
-import com.tvd12.gamebox.util.ReadOnlyCollection;
-import com.tvd12.gamebox.util.ReadOnlyList;
-import com.tvd12.gamebox.util.ReadOnlySet;
-import lombok.Getter;
 
-import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import lombok.Getter;
 
 public abstract class AbstractPlayerManager<P extends Player>
         extends EzyLoggable
@@ -45,10 +47,15 @@ public abstract class AbstractPlayerManager<P extends Player>
     public P getPlayer(String username, Supplier<P> playerSupplier) {
         return playersByName.computeIfAbsent(username, k -> playerSupplier.get());
     }
-
+    
     @Override
-    public ReadOnlyCollection<P> getPlayerCollection() {
-        return new ReadOnlyCollection<P>(playersByName.values());
+    public P getFirstPlayer() {
+        return playersByName.isEmpty() ? null : playersByName.values().iterator().next();
+    }
+    
+    @Override
+    public List<P> getPlayerList() {
+        return new ArrayList<>(playersByName.values());
     }
 
     @Override
@@ -57,18 +64,16 @@ public abstract class AbstractPlayerManager<P extends Player>
     }
 
     @Override
-    public ReadOnlyList<P> getPlayerList(Predicate<P> predicate) {
-        return new ReadOnlyList<P>(
-                playersByName.values()
-                        .stream()
-                        .filter(predicate)
-                        .collect(Collectors.toList())
-        );
+    public List<P> getPlayerList(Predicate<P> predicate) {
+        return playersByName.values()
+            .stream()
+            .filter(predicate)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public ReadOnlySet<String> getPlayerNames() {
-        return new ReadOnlySet<>(playersByName.keySet());
+    public List<String> getPlayerNames() {
+        return new ArrayList<>(playersByName.keySet());
     }
 
     @Override

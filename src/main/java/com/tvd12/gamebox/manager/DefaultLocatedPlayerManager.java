@@ -1,14 +1,8 @@
 package com.tvd12.gamebox.manager;
 
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.gamebox.entity.LocatedPlayer;
-import com.tvd12.gamebox.exception.LocationNotAvailableException;
-import com.tvd12.gamebox.util.ReadOnlyCollection;
-import com.tvd12.gamebox.util.ReadOnlySet;
-import lombok.Getter;
-import lombok.Setter;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -16,6 +10,13 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.gamebox.entity.LocatedPlayer;
+import com.tvd12.gamebox.exception.LocationNotAvailableException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class DefaultLocatedPlayerManager
         extends EzyLoggable
@@ -38,8 +39,8 @@ public class DefaultLocatedPlayerManager
     }
 
     @Override
-    public ReadOnlyCollection<LocatedPlayer> getPlayerCollection() {
-        return new ReadOnlyCollection<>(playersByLocation.values());
+    public List<LocatedPlayer> getPlayerCollection() {
+        return new ArrayList<>(playersByLocation.values());
     }
 
     @Override
@@ -105,8 +106,8 @@ public class DefaultLocatedPlayerManager
     }
 
     @Override
-    public ReadOnlySet<String> getPlayerNames() {
-        return new ReadOnlySet<>(playersByName.keySet());
+    public List<String> getPlayerNames() {
+        return new ArrayList<>(playersByName.keySet());
     }
 
     @Override

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@SuppressWarnings({"unchecked"})
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class NormalRoom extends Room {
 
     @Setter(AccessLevel.NONE)
@@ -30,7 +30,6 @@ public class NormalRoom extends Room {
         return (T) playerManager;
     }
 
-    @SuppressWarnings("rawtypes")
     public static Builder builder() {
         return new Builder<>();
     }

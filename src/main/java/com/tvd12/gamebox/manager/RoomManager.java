@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.tvd12.gamebox.entity.Room;
-import com.tvd12.gamebox.util.ReadOnlyCollection;
 
 public interface RoomManager<R extends Room> {
 
@@ -32,7 +31,7 @@ public interface RoomManager<R extends Room> {
 
     R getRoom(Predicate<R> predicate);
 
-    ReadOnlyCollection<R> getRoomList();
+    List<R> getRoomList();
 
     void getRoomList(List<R> buffer);
 

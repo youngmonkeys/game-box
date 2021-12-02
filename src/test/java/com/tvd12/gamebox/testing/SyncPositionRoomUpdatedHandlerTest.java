@@ -68,8 +68,11 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		});
 		room.getPlayerManager().addPlayer(player);
 		
+		List<MMOPlayer> players = FieldUtil.getFieldValue(room, "playerBuffer");
+		room.getPlayerManager().getPlayerList(players);
+		
 		// when
-		sut.onRoomUpdated(room);
+		sut.onRoomUpdated(room, players);
 		
 		// then
 		verify(responseFactory, times(1)).newArrayResponse();
