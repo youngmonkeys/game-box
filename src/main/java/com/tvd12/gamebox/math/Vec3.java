@@ -2,6 +2,7 @@ package com.tvd12.gamebox.math;
 
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
+
 import lombok.Getter;
 
 @Getter
@@ -41,17 +42,6 @@ public class Vec3 {
         x += v.x;
         y += v.y;
         z += v.z;
-    }
-
-    public double distance(Vec3 v) {
-        double dx = v.x - x;
-        double dy = v.y - y;
-        double dz = v.z - z;
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    public double length() {
-        return Math.sqrt(x * x + y * y + z * z);
     }
 
     public void negate() {
@@ -94,6 +84,38 @@ public class Vec3 {
         x *= value;
         y *= value;
         z *= value;
+    }
+    
+    public double distance(Vec3 v) {
+        double dx = v.x - x;
+        double dy = v.y - y;
+        double dz = v.z - z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public double length() {
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+    
+    public float distanceSquare(Vec3 v) {
+        float dx = x - v.x;
+        float dy = y - v.y;
+        float dz = z - v.z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        Vec3 other = (Vec3)obj;
+        return x == other.x && y == other.y && z == other.z;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hashCode = 31 + Double.hashCode(x);
+        hashCode += 31 * hashCode  + Double.hashCode(y);
+        hashCode += 31 * hashCode  + Double.hashCode(z);
+        return hashCode;
     }
 
     @Override

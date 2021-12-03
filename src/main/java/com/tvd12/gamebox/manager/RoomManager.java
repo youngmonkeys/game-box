@@ -34,6 +34,8 @@ public interface RoomManager<R extends Room> {
     List<R> getRoomList();
 
     void getRoomList(List<R> buffer);
+    
+    List<R> getRoomList(Predicate<R> predicate);
 
     int getRoomCount();
 

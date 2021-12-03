@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -14,6 +15,7 @@ import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.function.EzyFunctions;
 import com.tvd12.ezyfox.io.EzyLists;
 import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
@@ -224,7 +226,7 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     protected void unlockAll() {
         for (Lock lock : locks.values()) {
-            lock.unlock();
+            EzyProcessor.processSilently(() -> lock.unlock());
         }
     }
 
@@ -232,8 +234,8 @@ public abstract class AbstractPlayerManager<P extends Player>
         return "user manager:";
     }
 
-    protected Map<String, Lock> newLockMap() {
-        return new HashMap<>();
+    private Map<String, Lock> newLockMap() {
+        return new ConcurrentHashMap<>();
     }
 
     protected Map<String, P> newPlayersByNameMap() {

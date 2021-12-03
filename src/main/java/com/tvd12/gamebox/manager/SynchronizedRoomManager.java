@@ -1,9 +1,9 @@
 package com.tvd12.gamebox.manager;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.tvd12.gamebox.entity.Room;
-import com.tvd12.gamebox.exception.RoomExistsException;
 
 import lombok.Getter;
 
@@ -26,12 +26,8 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 
     @Override
     public void addRoom(R room, boolean failIfAdded) {
-        boolean exists = false;
         synchronized (synchronizedLock) {
-            exists = addRoom0(room, failIfAdded);
-        }
-        if (exists && failIfAdded) {
-            throw new RoomExistsException(room.getName());
+            super.addRoom(room, failIfAdded);
         }
         logger.info(
                 "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
@@ -41,11 +37,18 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
                 roomsById.size()
         );
     }
+    
+    @Override
+    public void addRooms(R[] rooms, boolean failIfAdded) {
+        synchronized (synchronizedLock) {
+            super.addRooms(rooms, failIfAdded);
+        }
+    }
 
     @Override
     public void addRooms(Iterable<R> rooms, boolean failIfAdded) {
         synchronized (synchronizedLock) {
-            addRooms0(rooms, failIfAdded);
+            super.addRooms(rooms, failIfAdded);
         }
         logger.info(
                 "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
@@ -69,6 +72,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             return super.getRoom(name);
         }
     }
+    
+    @Override
+    public R getRoom(Predicate<R> predicate) {
+        synchronized (synchronizedLock) {
+            return super.getRoom(predicate);
+        }
+    }
 
     @Override
     public List<R> getRoomList() {
@@ -83,7 +93,14 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             super.getRoomList(buffer);
         }
     }
-
+    
+    @Override
+    public List<R> getRoomList(Predicate<R> predicate) {
+        synchronized (synchronizedLock) {
+            return super.getRoomList(predicate);
+        }
+    }
+    
     @Override
     public int getRoomCount() {
         synchronized (synchronizedLock) {
@@ -94,7 +111,7 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
     @Override
     public void removeRoom(R room) {
         synchronized (synchronizedLock) {
-            removeRoom0(room);
+            super.removeRoom(room);
         }
         logger.info(
                 "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
@@ -103,6 +120,20 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
                 roomsByName.size(),
                 roomsById.size()
         );
+    }
+    
+    @Override
+    public boolean containsRoom(long id) {
+        synchronized (synchronizedLock) {
+            return super.containsRoom(id);   
+        }
+    }
+    
+    @Override
+    public boolean containsRoom(String name) {
+        synchronized (synchronizedLock) {
+            return super.containsRoom(name);
+        }
     }
 
     @Override
@@ -122,7 +153,7 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
     @Override
     public void removeRooms(Iterable<R> rooms) {
         synchronized (synchronizedLock) {
-            removeRooms0(rooms);
+            super.removeRooms(rooms);
         }
         logger.info(
                 "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
@@ -137,6 +168,13 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
     public boolean available() {
         synchronized (synchronizedLock) {
             return super.available();
+        }
+    }
+    
+    @Override
+    public void clear() {
+        synchronized (synchronizedLock) {
+            super.clear();   
         }
     }
 
@@ -154,5 +192,4 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
         }
 
     }
-
 }
