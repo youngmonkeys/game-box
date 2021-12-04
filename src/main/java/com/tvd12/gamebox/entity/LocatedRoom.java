@@ -31,7 +31,6 @@ public class LocatedRoom extends Room {
             throw new NoSlotException("has no available slot");
         }
         int location = slots.poll();
-        player.setLocation(location);
         playerManager.addPlayer(player, location);
         return location;
     }

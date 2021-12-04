@@ -20,8 +20,6 @@ public interface LocatedPlayerManager {
 
     LocatedPlayer getPlayer(int location);
 
-    List<LocatedPlayer> getPlayerCollection();
-
     void addPlayer(LocatedPlayer player, int location);
 
     void removePlayer(int location);
