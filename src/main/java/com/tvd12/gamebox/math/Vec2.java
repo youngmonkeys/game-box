@@ -1,10 +1,9 @@
 package com.tvd12.gamebox.math;
 
-import lombok.Getter;
-import static java.lang.Float.floatToIntBits;
-
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyEntityArrays;
+
+import lombok.Getter;
 
 @Getter
 @SuppressWarnings("MemberName")
@@ -106,8 +105,8 @@ public class Vec2 {
     @Override
     public boolean equals(Object obj) {
         Vec2 other = (Vec2)obj;
-        return floatToIntBits(x) == floatToIntBits(other.x) &&
-            floatToIntBits(y) == floatToIntBits(other.y);
+        return Numbers.equals(x, other.x) 
+            && Numbers.equals(y, other.y);
     }
     
     @Override

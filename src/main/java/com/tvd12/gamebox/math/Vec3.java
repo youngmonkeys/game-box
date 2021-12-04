@@ -1,7 +1,5 @@
 package com.tvd12.gamebox.math;
 
-import static java.lang.Float.floatToIntBits;
-
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import com.tvd12.ezyfox.util.EzyEntityArrays;
@@ -110,9 +108,9 @@ public class Vec3 {
     @Override
     public boolean equals(Object obj) {
         Vec3 other = (Vec3)obj;
-        return floatToIntBits(x) == floatToIntBits(other.x) &&
-            floatToIntBits(y) == floatToIntBits(other.y) &&
-            floatToIntBits(z) == floatToIntBits(other.z);
+        return Numbers.equals(x, other.x) 
+            && Numbers.equals(y, other.y)
+            && Numbers.equals(z, other.z);
     }
     
     @Override
