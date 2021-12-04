@@ -1,6 +1,10 @@
 package com.tvd12.gamebox.math;
 
 import lombok.Getter;
+import static java.lang.Float.floatToIntBits;
+
+import com.tvd12.ezyfox.entity.EzyArray;
+import com.tvd12.ezyfox.util.EzyEntityArrays;
 
 @Getter
 @SuppressWarnings("MemberName")
@@ -10,6 +14,10 @@ public class Vec2 {
     public float y;
 
     public static final Vec2 ZERO = new Vec2();
+    public static final Vec2 LEFT = new Vec2(-1, 0);
+    public static final Vec2 UP = new Vec2(0, 1);
+    public static final Vec2 RIGHT = new Vec2(1, 0);
+    public static final Vec2 DOWN = new Vec2(0, -1);
 
     public Vec2() {
         this(0.0F, 0.0F);
@@ -98,14 +106,23 @@ public class Vec2 {
     @Override
     public boolean equals(Object obj) {
         Vec2 other = (Vec2)obj;
-        return x == other.x && y == other.y;
+        return floatToIntBits(x) == floatToIntBits(other.x) &&
+            floatToIntBits(y) == floatToIntBits(other.y);
     }
     
     @Override
     public int hashCode() {
-        int hashCode = 31 + Double.hashCode(x);
-        hashCode += 31 * hashCode  + Double.hashCode(y);
+        int hashCode = 31 + Float.hashCode(x);
+        hashCode += 31 * hashCode  + Float.hashCode(y);
         return hashCode;
+    }
+    
+    public float[] toFloatArray() {
+        return new float[] { x, y };
+    }
+    
+    public EzyArray toArray() {
+        return EzyEntityArrays.newArray(x, y);
     }
 
     @Override

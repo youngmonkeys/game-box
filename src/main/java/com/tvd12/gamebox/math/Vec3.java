@@ -1,7 +1,10 @@
 package com.tvd12.gamebox.math;
 
+import static java.lang.Float.floatToIntBits;
+
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
+import com.tvd12.ezyfox.util.EzyEntityArrays;
 
 import lombok.Getter;
 
@@ -107,15 +110,25 @@ public class Vec3 {
     @Override
     public boolean equals(Object obj) {
         Vec3 other = (Vec3)obj;
-        return x == other.x && y == other.y && z == other.z;
+        return floatToIntBits(x) == floatToIntBits(other.x) &&
+            floatToIntBits(y) == floatToIntBits(other.y) &&
+            floatToIntBits(z) == floatToIntBits(other.z);
     }
     
     @Override
     public int hashCode() {
-        int hashCode = 31 + Double.hashCode(x);
-        hashCode += 31 * hashCode  + Double.hashCode(y);
-        hashCode += 31 * hashCode  + Double.hashCode(z);
+        int hashCode = 31 + Float.hashCode(x);
+        hashCode += 31 * hashCode  + Float.hashCode(y);
+        hashCode += 31 * hashCode  + Float.hashCode(z);
         return hashCode;
+    }
+    
+    public float[] toFloatArray() {
+        return new float[] { x, y, z };
+    }
+    
+    public EzyArray toArray() {
+        return EzyEntityArrays.newArray(x, y, z);
     }
 
     @Override
