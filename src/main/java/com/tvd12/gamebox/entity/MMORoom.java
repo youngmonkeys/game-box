@@ -8,14 +8,14 @@ import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("AbbreviationAsWordInName")
 public class MMORoom extends NormalRoom {
 
     @Getter
+    @Setter
     protected MMOPlayer master;
-    @Getter
-    protected final int maxPlayer;
     
     @Getter
     protected final double distanceOfInterest;
@@ -27,7 +27,6 @@ public class MMORoom extends NormalRoom {
     public MMORoom(Builder builder) {
         super(builder);
         this.playerBuffer = new ArrayList<>();
-        this.maxPlayer = builder.maxPlayer;
         this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
         this.distanceOfInterest = builder.distanceOfInterest;
     }
@@ -59,14 +58,20 @@ public class MMORoom extends NormalRoom {
 
         synchronized (this) {
             super.removePlayer(player);
-            if (master == player && !playerManager.isEmpty()) {
-                master = (MMOPlayer) playerManager.getFirstPlayer();
+            if (master == player) {
+                master = (playerManager.isEmpty())
+                    ? null
+                    : (MMOPlayer) playerManager.getFirstPlayer();
             }
         }
     }
     
     public boolean isEmpty() {
         return this.getPlayerManager().isEmpty();
+    }
+    
+    public int getMaxPlayer() {
+        return this.getPlayerManager().getMaxPlayer();
     }
 
     @SuppressWarnings("unchecked")
@@ -101,12 +106,10 @@ public class MMORoom extends NormalRoom {
     }
 
     public static class Builder extends NormalRoom.Builder<Builder> {
-        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
-        protected double distanceOfInterest;
+        
         protected int maxPlayer = 999;
-
-        public Builder() {
-        }
+        protected double distanceOfInterest;
+        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 
         public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
             this.roomUpdatedHandlers.add(handler);

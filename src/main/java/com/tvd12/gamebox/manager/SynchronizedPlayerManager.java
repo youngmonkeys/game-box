@@ -86,7 +86,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     @Override
     public void addPlayer(P player, boolean failIfAdded) {
         synchronized (synchronizedLock) {
-            addPlayer0(player, failIfAdded);
+            super.addPlayer(player, failIfAdded);
         }
         logger.info(
                 "{} add player: {}, locks.size = {}, playersByName.size = {}",
@@ -100,7 +100,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     @Override
     public void addPlayers(Collection<P> players, boolean failIfAdded) {
         synchronized (synchronizedLock) {
-            addPlayers0(players, failIfAdded);
+            super.addPlayers(players, failIfAdded);
         }
         logger.info(
                 "{} add players: {}, locks.size = {}, playersByName.size = {}",
@@ -114,7 +114,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     @Override
     public P removePlayer(P player) {
         synchronized (synchronizedLock) {
-            removePlayer0(player);
+            super.removePlayer(player);
         }
         logger.info(
                 "{} remove player: {}, locks.size = {}, playersByName.size = {}",
@@ -129,7 +129,7 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     @Override
     public void removePlayers(Collection<P> players) {
         synchronized (synchronizedLock) {
-            removePlayers0(players);
+            super.removePlayers(players);
         }
         logger.info(
                 "{} remove players: {}, locks.size = {}, playersByName.size = {}",
@@ -165,6 +165,13 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
     public void removeLock(String username) {
         synchronized (synchronizedLock) {
             super.removeLock(username);
+        }
+    }
+    
+    @Override
+    public int countPlayers(Predicate<P> tester) {
+        synchronized (synchronizedLock) {
+            return super.countPlayers(tester);   
         }
     }
 

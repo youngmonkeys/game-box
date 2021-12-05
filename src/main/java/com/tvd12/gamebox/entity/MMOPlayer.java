@@ -18,6 +18,7 @@ public class MMOPlayer extends Player {
 
     protected Vec3 position = new Vec3();
     protected Vec3 rotation = new Vec3();
+    @Getter(AccessLevel.NONE)
     protected AtomicBoolean stateChanged = new AtomicBoolean(false);
     @Setter
     protected int clientTimeTick;
