@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import org.testng.annotations.Test;
 
+import com.tvd12.gamebox.manager.DefaultPlayerManager;
+import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
 
@@ -60,5 +62,74 @@ public class MMORoomTest {
         sut.update();
         Asserts.assertEquals(player1.getNearbyPlayerNames(), Arrays.asList(player1.getName(), player2.getName()), false);
         Asserts.assertEquals(player2.getNearbyPlayerNames(), Arrays.asList(player1.getName(), player2.getName()), false);
+    }
+    
+    @Test
+    public void buildFailedDueToDistanceOfInterest() {
+        // given
+        MMORoom.Builder builder = MMORoom.builder()
+            .playerManager(new SynchronizedPlayerManager<>());
+        
+        // when
+        Throwable e = Asserts.assertThrows(() -> builder.build());
+        
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+    }
+    
+    @Test
+    public void buildSetPlayerManagerFailed() {
+        // given
+        MMORoom.Builder builder = MMORoom.builder();
+        
+        // when
+        Throwable e = Asserts.assertThrows(() -> 
+            builder.playerManager(new DefaultPlayerManager<>())
+        );
+        
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+    }
+    
+    @Test
+    public void addPlayerFailed() {
+        // given
+        MMORoom sut = MMORoom.builder()
+            .defaultPlayerManager(2)
+            .distanceOfInterest(100)
+            .build();
+        
+        Player player1 = Player.builder()
+            .name("player1")
+            .build();
+        
+        // when
+        Throwable e = Asserts.assertThrows(() -> 
+            sut.addPlayer(player1)
+        );
+        
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+    }
+    
+    @Test
+    public void removePlayerFailed() {
+        // given
+        MMORoom sut = MMORoom.builder()
+            .defaultPlayerManager(2)
+            .distanceOfInterest(100)
+            .build();
+        
+        Player player1 = Player.builder()
+            .name("player1")
+            .build();
+        
+        // when
+        Throwable e = Asserts.assertThrows(() -> 
+            sut.removePlayer(player1)
+        );
+        
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
     }
 }

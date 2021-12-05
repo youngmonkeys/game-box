@@ -43,8 +43,8 @@ public class Vec2 {
     }
 
     public void set(double[] xy) {
-        x = (float)xy[0];
-        y = (float)xy[1];
+        x = (float) xy[0];
+        y = (float) xy[1];
     }
     
     public void set(double x, double y) {
@@ -104,7 +104,7 @@ public class Vec2 {
 
     @Override
     public boolean equals(Object obj) {
-        Vec2 other = (Vec2)obj;
+        Vec2 other = (Vec2) obj;
         return Numbers.equals(x, other.x) 
             && Numbers.equals(y, other.y);
     }

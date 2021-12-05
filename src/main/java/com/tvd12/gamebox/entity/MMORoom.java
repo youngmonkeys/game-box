@@ -106,12 +106,10 @@ public class MMORoom extends NormalRoom {
     }
 
     public static class Builder extends NormalRoom.Builder<Builder> {
-        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
-        protected double distanceOfInterest;
+        
         protected int maxPlayer = 999;
-
-        public Builder() {
-        }
+        protected double distanceOfInterest;
+        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 
         public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
             this.roomUpdatedHandlers.add(handler);
@@ -130,7 +128,6 @@ public class MMORoom extends NormalRoom {
 
         @Override
         public Builder defaultPlayerManager(int maxPlayer) {
-            this.maxPlayer = maxPlayer;
             this.playerManager = new SynchronizedPlayerManager<>(maxPlayer);
             return this;
         }

@@ -36,7 +36,7 @@ public class Player {
         if (this == obj) {
             return true;
         }
-        return name.equals(((Player)obj).name);
+        return name.equals(((Player) obj).name);
     }
 
     @Override

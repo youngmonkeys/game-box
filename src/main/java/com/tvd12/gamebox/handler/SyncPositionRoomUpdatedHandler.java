@@ -7,7 +7,6 @@ import com.tvd12.ezyfoxserver.support.factory.EzyResponseFactory;
 import com.tvd12.gamebox.constant.Commands;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
-import com.tvd12.gamebox.math.Vec3;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -31,8 +30,8 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
                         .udpTransport()
                         .command(Commands.SYNC_POSITION)
                         .param(player.getName())
-                        .param(Vec3.toArray(player.getPosition()))
-                        .param(Vec3.toArray(player.getRotation()))
+                        .param(player.getPosition().toArray())
+                        .param(player.getRotation().toArray())
                         .param(player.getClientTimeTick())
                         .usernames(player.getNearbyPlayerNames())
                         .execute();

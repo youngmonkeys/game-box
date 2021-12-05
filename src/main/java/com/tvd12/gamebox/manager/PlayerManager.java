@@ -13,8 +13,7 @@ public interface PlayerManager<P extends Player> {
     /**
      * Get player by id.
      *
-     * @param username
-     *         the player's name
+     * @param username the player's name
      * @return the player
      */
     P getPlayer(String username);
@@ -22,24 +21,21 @@ public interface PlayerManager<P extends Player> {
     /**
      * Get player by id.
      *
-     * @param username
-     *         the player's name
-     * @param playerSupplier
-     *         if the player's not existed, we will create a new one
+     * @param username the player's name
+     * @param playerSupplier if the player's not existed, we will create a new one
      * @return the player
      */
     P getPlayer(String username, Supplier<P> playerSupplier);
     
     /**
-     * Get the first player 
+     * Get the first player.
      * 
      * @return the first player
      */
     P getFirstPlayer();
     
     /**
-     * 
-     * Get player list
+     * Get player list.
      * 
      * @return the player list
      */

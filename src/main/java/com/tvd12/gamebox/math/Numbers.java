@@ -57,9 +57,9 @@ public final class Numbers {
      * @param x first value
      * @param y second value
      * @param maxUlps {@code (maxUlps - 1)} is the number of floating point
-     * values between {@code x} and {@code y}.
+     *     values between {@code x} and {@code y}.
      * @return {@code true} if there are fewer than {@code maxUlps} floating
-     * point values between {@code x} and {@code y}.
+     *     point values between {@code x} and {@code y}.
      */
     public static boolean equals(final float x, final float y, final int maxUlps) {
         if (Float.isNaN(x) || Float.isNaN(y)) {

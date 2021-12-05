@@ -1,7 +1,6 @@
 package com.tvd12.gamebox.math;
 
 import com.tvd12.ezyfox.entity.EzyArray;
-import com.tvd12.ezyfox.factory.EzyEntityFactory;
 import com.tvd12.ezyfox.util.EzyEntityArrays;
 
 import lombok.Getter;
@@ -107,7 +106,7 @@ public class Vec3 {
     
     @Override
     public boolean equals(Object obj) {
-        Vec3 other = (Vec3)obj;
+        Vec3 other = (Vec3) obj;
         return Numbers.equals(x, other.x) 
             && Numbers.equals(y, other.y)
             && Numbers.equals(z, other.z);
@@ -138,13 +137,5 @@ public class Vec3 {
                 .append(z)
                 .append(")")
                 .toString();
-    }
-
-    public static EzyArray toArray(Vec3 value) {
-        EzyArray array = EzyEntityFactory.newArray();
-        array.add(value.getX());
-        array.add(value.getY());
-        array.add(value.getZ());
-        return array;
     }
 }

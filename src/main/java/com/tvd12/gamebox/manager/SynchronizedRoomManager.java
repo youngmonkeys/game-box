@@ -109,20 +109,6 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
     }
 
     @Override
-    public void removeRoom(R room) {
-        synchronized (synchronizedLock) {
-            super.removeRoom(room);
-        }
-        logger.info(
-                "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                room,
-                roomsByName.size(),
-                roomsById.size()
-        );
-    }
-    
-    @Override
     public boolean containsRoom(long id) {
         synchronized (synchronizedLock) {
             return super.containsRoom(id);   
@@ -134,6 +120,20 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
         synchronized (synchronizedLock) {
             return super.containsRoom(name);
         }
+    }
+    
+    @Override
+    public void removeRoom(R room) {
+        synchronized (synchronizedLock) {
+            super.removeRoom(room);
+        }
+        logger.info(
+                "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
+                getMessagePrefix(),
+                room,
+                roomsByName.size(),
+                roomsById.size()
+        );
     }
 
     @Override

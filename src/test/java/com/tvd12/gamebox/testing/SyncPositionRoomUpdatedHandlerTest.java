@@ -38,8 +38,8 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		when(arrayResponse.udpTransport()).thenReturn(arrayResponse);
 		when(arrayResponse.command(Commands.SYNC_POSITION)).thenReturn(arrayResponse);
 		when(arrayResponse.param(playerName)).thenReturn(arrayResponse);
-		when(arrayResponse.param(Vec3.toArray(position))).thenReturn(arrayResponse);
-		when(arrayResponse.param(Vec3.toArray(rotation))).thenReturn(arrayResponse);
+		when(arrayResponse.param(position.toArray())).thenReturn(arrayResponse);
+		when(arrayResponse.param(rotation.toArray())).thenReturn(arrayResponse);
 		when(arrayResponse.param(clientTimeTick)).thenReturn(arrayResponse);
 		when(arrayResponse.usernames(nearbyPlayerNameList)).thenReturn(arrayResponse);
 		doNothing().when(arrayResponse).execute();
@@ -79,8 +79,8 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		verify(arrayResponse, times(1)).udpTransport();
 		verify(arrayResponse, times(1)).command(Commands.SYNC_POSITION);
 		verify(arrayResponse, times(1)).param(playerName);
-		verify(arrayResponse, times(1)).param(Vec3.toArray(position));
-		verify(arrayResponse, times(1)).param(Vec3.toArray(rotation));
+		verify(arrayResponse, times(1)).param(position.toArray());
+		verify(arrayResponse, times(1)).param(rotation.toArray());
 		verify(arrayResponse, times(1)).usernames(nearbyPlayerNameList);
 		verify(arrayResponse, times(1)).execute();
 	}
