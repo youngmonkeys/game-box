@@ -22,7 +22,7 @@ public interface LocatedPlayerManager {
 
     void addPlayer(LocatedPlayer player, int location);
 
-    void removePlayer(int location);
+    LocatedPlayer removePlayer(int location);
 
     LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 

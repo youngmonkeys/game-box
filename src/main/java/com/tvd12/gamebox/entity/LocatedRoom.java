@@ -36,8 +36,11 @@ public class LocatedRoom extends Room {
     }
 
     public void removePlayer(LocatedPlayer player) {
-        playerManager.removePlayer(player.getLocation());
-        slots.add(player.getLocation());
+        if (playerManager.containsPlayer(player.getName())) {
+            playerManager.removePlayer(player.getLocation());
+            slots.add(player.getLocation());
+        }
+        
     }
 
     protected Queue<Integer> newSlots(int maxSlots) {

@@ -55,11 +55,12 @@ public class DefaultLocatedPlayerManager
     }
 
     @Override
-    public void removePlayer(int location) {
+    public LocatedPlayer removePlayer(int location) {
         LocatedPlayer removed = playersByLocation.remove(location);
         if (removed != null) {
             playersByName.remove(removed.getName());
         }
+        return removed;
     }
 
     @Override

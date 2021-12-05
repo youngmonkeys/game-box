@@ -84,6 +84,7 @@ public class MMORoomGroupTest {
 		expectedRoomList.add(room2);
 		
 		Asserts.assertEquals(expectedRoomList, roomsBuffer);
+		Asserts.assertEquals(sut.getRoom(room2.getName()), room2);
 	}
 	
 	@Test
@@ -127,4 +128,40 @@ public class MMORoomGroupTest {
 		// then
 		verify(room, atLeastOnce()).update();
 	}
+	
+	@Test
+    public void overTimeTickTest() throws InterruptedException {
+        // given
+        MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
+        MMORoom room = mock(MMORoom.class);
+        doAnswer(it -> {
+            Thread.sleep(300);
+            return null;
+        }).when(room).update();
+        
+        // when
+        sut.addRoom(room);
+        Thread.sleep(350);
+        
+        // then
+        verify(room, atLeastOnce()).update();
+    }
+	
+	@Test
+    public void loopException() throws InterruptedException {
+        // given
+        MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
+        MMORoom room = mock(MMORoom.class);
+        doAnswer(it -> {
+            Thread.currentThread().interrupt();
+            return null;
+        }).when(room).update();
+        
+        // when
+        sut.addRoom(room);
+        Thread.sleep(110);
+        
+        // then
+        sut.destroy();
+    }
 }

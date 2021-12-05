@@ -49,6 +49,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 		
 		SyncPositionRoomUpdatedHandler sut = new SyncPositionRoomUpdatedHandler();
 		sut.setResponseFactory(responseFactory);
+		sut = new SyncPositionRoomUpdatedHandler(responseFactory);
 		
 		MMORoom room = MMORoom.builder()
 				.name(RandomUtil.randomShortAlphabetString())

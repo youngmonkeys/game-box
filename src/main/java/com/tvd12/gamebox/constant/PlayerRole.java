@@ -32,5 +32,4 @@ public enum PlayerRole implements IPlayerRole {
     public static PlayerRole valueOf(int id) {
         return ROLE_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
     }
-
 }
