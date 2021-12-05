@@ -1,10 +1,12 @@
 package com.tvd12.gamebox.manager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
@@ -12,7 +14,6 @@ import com.tvd12.gamebox.entity.Room;
 import com.tvd12.gamebox.exception.MaxRoomException;
 import com.tvd12.gamebox.exception.RoomExistsException;
 
-import com.tvd12.gamebox.util.ReadOnlyCollection;
 import lombok.Getter;
 
 public abstract class AbstractRoomManager<R extends Room>
@@ -33,17 +34,12 @@ public abstract class AbstractRoomManager<R extends Room>
     }
 
     protected AbstractRoomManager(Builder<?, ?> builder) {
-        this(
-                builder.maxRoom
-        );
+        this(builder.maxRoom);
     }
 
     @Override
     public void addRoom(R room, boolean failIfAdded) {
-        boolean exists = addRoom0(room, failIfAdded);
-        if (exists && failIfAdded) {
-            throw new RoomExistsException(room.getName());
-        }
+        addRoom0(room, failIfAdded);
         logger.info(
                 "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
                 getMessagePrefix(),
@@ -53,17 +49,16 @@ public abstract class AbstractRoomManager<R extends Room>
         );
     }
 
-    protected boolean addRoom0(R room, boolean failIfAdded) {
+    protected void addRoom0(R room, boolean failIfAdded) {
         int roomCount = roomsByName.size();
         if (roomCount >= maxRoom) {
             throw new MaxRoomException(room.toString(), roomCount, maxRoom);
         }
-        boolean exists = roomsById.containsKey(room.getId())
-                || roomsByName.containsKey(room.getName());
-        if (!exists) {
-            addRoom0(room);
+        boolean exists = roomsByName.containsKey(room.getName());
+        if (exists && failIfAdded) {
+            throw new RoomExistsException(room.getName());
         }
-        return exists;
+        addRoom0(room);
     }
 
     protected void addRoom0(R room) {
@@ -92,8 +87,7 @@ public abstract class AbstractRoomManager<R extends Room>
         int count = 0;
         if (failIfAdded) {
             for (R room : rooms) {
-                if (roomsById.containsKey(room.getId())
-                        || roomsByName.containsKey(room.getName())) {
+                if (roomsByName.containsKey(room.getName())) {
                     throw new RoomExistsException(room.getName());
                 }
                 ++count;
@@ -101,7 +95,7 @@ public abstract class AbstractRoomManager<R extends Room>
         }
         int roomCount = roomsByName.size();
         int nextRoomCount = roomCount + count;
-        if (nextRoomCount >= maxRoom) {
+        if (nextRoomCount > maxRoom) {
             throw new MaxRoomException(count, roomCount, maxRoom);
         }
         for (R room : rooms) {
@@ -144,8 +138,17 @@ public abstract class AbstractRoomManager<R extends Room>
     }
 
     @Override
-    public ReadOnlyCollection<R> getRoomList() {
-        return new ReadOnlyCollection<R>(roomsByName.values());
+    public List<R> getRoomList() {
+        return new ArrayList<R>(roomsByName.values());
+    }
+    
+    @Override
+    public List<R> getRoomList(Predicate<R> predicate) {
+        return roomsByName
+            .values()
+            .stream()
+            .filter(predicate)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -214,6 +217,11 @@ public abstract class AbstractRoomManager<R extends Room>
     public boolean available() {
         boolean answer = roomsById.size() < maxRoom;
         return answer;
+    }
+    
+    public void clear() {
+        roomsById.clear();
+        roomsByName.clear();
     }
 
     protected String getMessagePrefix() {

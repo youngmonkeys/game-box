@@ -1,5 +1,7 @@
 package com.tvd12.gamebox.constant;
 
+import java.util.Map;
+
 import com.tvd12.ezyfox.util.EzyEnums;
 
 import lombok.Getter;
@@ -14,6 +16,9 @@ public enum RoomStatus implements IRoomStatus {
 
     @Getter
     private int id;
+    
+    private static final Map<Integer, RoomStatus> STATUS_BY_ID =
+        EzyEnums.enumMapInt(RoomStatus.class);
 
     private RoomStatus(int id) {
         this.id = id;
@@ -25,7 +30,6 @@ public enum RoomStatus implements IRoomStatus {
     }
 
     public static RoomStatus valueOf(int id) {
-        return EzyEnums.valueOf(values(), id);
+        return STATUS_BY_ID.get(Integer.valueOf(id));
     }
-
 }

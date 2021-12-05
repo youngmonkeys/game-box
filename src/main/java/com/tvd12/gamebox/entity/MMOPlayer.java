@@ -1,15 +1,16 @@
 package com.tvd12.gamebox.entity;
 
-import com.tvd12.gamebox.math.Vec3;
-import com.tvd12.gamebox.util.ReadOnlySet;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.tvd12.gamebox.math.Vec3;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @SuppressWarnings("AbbreviationAsWordInName")
@@ -17,6 +18,7 @@ public class MMOPlayer extends Player {
 
     protected Vec3 position = new Vec3();
     protected Vec3 rotation = new Vec3();
+    @Getter(AccessLevel.NONE)
     protected AtomicBoolean stateChanged = new AtomicBoolean(false);
     @Setter
     protected int clientTimeTick;
@@ -75,8 +77,8 @@ public class MMOPlayer extends Player {
         buffer.addAll(nearbyPlayers.keySet());
     }
 
-    public ReadOnlySet<String> getNearbyPlayerNames() {
-        return new ReadOnlySet<>(nearbyPlayers.keySet());
+    public List<String> getNearbyPlayerNames() {
+        return new ArrayList<String>(nearbyPlayers.keySet());
     }
 
     protected MMOPlayer(Builder builder) {

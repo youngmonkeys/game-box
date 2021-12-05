@@ -1,19 +1,17 @@
 package com.tvd12.gamebox.entity;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezyfox.util.EzyEquals;
-import com.tvd12.ezyfox.util.EzyHashCodes;
 import com.tvd12.gamebox.constant.IRoomStatus;
 import com.tvd12.gamebox.constant.RoomStatus;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
 public class Room {
 
-    protected static final String NAME_PREFIX = "Room#";
     protected final long id;
     protected final String name;
 
@@ -21,6 +19,8 @@ public class Room {
     protected String password;
     @Setter
     protected IRoomStatus status = RoomStatus.WAITING;
+    
+    protected static final String NAME_PREFIX = "Room#";
 
     protected Room(Builder<?> builder) {
         this.id = builder.id;
@@ -29,16 +29,18 @@ public class Room {
 
     @Override
     public boolean equals(Object obj) {
-        return new EzyEquals<Room>()
-                .function(t -> t.id)
-                .isEquals(this, obj);
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return id == ((Room) obj).id;
     }
 
     @Override
     public int hashCode() {
-        return new EzyHashCodes()
-                .append(id)
-                .toHashCode();
+        return Long.hashCode(id);
     }
 
     public static Builder<?> builder() {

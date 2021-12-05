@@ -1,8 +1,6 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezyfox.util.EzyEquals;
-import com.tvd12.ezyfox.util.EzyHashCodes;
 import com.tvd12.gamebox.constant.IPlayerRole;
 import com.tvd12.gamebox.constant.IPlayerStatus;
 import com.tvd12.gamebox.constant.PlayerRole;
@@ -32,16 +30,18 @@ public class Player {
 
     @Override
     public boolean equals(Object obj) {
-        return new EzyEquals<Player>()
-                .function(t -> t.name)
-                .isEquals(this, obj);
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return name.equals(((Player) obj).name);
     }
 
     @Override
     public int hashCode() {
-        return new EzyHashCodes()
-                .append(name)
-                .toHashCode();
+        return name.hashCode();
     }
 
     @Override

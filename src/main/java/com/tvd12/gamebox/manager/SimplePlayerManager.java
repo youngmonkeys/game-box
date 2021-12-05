@@ -2,7 +2,6 @@ package com.tvd12.gamebox.manager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 import com.tvd12.gamebox.entity.Player;
 
@@ -18,11 +17,6 @@ public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager
 
     protected SimplePlayerManager(Builder<?, ?> builder) {
         super(builder);
-    }
-
-    @Override
-    protected Map<String, Lock> newLockMap() {
-        return new HashMap<>();
     }
 
     @Override

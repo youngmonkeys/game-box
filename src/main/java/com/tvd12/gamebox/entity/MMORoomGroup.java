@@ -1,11 +1,13 @@
 package com.tvd12.gamebox.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.gamebox.manager.SynchronizedRoomManager;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("AbbreviationAsWordInName")
 class MMORoomGroup extends EzyLoggable {
@@ -29,10 +31,11 @@ class MMORoomGroup extends EzyLoggable {
 
     private void loop() {
         this.active = true;
+        List<MMORoom> roomBuffer = new ArrayList<>();
         while (active) {
             try {
                 long start = System.currentTimeMillis();
-                this.updateRooms();
+                this.updateRooms(roomBuffer);
                 long end = System.currentTimeMillis();
                 long timeElapsed = end - start;
                 if (timeElapsed < timeTickMillis) {
@@ -44,8 +47,10 @@ class MMORoomGroup extends EzyLoggable {
         }
     }
 
-    private void updateRooms() {
-        this.roomManager.getRoomList().forEach(room -> {
+    private void updateRooms(List<MMORoom> roomBuffer) {
+        roomBuffer.clear();
+        roomManager.getRoomList(roomBuffer);
+        roomBuffer.forEach(room -> {
             try {
                 room.update();
             } catch (Exception e) {

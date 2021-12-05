@@ -1,32 +1,37 @@
 package com.tvd12.gamebox.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
-import com.tvd12.gamebox.util.ReadOnlyCollection;
-import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("AbbreviationAsWordInName")
 public class MMORoom extends NormalRoom {
 
-    protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
+    @Getter
+    @Setter
+    protected MMOPlayer master;
+    
     @Getter
     protected final double distanceOfInterest;
-    @Getter
-    protected MMOPlayer master;
-    @Getter
-    protected int maxPlayer;
-
+    
+    protected final List<MMOPlayer> playerBuffer;
+    
+    protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
+    
     public MMORoom(Builder builder) {
         super(builder);
+        this.playerBuffer = new ArrayList<>();
         this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
         this.distanceOfInterest = builder.distanceOfInterest;
-        this.maxPlayer = builder.maxPlayer;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void addPlayer(Player player) {
         if (!(player instanceof MMOPlayer)) {
@@ -53,21 +58,28 @@ public class MMORoom extends NormalRoom {
 
         synchronized (this) {
             super.removePlayer(player);
-            if (master == player && !playerManager.isEmpty()) {
-                master = (MMOPlayer) playerManager.getPlayerCollection().getFirst();
+            if (master == player) {
+                master = (playerManager.isEmpty())
+                    ? null
+                    : (MMOPlayer) playerManager.getFirstPlayer();
             }
         }
     }
-
+    
     public boolean isEmpty() {
         return this.getPlayerManager().isEmpty();
     }
+    
+    public int getMaxPlayer() {
+        return this.getPlayerManager().getMaxPlayer();
+    }
 
+    @SuppressWarnings("unchecked")
     public void update() {
-        ReadOnlyCollection<MMOPlayer> playerCollection = playerManager.getPlayerCollection();
-        playerCollection.forEach(player -> {
+        List<MMOPlayer> playerList = playerManager.getPlayerList();
+        playerList.forEach(player -> {
             player.clearNearByPlayers();
-            playerCollection.forEach(other -> {
+            playerList.forEach(other -> {
                 double distance = player.getPosition().distance(other.getPosition());
                 if (distance <= this.distanceOfInterest) {
                     player.addNearbyPlayer(other);
@@ -80,9 +92,12 @@ public class MMORoom extends NormalRoom {
         notifyUpdatedHandlers();
     }
 
+    @SuppressWarnings("unchecked")
     private void notifyUpdatedHandlers() {
+        playerBuffer.clear();
+        playerManager.getPlayerList(playerBuffer);
         for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
-            handler.onRoomUpdated(this);
+            handler.onRoomUpdated(this, playerBuffer);
         }
     }
 
@@ -91,12 +106,10 @@ public class MMORoom extends NormalRoom {
     }
 
     public static class Builder extends NormalRoom.Builder<Builder> {
-        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
-        protected double distanceOfInterest;
+        
         protected int maxPlayer = 999;
-
-        public Builder() {
-        }
+        protected double distanceOfInterest;
+        protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();
 
         public Builder addRoomUpdatedHandler(MMORoomUpdatedHandler handler) {
             this.roomUpdatedHandlers.add(handler);
@@ -119,6 +132,7 @@ public class MMORoom extends NormalRoom {
             return this;
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
         public Builder playerManager(PlayerManager playerManager) {
             if (playerManager instanceof SynchronizedPlayerManager) {

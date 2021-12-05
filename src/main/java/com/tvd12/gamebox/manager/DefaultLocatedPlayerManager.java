@@ -1,14 +1,8 @@
 package com.tvd12.gamebox.manager;
 
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.gamebox.entity.LocatedPlayer;
-import com.tvd12.gamebox.exception.LocationNotAvailableException;
-import com.tvd12.gamebox.util.ReadOnlyCollection;
-import com.tvd12.gamebox.util.ReadOnlySet;
-import lombok.Getter;
-import lombok.Setter;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -16,6 +10,14 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.gamebox.entity.LocatedPlayer;
+import com.tvd12.gamebox.exception.LocationNotAvailableException;
+import com.tvd12.gamebox.exception.PlayerExistsException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class DefaultLocatedPlayerManager
         extends EzyLoggable
@@ -38,33 +40,53 @@ public class DefaultLocatedPlayerManager
     }
 
     @Override
-    public ReadOnlyCollection<LocatedPlayer> getPlayerCollection() {
-        return new ReadOnlyCollection<>(playersByLocation.values());
-    }
-
-    @Override
     public void addPlayer(LocatedPlayer player, int location) {
         LocatedPlayer current = playersByLocation.get(location);
         if (current != null) {
             throw new LocationNotAvailableException(
                     "location: " + location + " has owned by: " + current.getName());
         }
+        if (playersByName.containsKey(player.getName())) {
+            throw new PlayerExistsException(player.getName());
+        }
+        player.setLocation(location);
         playersByLocation.put(location, player);
         playersByName.put(player.getName(), player);
     }
 
     @Override
-    public void removePlayer(int location) {
+    public LocatedPlayer removePlayer(int location) {
         LocatedPlayer removed = playersByLocation.remove(location);
         if (removed != null) {
             playersByName.remove(removed.getName());
         }
+        return removed;
     }
 
     @Override
     public LocatedPlayer setNewMaster() {
         master = nextOf(master);
         return master;
+    }
+    
+    @Override
+    public List<String> getPlayerNames() {
+        return new ArrayList<>(playersByName.keySet());
+    }
+
+    @Override
+    public int getPlayerCount() {
+        return playersByLocation.size();
+    }
+
+    @Override
+    public boolean containsPlayer(String username) {
+        return playersByName.containsKey(username);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return playersByLocation.isEmpty();
     }
 
     @Override
@@ -83,84 +105,7 @@ public class DefaultLocatedPlayerManager
 
         return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
     }
-
-    @Override
-    public LocatedPlayer rightOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
-        return findCircle(
-                player.getLocation(),
-                condition,
-                playersByLocation::higherEntry,
-                playersByLocation::firstEntry
-        );
-    }
-
-    @Override
-    public LocatedPlayer leftOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
-        return findCircle(
-                player.getLocation(),
-                condition,
-                playersByLocation::lowerEntry,
-                playersByLocation::lastEntry
-        );
-    }
-
-    @Override
-    public ReadOnlySet<String> getPlayerNames() {
-        return new ReadOnlySet<>(playersByName.keySet());
-    }
-
-    @Override
-    public int getPlayerCount() {
-        return playersByLocation.size();
-    }
-
-    @Override
-    public boolean containsPlayer(String username) {
-        return playersByName.containsKey(username);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return playersByLocation.isEmpty();
-    }
-
-    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
-        return new HashMap<>();
-    }
-
-    protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
-        return new TreeMap<>();
-    }
-
-    @Override
-    public String toString() {
-        return new StringBuilder()
-                .append("(")
-                .append("master: ").append(master).append(", ")
-                .append("speakinger: ").append(speakinger).append(", ")
-                .append("playersByLocation: ").append(playersByLocation)
-                .append(")")
-                .toString();
-    }
-
-    /**
-     * Determine whether `leftPlayer` or `rightPlayer` is closer to `location`.
-     *
-     * @return closer player
-     */
-    private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
-        if (left == null && right == null) {
-            return null;
-        }
-        if (left == null) {
-            return right;
-        }
-        if (right == null) {
-            return left;
-        }
-        return (location - left.getLocation()) < (right.getLocation() - location) ? left : right;
-    }
-
+    
     /**
      * Find the first player that is null or satisfies condition. Use function to determine the jump
      * direction
@@ -184,6 +129,46 @@ public class DefaultLocatedPlayerManager
         }
         return next != null ? next.getValue() : null;
     }
+    
+    /**
+     * Determine whether `leftPlayer` or `rightPlayer` is closer to `location`.
+     *
+     * @return closer player
+     */
+    private LocatedPlayer getCloserPlayer(LocatedPlayer left, LocatedPlayer right, int location) {
+        if (left == null && right == null) {
+            return null;
+        }
+        if (left == null) {
+            return right;
+        }
+        if (right == null) {
+            return left;
+        }
+        return (location - left.getLocation()) < (right.getLocation() - location) ? left : right;
+    }
+
+
+    @Override
+    public LocatedPlayer rightOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
+        return findCircle(
+                player.getLocation(),
+                condition,
+                playersByLocation::higherEntry,
+                playersByLocation::firstEntry
+        );
+    }
+
+    @Override
+    public LocatedPlayer leftOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
+        return findCircle(
+                player.getLocation(),
+                condition,
+                playersByLocation::lowerEntry,
+                playersByLocation::lastEntry
+        );
+    }
+    
 
     /**
      * Find the first player that satisfies condition (in circle, not in current position) Use
@@ -222,5 +207,24 @@ public class DefaultLocatedPlayerManager
             nextLocation = next.getKey();
         }
         return next.getValue();
+    }
+    
+    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
+        return new HashMap<>();
+    }
+
+    protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
+        return new TreeMap<>();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("(")
+                .append("master: ").append(master).append(", ")
+                .append("speakinger: ").append(speakinger).append(", ")
+                .append("playersByLocation: ").append(playersByLocation)
+                .append(")")
+                .toString();
     }
 }

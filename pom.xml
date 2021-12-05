@@ -5,18 +5,17 @@
 	<parent>
 		<groupId>com.tvd12</groupId>
 		<artifactId>ezyfox-server</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</parent>
 
 	<artifactId>game-box</artifactId>
-	<version>1.1.1</version>
-	<packaging>jar</packaging>
+	<version>1.1.2</version>
 
 	<name>game-box</name>
 	<url>https://youngmonkeys.org/</url>
 
 	<properties>
-		<ezy.server.version>1.2.0</ezy.server.version>
+		<ezy.server.version>1.2.1</ezy.server.version>
 	</properties>
 
 	<dependencies>
@@ -49,7 +48,7 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<consoleOutput>true</consoleOutput>
-					<violationSeverity>error</violationSeverity>
+					<violationSeverity>warn</violationSeverity>
 					<configLocation>checkstyle.xml</configLocation>
 				</configuration>
 				<executions>

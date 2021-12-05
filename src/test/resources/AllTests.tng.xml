@@ -3,8 +3,12 @@
 <suite name="AllTests">
 	<test name="All">
 		<packages>
-			<package name="com.tvd12.gamebox.testing"></package>
 			<package name="com.tvd12.gamebox.entity"></package>
+			<package name="com.tvd12.gamebox.testing"></package>
+			<package name="com.tvd12.gamebox.testing.constant"></package>
+			<package name="com.tvd12.gamebox.testing.exception"></package>
+			<package name="com.tvd12.gamebox.testing.manager"></package>
+			<package name="com.tvd12.gamebox.testing.math"></package>
 		</packages>
 	</test>
 </suite>
