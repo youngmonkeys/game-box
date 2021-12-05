@@ -19,6 +19,7 @@ public class NormalRoom extends Room {
     }
 
     public void addPlayer(Player player) {
+        player.setCurrentRoomId(id);
         playerManager.addPlayer(player);
     }
 
