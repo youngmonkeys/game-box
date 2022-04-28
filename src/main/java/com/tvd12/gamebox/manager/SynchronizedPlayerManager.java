@@ -1,14 +1,13 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Player;
+import lombok.Getter;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import com.tvd12.gamebox.entity.Player;
-
-import lombok.Getter;
 
 public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerManager<P> {
 
@@ -27,6 +26,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
         super(builder);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static Builder builder() {
+        return new Builder<>();
+    }
+
     @Override
     public P getPlayer(String username) {
         synchronized (synchronizedLock) {
@@ -40,14 +44,14 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             return super.getPlayer(username, playerSupplier);
         }
     }
-    
+
     @Override
     public P getFirstPlayer() {
         synchronized (synchronizedLock) {
             return super.getFirstPlayer();
         }
     }
-    
+
     @Override
     public List<P> getPlayerList() {
         synchronized (synchronizedLock) {
@@ -89,11 +93,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             super.addPlayer(player, failIfAdded);
         }
         logger.info(
-                "{} add player: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                player,
-                locks.size(),
-                playersByName.size()
+            "{} add player: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            player,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -103,11 +107,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             super.addPlayers(players, failIfAdded);
         }
         logger.info(
-                "{} add players: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                players,
-                locks.size(),
-                playersByName.size()
+            "{} add players: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            players,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -117,11 +121,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             super.removePlayer(player);
         }
         logger.info(
-                "{} remove player: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                player,
-                locks.size(),
-                playersByName.size()
+            "{} remove player: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            player,
+            locks.size(),
+            playersByName.size()
         );
         return player;
     }
@@ -132,11 +136,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             super.removePlayers(players);
         }
         logger.info(
-                "{} remove players: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                players,
-                locks.size(),
-                playersByName.size()
+            "{} remove players: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            players,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -167,11 +171,11 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             super.removeLock(username);
         }
     }
-    
+
     @Override
     public int countPlayers(Predicate<P> tester) {
         synchronized (synchronizedLock) {
-            return super.countPlayers(tester);   
+            return super.countPlayers(tester);
         }
     }
 
@@ -189,13 +193,8 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public static Builder builder() {
-        return new Builder<>();
-    }
-
     public static class Builder<U extends Player, B extends Builder<U, B>>
-            extends AbstractPlayerManager.Builder<U, B> {
+        extends AbstractPlayerManager.Builder<U, B> {
 
         @Override
         protected PlayerManager<U> newProduct() {

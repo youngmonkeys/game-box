@@ -1,30 +1,31 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.gamebox.constant.IRoomStatus;
 import com.tvd12.gamebox.constant.RoomStatus;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 @Getter
 public class Room {
 
+    protected static final String NAME_PREFIX = "Room#";
     protected final long id;
     protected final String name;
-
     @Setter
     protected String password;
     @Setter
     protected IRoomStatus status = RoomStatus.WAITING;
-    
-    protected static final String NAME_PREFIX = "Room#";
 
     protected Room(Builder<?> builder) {
         this.id = builder.id;
         this.name = builder.name;
+    }
+
+    public static Builder<?> builder() {
+        return new Builder<>();
     }
 
     @Override
@@ -43,27 +44,22 @@ public class Room {
         return Long.hashCode(id);
     }
 
-    public static Builder<?> builder() {
-        return new Builder<>();
-    }
-
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("(")
-                .append("name = ").append(name)
-                .append(", id = ").append(id)
-                .append(")")
-                .toString();
+            .append("(")
+            .append("name = ").append(name)
+            .append(", id = ").append(id)
+            .append(")")
+            .toString();
     }
 
     @SuppressWarnings("unchecked")
     public static class Builder<B extends Builder<B>> implements EzyBuilder<Room> {
 
+        protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
         protected Long id;
         protected String name;
-
-        protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
 
         public B id(long id) {
             this.id = id;

@@ -1,8 +1,7 @@
 package com.tvd12.gamebox.entity;
 
-import org.testng.annotations.Test;
-
 import com.tvd12.test.assertion.Asserts;
+import org.testng.annotations.Test;
 
 public class NormalRoomTest {
 
@@ -12,7 +11,7 @@ public class NormalRoomTest {
         NormalRoom sut = NormalRoom.builder()
             .defaultPlayerManager(100)
             .build();
-        
+
         // when
         // then
         Asserts.assertEquals(sut.getPlayerManager().getMaxPlayer(), 100);

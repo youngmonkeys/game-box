@@ -1,24 +1,19 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.Room;
 import com.tvd12.gamebox.exception.MaxRoomException;
 import com.tvd12.gamebox.exception.RoomExistsException;
-
 import lombok.Getter;
 
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 public abstract class AbstractRoomManager<R extends Room>
-        extends EzyLoggable
-        implements RoomManager<R> {
+    extends EzyLoggable
+    implements RoomManager<R> {
 
     @Getter
     protected final int maxRoom;
@@ -41,11 +36,11 @@ public abstract class AbstractRoomManager<R extends Room>
     public void addRoom(R room, boolean failIfAdded) {
         addRoom0(room, failIfAdded);
         logger.info(
-                "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                room,
-                roomsByName.size(),
-                roomsById.size()
+            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            room,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -75,11 +70,11 @@ public abstract class AbstractRoomManager<R extends Room>
     public void addRooms(Iterable<R> rooms, boolean failIfAdded) {
         addRooms0(rooms, failIfAdded);
         logger.info(
-                "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                rooms,
-                roomsByName.size(),
-                roomsById.size()
+            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            rooms,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -141,7 +136,7 @@ public abstract class AbstractRoomManager<R extends Room>
     public List<R> getRoomList() {
         return new ArrayList<R>(roomsByName.values());
     }
-    
+
     @Override
     public List<R> getRoomList(Predicate<R> predicate) {
         return roomsByName
@@ -166,11 +161,11 @@ public abstract class AbstractRoomManager<R extends Room>
     public void removeRoom(R room) {
         removeRoom0(room);
         logger.info(
-                "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                room,
-                roomsByName.size(),
-                roomsById.size()
+            "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            room,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -188,11 +183,11 @@ public abstract class AbstractRoomManager<R extends Room>
     public void removeRooms(Iterable<R> rooms) {
         removeRooms0(rooms);
         logger.info(
-                "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                rooms,
-                roomsByName.size(),
-                roomsById.size()
+            "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            rooms,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -218,7 +213,7 @@ public abstract class AbstractRoomManager<R extends Room>
         boolean answer = roomsById.size() < maxRoom;
         return answer;
     }
-    
+
     public void clear() {
         roomsById.clear();
         roomsByName.clear();
@@ -238,7 +233,7 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @SuppressWarnings("unchecked")
     public abstract static class Builder<R extends Room, B extends Builder<R, B>>
-            implements EzyBuilder<RoomManager<R>> {
+        implements EzyBuilder<RoomManager<R>> {
 
         protected int maxRoom = 10000;
 

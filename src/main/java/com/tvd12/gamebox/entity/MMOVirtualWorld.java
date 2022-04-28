@@ -1,10 +1,10 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.Arrays;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.exception.MaxRoomException;
+
+import java.util.Arrays;
 
 @SuppressWarnings("AbbreviationAsWordInName")
 public class MMOVirtualWorld extends EzyLoggable {
@@ -21,12 +21,16 @@ public class MMOVirtualWorld extends EzyLoggable {
         this.roomGroups = this.createRoomGroups();
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     private MMORoomGroup[] createRoomGroups() {
         MMORoomGroup[] groups = new MMORoomGroup[this.roomGroupCount];
         for (int i = 0; i < roomGroupCount; i++) {
             groups[i] = MMORoomGroup.builder()
-                    .timeTickMillis(timeTickMillis)
-                    .build();
+                .timeTickMillis(timeTickMillis)
+                .build();
         }
         return groups;
     }
@@ -57,12 +61,8 @@ public class MMOVirtualWorld extends EzyLoggable {
 
     public int getRoomCount() {
         return Arrays.stream(roomGroups)
-                .map(MMORoomGroup::getRoomCount)
-                .reduce(0, Integer::sum);
-    }
-
-    public static Builder builder() {
-        return new Builder();
+            .map(MMORoomGroup::getRoomCount)
+            .reduce(0, Integer::sum);
     }
 
     public static class Builder implements EzyBuilder<MMOVirtualWorld> {

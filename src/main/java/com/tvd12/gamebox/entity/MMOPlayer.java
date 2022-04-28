@@ -1,21 +1,22 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.gamebox.math.Vec3;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.tvd12.gamebox.math.Vec3;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
 @Getter
 @SuppressWarnings("AbbreviationAsWordInName")
 public class MMOPlayer extends Player {
 
+    @Getter(AccessLevel.NONE)
+    protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
     protected Vec3 position = new Vec3();
     protected Vec3 rotation = new Vec3();
     @Getter(AccessLevel.NONE)
@@ -23,11 +24,16 @@ public class MMOPlayer extends Player {
     @Setter
     protected int clientTimeTick;
 
-    @Getter(AccessLevel.NONE)
-    protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
-
     public MMOPlayer(String name) {
         super(name);
+    }
+
+    protected MMOPlayer(Builder builder) {
+        super(builder);
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     void addNearbyPlayer(MMOPlayer otherPlayer) {
@@ -60,12 +66,12 @@ public class MMOPlayer extends Player {
         this.stateChanged.set(true);
     }
 
-    public void setStateChanged(boolean changed) {
-        this.stateChanged.set(changed);
-    }
-
     public boolean isStateChanged() {
         return this.stateChanged.get();
+    }
+
+    public void setStateChanged(boolean changed) {
+        this.stateChanged.set(changed);
     }
 
     /**
@@ -79,14 +85,6 @@ public class MMOPlayer extends Player {
 
     public List<String> getNearbyPlayerNames() {
         return new ArrayList<String>(nearbyPlayers.keySet());
-    }
-
-    protected MMOPlayer(Builder builder) {
-        super(builder);
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static class Builder extends Player.Builder<Builder> {

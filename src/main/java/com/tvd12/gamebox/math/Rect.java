@@ -8,7 +8,8 @@ public class Rect {
     public float width;
     public float height;
 
-    public Rect() {}
+    public Rect() {
+    }
 
     public Rect(Rect r) {
         this.x = r.x;
@@ -55,30 +56,30 @@ public class Rect {
         return y;
     }
 
-    public  boolean containsPoint(Vec2 point) {
+    public boolean containsPoint(Vec2 point) {
         return (point.x >= getMinX()
-                && point.x <= getMaxX()
-                && point.y >= getMinY()
-                && point.y <= getMaxY());
+            && point.x <= getMaxX()
+            && point.y >= getMinY()
+            && point.y <= getMaxY());
     }
 
     public boolean intersectsRect(Rect rect) {
         return !(getMaxX() < rect.getMinX()
-                 || rect.getMaxX() <      getMinX()
-                 ||      getMaxY() < rect.getMinY()
-                 || rect.getMaxY() <      getMinY());
+            || rect.getMaxX() < getMinX()
+            || getMaxY() < rect.getMinY()
+            || rect.getMaxY() < getMinY());
     }
 
     public boolean intersectsCircle(Vec2 center, float radius) {
         float centerX = x + width / 2;
         float centerY = y + height / 2;
-        
+
         float w = width / 2;
         float h = height / 2;
-        
+
         float dx = Math.abs(center.x - centerX);
         float dy = Math.abs(center.y - centerY);
-        
+
         if (dx > (radius + w) || dy > (radius + h)) {
             return false;
         }
@@ -88,17 +89,17 @@ public class Rect {
         if (circleDistanceX <= w) {
             return true;
         }
-        
+
         if (circleDistanceY <= h) {
             return true;
         }
-        
-        float cornerDistanceSq = (float) (Math.pow(circleDistanceX - w, 2) 
+
+        float cornerDistanceSq = (float) (Math.pow(circleDistanceX - w, 2)
             + Math.pow(circleDistanceY - h, 2));
-        
+
         return cornerDistanceSq <= (float) Math.pow(radius, 2);
     }
-    
+
     public void merge(Rect rect) {
         float minX = Math.min(getMinX(), rect.getMinX());
         float minY = Math.min(getMinY(), rect.getMinY());
@@ -119,7 +120,7 @@ public class Rect {
             thisRightX = thisLeftX;
             thisLeftX = tmp;
         }
-        
+
         // This rect has negative height
         if (thisTopY < thisBottomY) {
             float tmp = thisTopY;
@@ -152,9 +153,9 @@ public class Rect {
         float combinedBottomY = Math.min(thisBottomY, otherBottomY);
 
         return new Rect(
-            combinedLeftX, 
-            combinedBottomY, 
-            combinedRightX - combinedLeftX, 
+            combinedLeftX,
+            combinedBottomY,
+            combinedRightX - combinedLeftX,
             combinedTopY - combinedBottomY
         );
     }

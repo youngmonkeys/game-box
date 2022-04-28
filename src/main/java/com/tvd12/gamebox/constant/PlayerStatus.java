@@ -1,10 +1,9 @@
 package com.tvd12.gamebox.constant;
 
-import java.util.Map;
-
 import com.tvd12.ezyfox.util.EzyEnums;
-
 import lombok.Getter;
+
+import java.util.Map;
 
 public enum PlayerStatus implements IPlayerStatus {
 
@@ -13,22 +12,21 @@ public enum PlayerStatus implements IPlayerStatus {
     PLAYING(2),
     SPEAKING(3);
 
-    @Getter
-    private int id;
-    
     private static final Map<Integer, PlayerStatus> STATUS_BY_ID =
         EzyEnums.enumMapInt(PlayerStatus.class);
+    @Getter
+    private int id;
 
     private PlayerStatus(int id) {
         this.id = id;
     }
 
+    public static PlayerStatus valueOf(int id) {
+        return STATUS_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
+    }
+
     @Override
     public String getName() {
         return toString();
-    }
-    
-    public static PlayerStatus valueOf(int id) {
-        return STATUS_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
     }
 }

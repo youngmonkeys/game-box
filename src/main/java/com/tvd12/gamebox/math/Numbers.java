@@ -18,19 +18,26 @@
 package com.tvd12.gamebox.math;
 
 public final class Numbers {
-    
-    /** Offset to order signed double numbers lexicographically. */
+
+    /**
+     * Offset to order signed double numbers lexicographically.
+     */
     private static final int SGN_MASK_FLOAT = 0x80000000;
-    /** Positive zero bits. */
+    /**
+     * Positive zero bits.
+     */
     private static final int POSITIVE_ZERO_FLOAT_BITS = Float.floatToRawIntBits(+0.0f);
-    /** Negative zero bits. */
+    /**
+     * Negative zero bits.
+     */
     private static final int NEGATIVE_ZERO_FLOAT_BITS = Float.floatToRawIntBits(-0.0f);
 
-    private Numbers() {}
-    
+    private Numbers() {
+    }
+
     /**
      * Returns true if they are equal as defined by
-     * {@link #equals(float,float,int) equals(x, y, 1)}.
+     * {@link #equals(float, float, int) equals(x, y, 1)}.
      *
      * @param x first value
      * @param y second value
@@ -39,7 +46,7 @@ public final class Numbers {
     public static boolean equals(float x, float y) {
         return x == y || equals(x, y, 1);
     }
-    
+
     /**
      * Returns true if the arguments are equal or within the range of allowed
      * error (inclusive). Returns {@code false} if either of the arguments is NaN.
@@ -54,12 +61,12 @@ public final class Numbers {
      * Bruce Dawson</a>.
      * </p>
      *
-     * @param x first value
-     * @param y second value
+     * @param x       first value
+     * @param y       second value
      * @param maxUlps {@code (maxUlps - 1)} is the number of floating point
-     *     values between {@code x} and {@code y}.
+     *                values between {@code x} and {@code y}.
      * @return {@code true} if there are fewer than {@code maxUlps} floating
-     *     point values between {@code x} and {@code y}.
+     * point values between {@code x} and {@code y}.
      */
     public static boolean equals(final float x, final float y, final int maxUlps) {
         if (Float.isNaN(x) || Float.isNaN(y)) {
@@ -77,10 +84,10 @@ public final class Numbers {
             final int deltaPlus;
             final int deltaMinus;
             if (xInt < yInt) {
-                deltaPlus  = yInt - POSITIVE_ZERO_FLOAT_BITS;
+                deltaPlus = yInt - POSITIVE_ZERO_FLOAT_BITS;
                 deltaMinus = xInt - NEGATIVE_ZERO_FLOAT_BITS;
             } else {
-                deltaPlus  = xInt - POSITIVE_ZERO_FLOAT_BITS;
+                deltaPlus = xInt - POSITIVE_ZERO_FLOAT_BITS;
                 deltaMinus = yInt - NEGATIVE_ZERO_FLOAT_BITS;
             }
 

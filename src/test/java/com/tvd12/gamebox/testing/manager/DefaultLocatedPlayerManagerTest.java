@@ -1,14 +1,13 @@
 package com.tvd12.gamebox.testing.manager;
 
-import java.util.Arrays;
-
-import org.testng.annotations.Test;
-
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
 import com.tvd12.test.assertion.Asserts;
+import org.testng.annotations.Test;
+
+import java.util.Arrays;
 
 public class DefaultLocatedPlayerManagerTest {
 
@@ -16,22 +15,22 @@ public class DefaultLocatedPlayerManagerTest {
     public void test() {
         // given
         DefaultLocatedPlayerManager sut = new DefaultLocatedPlayerManager();
-        
+
         LocatedPlayer master = LocatedPlayer.builder()
             .name("master")
             .build();
-        
+
         LocatedPlayer user = LocatedPlayer.builder()
             .name("user")
             .build();
-        
+
         // when
         sut.addPlayer(master, 0);
         sut.addPlayer(user, 1);
-        
+
         sut.setMaster(master);
         sut.setSpeakinger(user);
-        
+
         // then
         Asserts.assertEquals(sut.getMaster(), master);
         Asserts.assertEquals(sut.getPlayer(0), master);
@@ -45,51 +44,51 @@ public class DefaultLocatedPlayerManagerTest {
         sut.removePlayer(0);
         sut.removePlayer(1);
     }
-    
+
     @Test
     public void addPlayerFailedDueToLocationTest() {
-     // given
+        // given
         DefaultLocatedPlayerManager sut = new DefaultLocatedPlayerManager();
-        
+
         LocatedPlayer player1 = LocatedPlayer.builder()
             .name("player1")
             .build();
         LocatedPlayer player2 = LocatedPlayer.builder()
             .name("player2")
             .build();
-        
+
         sut.addPlayer(player1, 0);
-        
+
         // when
         Throwable e = Asserts.assertThrows(() -> sut.addPlayer(player2, 0));
-        
+
         // then
         Asserts.assertEqualsType(e, LocationNotAvailableException.class);
     }
-    
+
     @Test
     public void addPlayerFailedDueToPlayerTest() {
         // given
-           DefaultLocatedPlayerManager sut = new DefaultLocatedPlayerManager();
-           
-           LocatedPlayer player1 = LocatedPlayer.builder()
-               .name("player1")
-               .build();
-           
-           sut.addPlayer(player1, 0);
-           
-           // when
-           Throwable e = Asserts.assertThrows(() -> sut.addPlayer(player1, 1));
-           
-           // then
-           Asserts.assertEqualsType(e, PlayerExistsException.class);
-       }
-    
+        DefaultLocatedPlayerManager sut = new DefaultLocatedPlayerManager();
+
+        LocatedPlayer player1 = LocatedPlayer.builder()
+            .name("player1")
+            .build();
+
+        sut.addPlayer(player1, 0);
+
+        // when
+        Throwable e = Asserts.assertThrows(() -> sut.addPlayer(player1, 1));
+
+        // then
+        Asserts.assertEqualsType(e, PlayerExistsException.class);
+    }
+
     @Test
     public void nextOfTest() {
         // given
         DefaultLocatedPlayerManager sut = new DefaultLocatedPlayerManager();
-        
+
         LocatedPlayer player1 = LocatedPlayer.builder()
             .name("player1")
             .build();
@@ -99,18 +98,18 @@ public class DefaultLocatedPlayerManagerTest {
         LocatedPlayer player3 = LocatedPlayer.builder()
             .name("player3")
             .build();
-        
+
         // when
         // then
         Asserts.assertNull(sut.nextOf(player1));
         Asserts.assertNull(sut.leftOf(player1));
         Asserts.assertNull(sut.rightOf(player1));
-        
+
         sut.addPlayer(player1, 0);
         Asserts.assertNull(sut.nextOf(player1));
         Asserts.assertNull(sut.leftOf(player1));
         Asserts.assertNull(sut.rightOf(player1));
-        
+
         sut.addPlayer(player2, 2);
         sut.addPlayer(player3, 10);
         Asserts.assertEquals(sut.nextOf(player2), player1);

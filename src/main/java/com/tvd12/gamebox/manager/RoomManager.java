@@ -1,9 +1,9 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Room;
+
 import java.util.List;
 import java.util.function.Predicate;
-
-import com.tvd12.gamebox.entity.Room;
 
 public interface RoomManager<R extends Room> {
 
@@ -34,7 +34,7 @@ public interface RoomManager<R extends Room> {
     List<R> getRoomList();
 
     void getRoomList(List<R> buffer);
-    
+
     List<R> getRoomList(Predicate<R> predicate);
 
     int getRoomCount();

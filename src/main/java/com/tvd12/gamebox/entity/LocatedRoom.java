@@ -15,15 +15,19 @@ public class LocatedRoom extends Room {
 
     protected final int maxSlot;
     @Setter(AccessLevel.NONE)
-    protected Queue<Integer> slots;
-    @Setter(AccessLevel.NONE)
     protected final LocatedPlayerManager playerManager;
+    @Setter(AccessLevel.NONE)
+    protected Queue<Integer> slots;
 
     public LocatedRoom(Builder<?> builder) {
         super(builder);
         this.maxSlot = builder.maxSlot;
         this.playerManager = builder.playerManager;
         this.slots = newSlots(builder.maxSlot);
+    }
+
+    public static Builder<?> builder() {
+        return new Builder<>();
     }
 
     public int addPlayer(LocatedPlayer player) {
@@ -40,7 +44,7 @@ public class LocatedRoom extends Room {
             playerManager.removePlayer(player.getLocation());
             slots.add(player.getLocation());
         }
-        
+
     }
 
     protected Queue<Integer> newSlots(int maxSlots) {
@@ -49,10 +53,6 @@ public class LocatedRoom extends Room {
             slots.add(i);
         }
         return slots;
-    }
-
-    public static Builder<?> builder() {
-        return new Builder<>();
     }
 
     @SuppressWarnings("unchecked")

@@ -18,6 +18,10 @@ public class NormalRoom extends Room {
         this.playerManager = builder.playerManager;
     }
 
+    public static Builder builder() {
+        return new Builder<>();
+    }
+
     public void addPlayer(Player player) {
         player.setCurrentRoomId(id);
         playerManager.addPlayer(player);
@@ -29,10 +33,6 @@ public class NormalRoom extends Room {
 
     public <T extends PlayerManager> T getPlayerManager() {
         return (T) playerManager;
-    }
-
-    public static Builder builder() {
-        return new Builder<>();
     }
 
     public static class Builder<B extends Builder<B>> extends Room.Builder<B> {

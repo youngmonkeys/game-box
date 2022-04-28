@@ -2,16 +2,11 @@ package com.tvd12.gamebox.math;
 
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyEntityArrays;
-
 import lombok.Getter;
 
 @Getter
 @SuppressWarnings("MemberName")
 public class Vec3 {
-    public float x;
-    public float y;
-    public float z;
-
     public static final Vec3 ZERO = new Vec3();
     public static final Vec3 up = new Vec3(0.0f, 1f, 0.0f);
     public static final Vec3 down = new Vec3(0.0f, -1f, 0.0f);
@@ -19,6 +14,9 @@ public class Vec3 {
     public static final Vec3 right = new Vec3(1f, 0.0f, 0.0f);
     public static final Vec3 forward = new Vec3(0.0f, 0.0f, 1f);
     public static final Vec3 backward = new Vec3(0.0f, 0.0f, -1f);
+    public float x;
+    public float y;
+    public float z;
 
     public Vec3() {
         this(0.0f, 0.0f, 0.0f);
@@ -85,7 +83,7 @@ public class Vec3 {
         y *= value;
         z *= value;
     }
-    
+
     public double distance(Vec3 v) {
         double dx = v.x - x;
         double dy = v.y - y;
@@ -96,34 +94,34 @@ public class Vec3 {
     public double length() {
         return Math.sqrt(x * x + y * y + z * z);
     }
-    
+
     public float distanceSquare(Vec3 v) {
         float dx = x - v.x;
         float dy = y - v.y;
         float dz = z - v.z;
         return dx * dx + dy * dy + dz * dz;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         Vec3 other = (Vec3) obj;
-        return Numbers.equals(x, other.x) 
+        return Numbers.equals(x, other.x)
             && Numbers.equals(y, other.y)
             && Numbers.equals(z, other.z);
     }
-    
+
     @Override
     public int hashCode() {
         int hashCode = 31 + Float.hashCode(x);
-        hashCode += 31 * hashCode  + Float.hashCode(y);
-        hashCode += 31 * hashCode  + Float.hashCode(z);
+        hashCode += 31 * hashCode + Float.hashCode(y);
+        hashCode += 31 * hashCode + Float.hashCode(z);
         return hashCode;
     }
-    
+
     public float[] toFloatArray() {
-        return new float[] { x, y, z };
+        return new float[]{x, y, z};
     }
-    
+
     public EzyArray toArray() {
         return EzyEntityArrays.newArray(x, y, z);
     }
@@ -131,11 +129,11 @@ public class Vec3 {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("(")
-                .append(x).append(", ")
-                .append(y).append(", ")
-                .append(z)
-                .append(")")
-                .toString();
+            .append("(")
+            .append(x).append(", ")
+            .append(y).append(", ")
+            .append(z)
+            .append(")")
+            .toString();
     }
 }
