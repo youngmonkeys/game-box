@@ -1,9 +1,9 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Player;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tvd12.gamebox.entity.Player;
 
 public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager<P> {
 
@@ -19,17 +19,17 @@ public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager
         super(builder);
     }
 
+    public static Builder<?, ?> builder() {
+        return new Builder<>();
+    }
+
     @Override
     protected Map<String, P> newPlayersByNameMap() {
         return new HashMap<>();
     }
 
-    public static Builder<?, ?> builder() {
-        return new Builder<>();
-    }
-
     public static class Builder<U extends Player, B extends Builder<U, B>>
-            extends AbstractPlayerManager.Builder<U, B> {
+        extends AbstractPlayerManager.Builder<U, B> {
 
         @Override
         protected PlayerManager<U> newProduct() {

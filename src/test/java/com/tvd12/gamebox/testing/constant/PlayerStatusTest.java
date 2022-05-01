@@ -1,9 +1,8 @@
 package com.tvd12.gamebox.testing.constant;
 
-import org.testng.annotations.Test;
-
 import com.tvd12.gamebox.constant.PlayerStatus;
 import com.tvd12.test.assertion.Asserts;
+import org.testng.annotations.Test;
 
 public class PlayerStatusTest {
 

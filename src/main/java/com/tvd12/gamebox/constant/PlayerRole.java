@@ -1,10 +1,9 @@
 package com.tvd12.gamebox.constant;
 
-import java.util.Map;
-
 import com.tvd12.ezyfox.util.EzyEnums;
-
 import lombok.Getter;
+
+import java.util.Map;
 
 public enum PlayerRole implements IPlayerRole {
 
@@ -14,22 +13,21 @@ public enum PlayerRole implements IPlayerRole {
     PLAYER(3),
     NPC(4);
 
+    private static final Map<Integer, PlayerRole> ROLE_BY_ID =
+        EzyEnums.enumMapInt(PlayerRole.class);
     @Getter
     private int id;
-
-    private static final Map<Integer, PlayerRole> ROLE_BY_ID =
-            EzyEnums.enumMapInt(PlayerRole.class);
 
     private PlayerRole(int id) {
         this.id = id;
     }
 
+    public static PlayerRole valueOf(int id) {
+        return ROLE_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
+    }
+
     @Override
     public String getName() {
         return toString();
-    }
-
-    public static PlayerRole valueOf(int id) {
-        return ROLE_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
     }
 }

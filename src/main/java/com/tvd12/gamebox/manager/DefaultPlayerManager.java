@@ -21,7 +21,7 @@ public class DefaultPlayerManager<P extends Player> extends AbstractPlayerManage
     }
 
     public static class Builder<U extends Player, B extends Builder<U, B>>
-            extends AbstractPlayerManager.Builder<U, B> {
+        extends AbstractPlayerManager.Builder<U, B> {
 
         @Override
         protected PlayerManager<U> newProduct() {

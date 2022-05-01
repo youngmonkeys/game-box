@@ -1,22 +1,22 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.List;
-import java.util.function.Predicate;
-
 import com.tvd12.ezyfox.function.EzyPredicates;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 
-public interface LocatedPlayerManager {
+import java.util.List;
+import java.util.function.Predicate;
 
-    void setMaster(LocatedPlayer master);
+public interface LocatedPlayerManager {
 
     LocatedPlayer setNewMaster();
 
     LocatedPlayer getMaster();
 
-    void setSpeakinger(LocatedPlayer speakinger);
+    void setMaster(LocatedPlayer master);
 
     LocatedPlayer getSpeakinger();
+
+    void setSpeakinger(LocatedPlayer speakinger);
 
     LocatedPlayer getPlayer(int location);
 

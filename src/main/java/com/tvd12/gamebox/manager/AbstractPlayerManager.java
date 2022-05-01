@@ -1,16 +1,5 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.function.EzyFunctions;
 import com.tvd12.ezyfox.io.EzyLists;
@@ -19,12 +8,18 @@ import com.tvd12.ezyfox.util.EzyProcessor;
 import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
-
 import lombok.Getter;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 public abstract class AbstractPlayerManager<P extends Player>
-        extends EzyLoggable
-        implements PlayerManager<P> {
+    extends EzyLoggable
+    implements PlayerManager<P> {
 
     @Getter
     protected final int maxPlayer;
@@ -49,12 +44,12 @@ public abstract class AbstractPlayerManager<P extends Player>
     public P getPlayer(String username, Supplier<P> playerSupplier) {
         return playersByName.computeIfAbsent(username, k -> playerSupplier.get());
     }
-    
+
     @Override
     public P getFirstPlayer() {
         return playersByName.isEmpty() ? null : playersByName.values().iterator().next();
     }
-    
+
     @Override
     public List<P> getPlayerList() {
         return new ArrayList<>(playersByName.values());
@@ -88,11 +83,11 @@ public abstract class AbstractPlayerManager<P extends Player>
     public void addPlayer(P player, boolean failIfAdded) {
         addPlayer0(player, failIfAdded);
         logger.info(
-                "{} add player: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                player,
-                locks.size(),
-                playersByName.size()
+            "{} add player: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            player,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -115,11 +110,11 @@ public abstract class AbstractPlayerManager<P extends Player>
     public void addPlayers(Collection<P> players, boolean failIfAdded) {
         addPlayers0(players, failIfAdded);
         logger.info(
-                "{} add players: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                players,
-                locks.size(),
-                playersByName.size()
+            "{} add players: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            players,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -141,11 +136,11 @@ public abstract class AbstractPlayerManager<P extends Player>
     public P removePlayer(P player) {
         removePlayer0(player);
         logger.info(
-                "{} remove player: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                player,
-                locks.size(),
-                playersByName.size()
+            "{} remove player: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            player,
+            locks.size(),
+            playersByName.size()
         );
         return player;
     }
@@ -165,11 +160,11 @@ public abstract class AbstractPlayerManager<P extends Player>
     public void removePlayers(Collection<P> players) {
         removePlayers0(players);
         logger.info(
-                "{} remove players: {}, locks.size = {}, playersByName.size = {}",
-                getMessagePrefix(),
-                players,
-                locks.size(),
-                playersByName.size()
+            "{} remove players: {}, locks.size = {}, playersByName.size = {}",
+            getMessagePrefix(),
+            players,
+            locks.size(),
+            playersByName.size()
         );
     }
 
@@ -243,7 +238,7 @@ public abstract class AbstractPlayerManager<P extends Player>
     }
 
     public abstract static class Builder<U extends Player, B extends Builder<U, B>>
-            implements EzyBuilder<PlayerManager<U>> {
+        implements EzyBuilder<PlayerManager<U>> {
 
         protected int maxPlayer = 999999;
 

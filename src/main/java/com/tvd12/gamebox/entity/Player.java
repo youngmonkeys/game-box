@@ -5,7 +5,6 @@ import com.tvd12.gamebox.constant.IPlayerRole;
 import com.tvd12.gamebox.constant.IPlayerStatus;
 import com.tvd12.gamebox.constant.PlayerRole;
 import com.tvd12.gamebox.constant.PlayerStatus;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +27,10 @@ public class Player {
         this(builder.name);
     }
 
+    public static Builder<?> builder() {
+        return new Builder<>();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -47,10 +50,6 @@ public class Player {
     @Override
     public String toString() {
         return name;
-    }
-
-    public static Builder<?> builder() {
-        return new Builder<>();
     }
 
     @SuppressWarnings("unchecked")

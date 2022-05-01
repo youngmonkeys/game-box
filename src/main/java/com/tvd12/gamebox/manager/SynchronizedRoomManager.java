@@ -1,11 +1,10 @@
 package com.tvd12.gamebox.manager;
 
+import com.tvd12.gamebox.entity.Room;
+import lombok.Getter;
+
 import java.util.List;
 import java.util.function.Predicate;
-
-import com.tvd12.gamebox.entity.Room;
-
-import lombok.Getter;
 
 public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager<R> {
 
@@ -24,20 +23,25 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
         super(builder);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static Builder builder() {
+        return new Builder<>();
+    }
+
     @Override
     public void addRoom(R room, boolean failIfAdded) {
         synchronized (synchronizedLock) {
             super.addRoom(room, failIfAdded);
         }
         logger.info(
-                "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                room,
-                roomsByName.size(),
-                roomsById.size()
+            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            room,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
-    
+
     @Override
     public void addRooms(R[] rooms, boolean failIfAdded) {
         synchronized (synchronizedLock) {
@@ -51,11 +55,11 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             super.addRooms(rooms, failIfAdded);
         }
         logger.info(
-                "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                rooms,
-                roomsByName.size(),
-                roomsById.size()
+            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            rooms,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -72,7 +76,7 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             return super.getRoom(name);
         }
     }
-    
+
     @Override
     public R getRoom(Predicate<R> predicate) {
         synchronized (synchronizedLock) {
@@ -93,14 +97,14 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             super.getRoomList(buffer);
         }
     }
-    
+
     @Override
     public List<R> getRoomList(Predicate<R> predicate) {
         synchronized (synchronizedLock) {
             return super.getRoomList(predicate);
         }
     }
-    
+
     @Override
     public int getRoomCount() {
         synchronized (synchronizedLock) {
@@ -111,28 +115,28 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
     @Override
     public boolean containsRoom(long id) {
         synchronized (synchronizedLock) {
-            return super.containsRoom(id);   
+            return super.containsRoom(id);
         }
     }
-    
+
     @Override
     public boolean containsRoom(String name) {
         synchronized (synchronizedLock) {
             return super.containsRoom(name);
         }
     }
-    
+
     @Override
     public void removeRoom(R room) {
         synchronized (synchronizedLock) {
             super.removeRoom(room);
         }
         logger.info(
-                "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                room,
-                roomsByName.size(),
-                roomsById.size()
+            "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            room,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -156,11 +160,11 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             super.removeRooms(rooms);
         }
         logger.info(
-                "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-                getMessagePrefix(),
-                rooms,
-                roomsByName.size(),
-                roomsById.size()
+            "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
+            getMessagePrefix(),
+            rooms,
+            roomsByName.size(),
+            roomsById.size()
         );
     }
 
@@ -170,21 +174,16 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
             return super.available();
         }
     }
-    
+
     @Override
     public void clear() {
         synchronized (synchronizedLock) {
-            super.clear();   
+            super.clear();
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    public static Builder builder() {
-        return new Builder<>();
-    }
-
     public static class Builder<R extends Room, B extends Builder<R, B>>
-            extends AbstractRoomManager.Builder<R, B> {
+        extends AbstractRoomManager.Builder<R, B> {
 
         @Override
         public RoomManager<R> build() {

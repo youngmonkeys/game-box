@@ -1,37 +1,31 @@
 package com.tvd12.gamebox.manager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
-
 import lombok.Getter;
 import lombok.Setter;
 
-public class DefaultLocatedPlayerManager
-        extends EzyLoggable
-        implements LocatedPlayerManager {
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
+public class DefaultLocatedPlayerManager
+    extends EzyLoggable
+    implements LocatedPlayerManager {
+
+    protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
+    protected final NavigableMap<Integer, LocatedPlayer> playersByLocation
+        = newPlayersByLocationsMap();
     @Getter
     @Setter
     protected LocatedPlayer master;
     @Getter
     @Setter
     protected LocatedPlayer speakinger;
-    protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
-    protected final NavigableMap<Integer, LocatedPlayer> playersByLocation
-            = newPlayersByLocationsMap();
 
     @Override
     public LocatedPlayer getPlayer(int location) {
@@ -44,7 +38,7 @@ public class DefaultLocatedPlayerManager
         LocatedPlayer current = playersByLocation.get(location);
         if (current != null) {
             throw new LocationNotAvailableException(
-                    "location: " + location + " has owned by: " + current.getName());
+                "location: " + location + " has owned by: " + current.getName());
         }
         if (playersByName.containsKey(player.getName())) {
             throw new PlayerExistsException(player.getName());
@@ -68,7 +62,7 @@ public class DefaultLocatedPlayerManager
         master = nextOf(master);
         return master;
     }
-    
+
     @Override
     public List<String> getPlayerNames() {
         return new ArrayList<>(playersByName.keySet());
@@ -98,30 +92,27 @@ public class DefaultLocatedPlayerManager
         int currentLocation = player.getLocation();
         LocatedPlayer leftPlayer = find(currentLocation, condition, playersByLocation::lowerEntry);
         LocatedPlayer rightPlayer = find(
-                currentLocation,
-                condition,
-                playersByLocation::higherEntry
+            currentLocation,
+            condition,
+            playersByLocation::higherEntry
         );
 
         return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
     }
-    
+
     /**
      * Find the first player that is null or satisfies condition. Use function to determine the jump
      * direction
      *
-     * @param currentLocation
-     *         current considered location
-     * @param condition
-     *         condition to test player
-     * @param function
-     *         specify how to jump to next entry
+     * @param currentLocation current considered location
+     * @param condition       condition to test player
+     * @param function        specify how to jump to next entry
      * @return the first player that satisfies condition or null
      */
     private LocatedPlayer find(
-            int currentLocation,
-            Predicate<LocatedPlayer> condition,
-            Function<Integer, Entry<Integer, LocatedPlayer>> function
+        int currentLocation,
+        Predicate<LocatedPlayer> condition,
+        Function<Integer, Entry<Integer, LocatedPlayer>> function
     ) {
         Entry<Integer, LocatedPlayer> next = function.apply(currentLocation);
         while (next != null && !condition.test(next.getValue())) {
@@ -129,7 +120,7 @@ public class DefaultLocatedPlayerManager
         }
         return next != null ? next.getValue() : null;
     }
-    
+
     /**
      * Determine whether `leftPlayer` or `rightPlayer` is closer to `location`.
      *
@@ -152,44 +143,40 @@ public class DefaultLocatedPlayerManager
     @Override
     public LocatedPlayer rightOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
         return findCircle(
-                player.getLocation(),
-                condition,
-                playersByLocation::higherEntry,
-                playersByLocation::firstEntry
+            player.getLocation(),
+            condition,
+            playersByLocation::higherEntry,
+            playersByLocation::firstEntry
         );
     }
 
     @Override
     public LocatedPlayer leftOf(LocatedPlayer player, Predicate<LocatedPlayer> condition) {
         return findCircle(
-                player.getLocation(),
-                condition,
-                playersByLocation::lowerEntry,
-                playersByLocation::lastEntry
+            player.getLocation(),
+            condition,
+            playersByLocation::lowerEntry,
+            playersByLocation::lastEntry
         );
     }
-    
+
 
     /**
      * Find the first player that satisfies condition (in circle, not in current position) Use
      * jumpFunction to determine the jump direction. Use anchorSupplier to determine which entry to
      * go to when reaching the end.
      *
-     * @param currentLocation
-     *         current considered location
-     * @param condition
-     *         condition to test player
-     * @param jumpFunction
-     *         specify how to jump to next entry
-     * @param anchorSupplier
-     *         specify which entry to jump to when reaching the end (next entry = null)
+     * @param currentLocation current considered location
+     * @param condition       condition to test player
+     * @param jumpFunction    specify how to jump to next entry
+     * @param anchorSupplier  specify which entry to jump to when reaching the end (next entry = null)
      * @return the first player that satisfies condition (in circle, not in current position)
      */
     private LocatedPlayer findCircle(
-            int currentLocation,
-            Predicate<LocatedPlayer> condition,
-            Function<Integer, Entry<Integer, LocatedPlayer>> jumpFunction,
-            Supplier<Entry<Integer, LocatedPlayer>> anchorSupplier
+        int currentLocation,
+        Predicate<LocatedPlayer> condition,
+        Function<Integer, Entry<Integer, LocatedPlayer>> jumpFunction,
+        Supplier<Entry<Integer, LocatedPlayer>> anchorSupplier
     ) {
         int nextLocation = currentLocation;
         Entry<Integer, LocatedPlayer> next;
@@ -208,7 +195,7 @@ public class DefaultLocatedPlayerManager
         }
         return next.getValue();
     }
-    
+
     protected Map<String, LocatedPlayer> newPlayersByNameMap() {
         return new HashMap<>();
     }
@@ -216,15 +203,15 @@ public class DefaultLocatedPlayerManager
     protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
         return new TreeMap<>();
     }
-    
+
     @Override
     public String toString() {
         return new StringBuilder()
-                .append("(")
-                .append("master: ").append(master).append(", ")
-                .append("speakinger: ").append(speakinger).append(", ")
-                .append("playersByLocation: ").append(playersByLocation)
-                .append(")")
-                .toString();
+            .append("(")
+            .append("master: ").append(master).append(", ")
+            .append("speakinger: ").append(speakinger).append(", ")
+            .append("playersByLocation: ").append(playersByLocation)
+            .append(")")
+            .toString();
     }
 }

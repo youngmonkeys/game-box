@@ -21,7 +21,7 @@ public class DefaultRoomManager<R extends Room> extends AbstractRoomManager<R> {
     }
 
     public static class Builder<R extends Room, B extends Builder<R, B>>
-            extends AbstractRoomManager.Builder<R, B> {
+        extends AbstractRoomManager.Builder<R, B> {
 
         @Override
         public DefaultRoomManager<R> build() {

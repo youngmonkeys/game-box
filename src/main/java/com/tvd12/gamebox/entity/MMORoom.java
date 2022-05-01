@@ -1,34 +1,34 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.manager.PlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("AbbreviationAsWordInName")
 public class MMORoom extends NormalRoom {
 
     @Getter
+    protected final double distanceOfInterest;
+    protected final List<MMOPlayer> playerBuffer;
+    protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
+    @Getter
     @Setter
     protected MMOPlayer master;
-    
-    @Getter
-    protected final double distanceOfInterest;
-    
-    protected final List<MMOPlayer> playerBuffer;
-    
-    protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
-    
+
     public MMORoom(Builder builder) {
         super(builder);
         this.playerBuffer = new ArrayList<>();
         this.roomUpdatedHandlers = builder.roomUpdatedHandlers;
         this.distanceOfInterest = builder.distanceOfInterest;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @SuppressWarnings("unchecked")
@@ -65,11 +65,11 @@ public class MMORoom extends NormalRoom {
             }
         }
     }
-    
+
     public boolean isEmpty() {
         return this.getPlayerManager().isEmpty();
     }
-    
+
     public int getMaxPlayer() {
         return this.getPlayerManager().getMaxPlayer();
     }
@@ -101,12 +101,8 @@ public class MMORoom extends NormalRoom {
         }
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public static class Builder extends NormalRoom.Builder<Builder> {
-        
+
         protected int maxPlayer = 999;
         protected double distanceOfInterest;
         protected List<MMORoomUpdatedHandler> roomUpdatedHandlers = new ArrayList<>();

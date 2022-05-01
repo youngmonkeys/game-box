@@ -1,26 +1,30 @@
 package com.tvd12.gamebox.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.gamebox.manager.SynchronizedRoomManager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 @SuppressWarnings("AbbreviationAsWordInName")
 class MMORoomGroup extends EzyLoggable {
 
-    private volatile boolean active;
+    private static final AtomicInteger COUNTER = new AtomicInteger();
     private final long timeTickMillis;
     private final RoomManager<MMORoom> roomManager;
-    private static final AtomicInteger COUNTER = new AtomicInteger();
+    private volatile boolean active;
 
     protected MMORoomGroup(Builder builder) {
         this.timeTickMillis = builder.timeTickMillis;
         this.roomManager = new SynchronizedRoomManager<>();
         this.start();
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     private void start() {
@@ -81,10 +85,6 @@ class MMORoomGroup extends EzyLoggable {
 
     public void destroy() {
         this.active = false;
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static class Builder implements EzyBuilder<MMORoomGroup> {
