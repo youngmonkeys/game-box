@@ -100,26 +100,22 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @Override
     public boolean containsRoom(long id) {
-        boolean contains = roomsById.containsKey(id);
-        return contains;
+        return roomsById.containsKey(id);
     }
 
     @Override
     public boolean containsRoom(String name) {
-        boolean contains = roomsByName.containsKey(name);
-        return contains;
+        return roomsByName.containsKey(name);
     }
 
     @Override
     public R getRoom(long id) {
-        R room = roomsById.get(id);
-        return room;
+        return roomsById.get(id);
     }
 
     @Override
     public R getRoom(String name) {
-        R room = roomsByName.get(name);
-        return room;
+        return roomsByName.get(name);
     }
 
     @Override
@@ -134,7 +130,7 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @Override
     public List<R> getRoomList() {
-        return new ArrayList<R>(roomsByName.values());
+        return new ArrayList<>(roomsByName.values());
     }
 
     @Override
@@ -153,8 +149,7 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @Override
     public int getRoomCount() {
-        int count = roomsByName.size();
-        return count;
+        return roomsByName.size();
     }
 
     @Override
@@ -210,8 +205,7 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @Override
     public boolean available() {
-        boolean answer = roomsById.size() < maxRoom;
-        return answer;
+        return roomsById.size() < maxRoom;
     }
 
     public void clear() {

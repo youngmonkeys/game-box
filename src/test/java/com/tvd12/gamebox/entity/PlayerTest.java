@@ -24,7 +24,9 @@ public class PlayerTest {
         Asserts.assertEquals(sut.getRole(), PlayerRole.MASTER);
         Asserts.assertEquals(sut.getStatus(), PlayerStatus.PLAYING);
         Asserts.assertEquals(sut.getCurrentRoomId(), 1L);
+        //noinspection EqualsWithItself
         Asserts.assertTrue(sut.equals(sut));
+        //noinspection ConstantConditions
         Asserts.assertFalse(sut.equals(null));
 
         Player me = Player.builder()

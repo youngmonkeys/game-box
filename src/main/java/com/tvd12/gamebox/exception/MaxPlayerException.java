@@ -7,20 +7,27 @@ public class MaxPlayerException extends RuntimeException {
         super(msg);
     }
 
-    public MaxPlayerException(String player, int currentPlayerCount, int maxPlayerCount) {
-        this(new StringBuilder()
-            .append("can not add new player: ").append(player)
-            .append(", current player count is: ").append(currentPlayerCount)
-            .append(" when max player count is: ").append(maxPlayerCount)
-            .toString());
+    public MaxPlayerException(
+        String player,
+        int currentPlayerCount,
+        int maxPlayerCount
+    ) {
+        this(
+            "can not add new player: " + player +
+            ", current player count is: " + currentPlayerCount +
+            " when max player count is: " + maxPlayerCount
+        );
     }
 
-    public MaxPlayerException(int numberOfPlayer, int currentPlayerCount, int maxPlayerCount) {
-        this(new StringBuilder()
-            .append("can not add ").append(numberOfPlayer).append(" new players")
-            .append(", current player count is: ").append(currentPlayerCount)
-            .append(" when max player count is: ").append(maxPlayerCount)
-            .toString());
+    public MaxPlayerException(
+        int numberOfPlayer,
+        int currentPlayerCount,
+        int maxPlayerCount
+    ) {
+        this(
+            "can not add " + numberOfPlayer + " new players" +
+            ", current player count is: " + currentPlayerCount +
+            " when max player count is: " + maxPlayerCount
+        );
     }
-
 }

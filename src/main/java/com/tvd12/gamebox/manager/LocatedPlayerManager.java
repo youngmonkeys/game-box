@@ -27,19 +27,19 @@ public interface LocatedPlayerManager {
     LocatedPlayer nextOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 
     default LocatedPlayer nextOf(LocatedPlayer player) {
-        return nextOf(player, EzyPredicates.alwayTrue());
+        return nextOf(player, EzyPredicates.alwaysTrue());
     }
 
     LocatedPlayer rightOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 
     default LocatedPlayer rightOf(LocatedPlayer player) {
-        return rightOf(player, EzyPredicates.alwayTrue());
+        return rightOf(player, EzyPredicates.alwaysTrue());
     }
 
     LocatedPlayer leftOf(LocatedPlayer player, Predicate<LocatedPlayer> condition);
 
     default LocatedPlayer leftOf(LocatedPlayer player) {
-        return leftOf(player, EzyPredicates.alwayTrue());
+        return leftOf(player, EzyPredicates.alwaysTrue());
     }
 
     List<String> getPlayerNames();

@@ -6,5 +6,4 @@ public class RoomExistsException extends IllegalArgumentException {
     public RoomExistsException(String roomName) {
         super("room: " + roomName + " has added");
     }
-
 }

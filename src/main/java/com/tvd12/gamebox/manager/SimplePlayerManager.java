@@ -36,5 +36,4 @@ public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager
             return new SimplePlayerManager<>(this);
         }
     }
-
 }

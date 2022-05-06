@@ -12,17 +12,18 @@ public enum PlayerStatus implements IPlayerStatus {
     PLAYING(2),
     SPEAKING(3);
 
+    @Getter
+    private final int id;
+
     private static final Map<Integer, PlayerStatus> STATUS_BY_ID =
         EzyEnums.enumMapInt(PlayerStatus.class);
-    @Getter
-    private int id;
 
-    private PlayerStatus(int id) {
+    PlayerStatus(int id) {
         this.id = id;
     }
 
     public static PlayerStatus valueOf(int id) {
-        return STATUS_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
+        return STATUS_BY_ID.getOrDefault(id, NULL);
     }
 
     @Override

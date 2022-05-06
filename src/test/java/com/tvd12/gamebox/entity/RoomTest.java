@@ -21,7 +21,9 @@ public class RoomTest {
         // then
         Asserts.assertEquals(sut.getPassword(), "123456");
         Asserts.assertEquals(sut.getStatus(), RoomStatus.FINISHED);
+        //noinspection EqualsWithItself
         Asserts.assertTrue(sut.equals(sut));
+        //noinspection ConstantConditions
         Asserts.assertFalse(sut.equals(null));
 
         Room me = Room.builder()

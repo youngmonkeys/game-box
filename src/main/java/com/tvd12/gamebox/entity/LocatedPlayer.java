@@ -32,7 +32,5 @@ public class LocatedPlayer extends Player {
         public LocatedPlayer build() {
             return (LocatedPlayer) super.build();
         }
-
     }
-
 }

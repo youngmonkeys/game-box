@@ -6,5 +6,4 @@ public class PlayerExistsException extends IllegalArgumentException {
     public PlayerExistsException(String username) {
         super("player: " + username + " has added");
     }
-
 }

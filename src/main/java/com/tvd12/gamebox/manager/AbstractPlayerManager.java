@@ -36,8 +36,7 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     @Override
     public P getPlayer(String username) {
-        P player = playersByName.get(username);
-        return player;
+        return playersByName.get(username);
     }
 
     @Override
@@ -75,8 +74,7 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     @Override
     public boolean containsPlayer(String username) {
-        boolean contains = playersByName.containsKey(username);
-        return contains;
+        return playersByName.containsKey(username);
     }
 
     @Override
@@ -176,19 +174,20 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     @Override
     public int getPlayerCount() {
-        int count = playersByName.size();
-        return count;
+        return playersByName.size();
     }
 
     @Override
     public boolean available() {
-        boolean available = playersByName.size() < maxPlayer;
-        return available;
+        return playersByName.size() < maxPlayer;
     }
 
     @Override
     public Lock getLock(String username) {
-        return locks.computeIfAbsent(username, EzyFunctions.NEW_REENTRANT_LOCK_FUNC);
+        return locks.computeIfAbsent(
+            username,
+            EzyFunctions.NEW_REENTRANT_LOCK_FUNC
+        );
     }
 
     @Override
@@ -203,8 +202,11 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     @Override
     public int countPlayers(Predicate<P> tester) {
-        int count = (int) playersByName.values().stream().filter(tester).count();
-        return count;
+        return (int) playersByName
+            .values()
+            .stream()
+            .filter(tester)
+            .count();
     }
 
     @Override
@@ -221,7 +223,7 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     protected void unlockAll() {
         for (Lock lock : locks.values()) {
-            EzyProcessor.processSilently(() -> lock.unlock());
+            EzyProcessor.processSilently(lock::unlock);
         }
     }
 
@@ -254,10 +256,8 @@ public abstract class AbstractPlayerManager<P extends Player>
             return newProduct();
         }
 
-        protected void preBuild() {
-        }
+        protected void preBuild() {}
 
         protected abstract PlayerManager<U> newProduct();
     }
-
 }

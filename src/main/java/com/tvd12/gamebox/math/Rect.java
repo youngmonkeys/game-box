@@ -8,8 +8,7 @@ public class Rect {
     public float width;
     public float height;
 
-    public Rect() {
-    }
+    public Rect() {}
 
     public Rect(Rect r) {
         this.x = r.x;
@@ -162,15 +161,6 @@ public class Rect {
 
     @Override
     public String toString() {
-        return new StringBuilder().append("(")
-            .append(x)
-            .append(", ")
-            .append(y)
-            .append(" | ")
-            .append(width)
-            .append(", ")
-            .append(height)
-            .append(")")
-            .toString();
+        return "(" + x + ", " + y + " | " + width + ", " + height + ")";
     }
 }

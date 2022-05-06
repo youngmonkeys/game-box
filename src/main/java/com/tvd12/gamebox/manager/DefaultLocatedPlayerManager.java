@@ -17,7 +17,8 @@ public class DefaultLocatedPlayerManager
     extends EzyLoggable
     implements LocatedPlayerManager {
 
-    protected final Map<String, LocatedPlayer> playersByName = newPlayersByNameMap();
+    protected final Map<String, LocatedPlayer> playersByName
+        = newPlayersByNameMap();
     protected final NavigableMap<Integer, LocatedPlayer> playersByLocation
         = newPlayersByLocationsMap();
     @Getter
@@ -29,8 +30,7 @@ public class DefaultLocatedPlayerManager
 
     @Override
     public LocatedPlayer getPlayer(int location) {
-        LocatedPlayer player = playersByLocation.get(location);
-        return player;
+        return playersByLocation.get(location);
     }
 
     @Override
@@ -206,12 +206,10 @@ public class DefaultLocatedPlayerManager
 
     @Override
     public String toString() {
-        return new StringBuilder()
-            .append("(")
-            .append("master: ").append(master).append(", ")
-            .append("speakinger: ").append(speakinger).append(", ")
-            .append("playersByLocation: ").append(playersByLocation)
-            .append(")")
-            .toString();
+        return "(" +
+            "master: " + master + ", " +
+            "speakinger: " + speakinger + ", " +
+            "playersByLocation: " + playersByLocation +
+            ")";
     }
 }

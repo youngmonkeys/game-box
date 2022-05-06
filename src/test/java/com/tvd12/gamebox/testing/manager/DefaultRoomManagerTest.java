@@ -6,7 +6,7 @@ import com.tvd12.gamebox.manager.DefaultRoomManager;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 public class DefaultRoomManagerTest {
 
@@ -29,7 +29,7 @@ public class DefaultRoomManagerTest {
 
         // when
         sut.addRooms(new Room[]{room1});
-        sut.addRooms(Arrays.asList(room2));
+        sut.addRooms(Collections.singletonList(room2));
 
         // then
         Asserts.assertEquals(sut.getMaxRoom(), 100);

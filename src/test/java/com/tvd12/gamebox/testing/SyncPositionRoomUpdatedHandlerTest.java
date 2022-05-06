@@ -85,5 +85,4 @@ public class SyncPositionRoomUpdatedHandlerTest {
         verify(arrayResponse, times(1)).usernames(nearbyPlayerNameList);
         verify(arrayResponse, times(1)).execute();
     }
-
 }

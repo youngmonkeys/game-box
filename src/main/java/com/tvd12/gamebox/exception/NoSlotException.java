@@ -6,5 +6,4 @@ public class NoSlotException extends RuntimeException {
     public NoSlotException(String msg) {
         super(msg);
     }
-
 }

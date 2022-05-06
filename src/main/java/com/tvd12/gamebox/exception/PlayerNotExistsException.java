@@ -6,5 +6,4 @@ public class PlayerNotExistsException extends IllegalArgumentException {
     public PlayerNotExistsException(String message) {
         super(message);
     }
-
 }

@@ -5,7 +5,6 @@ import com.tvd12.gamebox.entity.MMORoom;
 
 import java.util.List;
 
-@SuppressWarnings("AbbreviationAsWordInName")
 public interface MMORoomUpdatedHandler {
 
     void onRoomUpdated(MMORoom room, List<MMOPlayer> players);

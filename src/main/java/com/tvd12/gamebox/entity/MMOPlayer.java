@@ -12,17 +12,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
-@SuppressWarnings("AbbreviationAsWordInName")
 public class MMOPlayer extends Player {
 
-    @Getter(AccessLevel.NONE)
-    protected final Map<String, MMOPlayer> nearbyPlayers = new ConcurrentHashMap<>();
     protected Vec3 position = new Vec3();
     protected Vec3 rotation = new Vec3();
-    @Getter(AccessLevel.NONE)
-    protected AtomicBoolean stateChanged = new AtomicBoolean(false);
     @Setter
     protected int clientTimeTick;
+
+    @Getter(AccessLevel.NONE)
+    protected final AtomicBoolean stateChanged
+        = new AtomicBoolean(false);
+
+    @Getter(AccessLevel.NONE)
+    protected final Map<String, MMOPlayer> nearbyPlayers
+        = new ConcurrentHashMap<>();
 
     public MMOPlayer(String name) {
         super(name);
@@ -84,7 +87,7 @@ public class MMOPlayer extends Player {
     }
 
     public List<String> getNearbyPlayerNames() {
-        return new ArrayList<String>(nearbyPlayers.keySet());
+        return new ArrayList<>(nearbyPlayers.keySet());
     }
 
     public static class Builder extends Player.Builder<Builder> {

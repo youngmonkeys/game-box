@@ -13,17 +13,18 @@ public enum PlayerRole implements IPlayerRole {
     PLAYER(3),
     NPC(4);
 
+    @Getter
+    private final int id;
+
     private static final Map<Integer, PlayerRole> ROLE_BY_ID =
         EzyEnums.enumMapInt(PlayerRole.class);
-    @Getter
-    private int id;
 
-    private PlayerRole(int id) {
+    PlayerRole(int id) {
         this.id = id;
     }
 
     public static PlayerRole valueOf(int id) {
-        return ROLE_BY_ID.getOrDefault(Integer.valueOf(id), NULL);
+        return ROLE_BY_ID.getOrDefault(id, NULL);
     }
 
     @Override

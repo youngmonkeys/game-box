@@ -17,6 +17,5 @@ public class AbstractRoomManagerTest {
         Asserts.assertEquals(sut.getMaxRoom(), 10000);
     }
 
-    private static class InternalRoomManager extends AbstractRoomManager<Room> {
-    }
+    private static class InternalRoomManager extends AbstractRoomManager<Room> {}
 }

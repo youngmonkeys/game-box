@@ -7,6 +7,7 @@ import com.tvd12.test.assertion.Asserts;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class MMORoomTest {
 
@@ -54,13 +55,29 @@ public class MMORoomTest {
         Asserts.assertEmpty(player1.getNearbyPlayerNames());
         Asserts.assertEmpty(player2.getNearbyPlayerNames());
         sut.update();
-        Asserts.assertEquals(player1.getNearbyPlayerNames(), Arrays.asList(player1.getName()), false);
-        Asserts.assertEquals(player2.getNearbyPlayerNames(), Arrays.asList(player2.getName()), false);
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Collections.singletonList(player1.getName()),
+            false
+        );
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Collections.singletonList(player2.getName()),
+            false
+        );
 
         player2.setPosition(new Vec3(1, 1, 1));
         sut.update();
-        Asserts.assertEquals(player1.getNearbyPlayerNames(), Arrays.asList(player1.getName(), player2.getName()), false);
-        Asserts.assertEquals(player2.getNearbyPlayerNames(), Arrays.asList(player1.getName(), player2.getName()), false);
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Arrays.asList(player1.getName(), player2.getName()),
+            false
+        );
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Arrays.asList(player1.getName(), player2.getName()),
+            false
+        );
     }
 
     @Test
@@ -70,7 +87,7 @@ public class MMORoomTest {
             .playerManager(new SynchronizedPlayerManager<>());
 
         // when
-        Throwable e = Asserts.assertThrows(() -> builder.build());
+        Throwable e = Asserts.assertThrows(builder::build);
 
         // then
         Asserts.assertEqualsType(e, IllegalArgumentException.class);

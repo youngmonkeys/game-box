@@ -120,9 +120,8 @@ public class MMORoomTest {
         Asserts.assertEquals(MaxPlayerException.class.toString(), e.getClass().toString());
     }
 
-    public class A implements MMORoomUpdatedHandler {
+    public static class A implements MMORoomUpdatedHandler {
         @Override
-        public void onRoomUpdated(MMORoom room, List<MMOPlayer> players) {
-        }
+        public void onRoomUpdated(MMORoom room, List<MMOPlayer> players) {}
     }
 }

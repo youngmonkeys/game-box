@@ -9,13 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("AbbreviationAsWordInName")
 class MMORoomGroup extends EzyLoggable {
 
-    private static final AtomicInteger COUNTER = new AtomicInteger();
+    private volatile boolean active;
     private final long timeTickMillis;
     private final RoomManager<MMORoom> roomManager;
-    private volatile boolean active;
+
+    private static final AtomicInteger COUNTER
+        = new AtomicInteger();
 
     protected MMORoomGroup(Builder builder) {
         this.timeTickMillis = builder.timeTickMillis;
@@ -43,6 +44,7 @@ class MMORoomGroup extends EzyLoggable {
                 long end = System.currentTimeMillis();
                 long timeElapsed = end - start;
                 if (timeElapsed < timeTickMillis) {
+                    //noinspection BusyWait
                     Thread.sleep(timeTickMillis - timeElapsed);
                 }
             } catch (Exception e) {

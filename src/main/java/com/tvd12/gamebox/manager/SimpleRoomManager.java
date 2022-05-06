@@ -40,7 +40,5 @@ public class SimpleRoomManager<R extends Room> extends AbstractRoomManager<R> {
         public SimpleRoomManager<R> build() {
             return new SimpleRoomManager<>(this);
         }
-
     }
-
 }

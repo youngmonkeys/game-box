@@ -7,20 +7,27 @@ public class MaxRoomException extends RuntimeException {
         super(msg);
     }
 
-    public MaxRoomException(String room, int currentRoomCount, int maxRoomCount) {
-        this(new StringBuilder()
-            .append("can not add new room: ").append(room)
-            .append(", current room count is: ").append(currentRoomCount)
-            .append(" when max room count is: ").append(maxRoomCount)
-            .toString());
+    public MaxRoomException(
+        String room,
+        int currentRoomCount,
+        int maxRoomCount
+    ) {
+        this(
+            "can not add new room: " + room +
+            ", current room count is: " + currentRoomCount +
+            " when max room count is: " + maxRoomCount
+        );
     }
 
-    public MaxRoomException(int numberOfRoom, int currentRoomCount, int maxRoomCount) {
-        this(new StringBuilder()
-            .append("can not add ").append(numberOfRoom).append(" new rooms")
-            .append(", current room count is: ").append(currentRoomCount)
-            .append(" when max room count is: ").append(maxRoomCount)
-            .toString());
+    public MaxRoomException(
+        int numberOfRoom,
+        int currentRoomCount,
+        int maxRoomCount
+    ) {
+        this(
+            "can not add " + numberOfRoom + " new rooms" +
+            ", current room count is: " + currentRoomCount +
+            " when max room count is: " + maxRoomCount
+        );
     }
-
 }

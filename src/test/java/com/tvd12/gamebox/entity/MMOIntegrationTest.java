@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MMOIntergrationTest {
+public class MMOIntegrationTest {
 
     private final MMOVirtualWorld world;
     private final ExecutorService executorService;
@@ -24,7 +24,7 @@ public class MMOIntergrationTest {
     private final AtomicInteger totalPlayers;
     private final RoomManager<MMORoom> roomManager;
 
-    public MMOIntergrationTest() {
+    public MMOIntegrationTest() {
         this.world = MMOVirtualWorld.builder()
             .maxRoomCount(1000)
             .roomGroupCount(16)
@@ -39,18 +39,19 @@ public class MMOIntergrationTest {
     }
 
     public static void main(String[] args) throws Exception {
-        new MMOIntergrationTest().test();
+        new MMOIntegrationTest().test();
     }
 
     public void test() throws Exception {
         long testTime = 5 * 60 * 1000;
         long startTime = System.currentTimeMillis();
-        long endtime = startTime + testTime;
+        long endTime = startTime + testTime;
         while (true) {
             long currentTime = System.currentTimeMillis();
-            if (currentTime > endtime) {
+            if (currentTime > endTime) {
                 break;
             }
+            //noinspection BusyWait
             Thread.sleep(300);
             addPlayers();
             addPlayerToRooms();

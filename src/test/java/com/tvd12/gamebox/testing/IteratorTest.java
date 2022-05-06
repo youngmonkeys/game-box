@@ -7,5 +7,4 @@ public class IteratorTest {
     public static void main(String[] args) {
         System.out.println(Lists.newArrayList(1, 2, 3).iterator());
     }
-
 }

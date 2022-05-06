@@ -8,6 +8,7 @@ import com.tvd12.test.assertion.Asserts;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class SynchronizedRoomManagerTest {
 
@@ -44,11 +45,15 @@ public class SynchronizedRoomManagerTest {
         Asserts.assertEqualsType(e2, MaxRoomException.class);
         sut.clear();
 
-        sut.addRooms(Arrays.asList(room1), false);
-        Throwable e3 = Asserts.assertThrows(() -> sut.addRooms(Arrays.asList(room1), true));
+        sut.addRooms(Collections.singletonList(room1), false);
+        Throwable e3 = Asserts.assertThrows(
+            () -> sut.addRooms(Collections.singletonList(room1), true)
+        );
         Asserts.assertEqualsType(e3, RoomExistsException.class);
-        sut.addRooms(Arrays.asList(room2), true);
-        Throwable e4 = Asserts.assertThrows(() -> sut.addRooms(Arrays.asList(roomx), true));
+        sut.addRooms(Collections.singletonList(room2), true);
+        Throwable e4 = Asserts.assertThrows(
+            () -> sut.addRooms(Collections.singletonList(roomx), true)
+        );
         Asserts.assertEqualsType(e4, MaxRoomException.class);
 
         Asserts.assertEquals(sut.getRoom("room1"), room1);
@@ -73,7 +78,11 @@ public class SynchronizedRoomManagerTest {
 
         Asserts.assertEquals(sut.getRoom(it -> it.getName().equals("room1")), room1);
         Asserts.assertNull(sut.getRoom(it -> it.getName().equals("unknown")));
-        Asserts.assertEquals(sut.getRoomList(it -> it.getName().equals("room1")), Arrays.asList(room1), false);
+        Asserts.assertEquals(
+            sut.getRoomList(it -> it.getName().equals("room1")),
+            Collections.singletonList(room1),
+            false
+        );
 
         sut.clear();
         sut.addRooms(new LocatedRoom[]{room1}, false);

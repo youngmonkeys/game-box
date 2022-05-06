@@ -41,5 +41,4 @@ public class DefaultLocatedPlayerManager4Test {
         Asserts.assertEquals(manager.rightOf(huongntm3, p -> p != huongntm2 && p != havm), binh4);
         Asserts.assertEquals(manager.rightOf(binh4, p -> p != binh5 && p != havm), huongntm3);
     }
-
 }

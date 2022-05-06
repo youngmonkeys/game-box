@@ -40,7 +40,5 @@ public class DefaultLocatedPlayerManager1Test {
         System.out.println(manager);
 
         Asserts.assertEquals(manager.nextOf(a), null);
-
     }
-
 }

@@ -204,5 +204,5 @@ public interface PlayerManager<P extends Player> {
      *
      * @return empty or not
      */
-    public boolean isEmpty();
+    boolean isEmpty();
 }

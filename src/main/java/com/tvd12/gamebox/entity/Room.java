@@ -11,13 +11,14 @@ import java.util.concurrent.atomic.AtomicLong;
 @Getter
 public class Room {
 
-    protected static final String NAME_PREFIX = "Room#";
     protected final long id;
     protected final String name;
     @Setter
     protected String password;
     @Setter
     protected IRoomStatus status = RoomStatus.WAITING;
+
+    protected static final String NAME_PREFIX = "Room#";
 
     protected Room(Builder<?> builder) {
         this.id = builder.id;
@@ -46,12 +47,10 @@ public class Room {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-            .append("(")
-            .append("name = ").append(name)
-            .append(", id = ").append(id)
-            .append(")")
-            .toString();
+        return "(" +
+            "name = " + name +
+            ", id = " + id +
+            ")";
     }
 
     @SuppressWarnings("unchecked")
@@ -83,8 +82,7 @@ public class Room {
             return newProduct();
         }
 
-        protected void preBuild() {
-        }
+        protected void preBuild() {}
 
         protected Room newProduct() {
             return new Room(this);

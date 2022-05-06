@@ -32,8 +32,7 @@ public final class Numbers {
      */
     private static final int NEGATIVE_ZERO_FLOAT_BITS = Float.floatToRawIntBits(-0.0f);
 
-    private Numbers() {
-    }
+    private Numbers() {}
 
     /**
      * Returns true if they are equal as defined by

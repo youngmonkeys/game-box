@@ -28,5 +28,4 @@ public class DefaultPlayerManager<P extends Player> extends AbstractPlayerManage
             return new DefaultPlayerManager<>(this);
         }
     }
-
 }

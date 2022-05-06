@@ -25,5 +25,4 @@ public class LocatedRoomTest {
 
         System.out.println("\n\nnext master is: " + room.getPlayerManager().setNewMaster() + "\n\n");
     }
-
 }

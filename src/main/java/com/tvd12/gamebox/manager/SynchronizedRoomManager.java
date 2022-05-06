@@ -189,6 +189,5 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
         public RoomManager<R> build() {
             return new SynchronizedRoomManager<>(this);
         }
-
     }
 }

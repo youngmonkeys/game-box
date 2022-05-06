@@ -68,13 +68,10 @@ public class Player {
             return newProduct();
         }
 
-        protected void preBuild() {
-        }
+        protected void preBuild() {}
 
         protected Player newProduct() {
             return new Player(this);
         }
-
     }
-
 }

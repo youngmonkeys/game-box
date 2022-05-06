@@ -6,5 +6,4 @@ public class RoomNotExistsException extends IllegalArgumentException {
     public RoomNotExistsException(String message) {
         super(message);
     }
-
 }

@@ -4,18 +4,18 @@
 
     <parent>
         <groupId>com.tvd12</groupId>
-        <artifactId>ezyfox-server</artifactId>
-        <version>1.0.3</version>
+        <artifactId>ezyfox</artifactId>
+        <version>1.0.4</version>
     </parent>
 
     <artifactId>game-box</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
 
     <name>game-box</name>
     <url>https://youngmonkeys.org/</url>
 
     <properties>
-        <ezy.server.version>1.2.2</ezy.server.version>
+        <ezy.server.version>1.2.3</ezy.server.version>
     </properties>
 
     <dependencies>

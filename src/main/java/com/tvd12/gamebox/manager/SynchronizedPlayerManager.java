@@ -201,5 +201,4 @@ public class SynchronizedPlayerManager<P extends Player> extends AbstractPlayerM
             return new SynchronizedPlayerManager<>(this);
         }
     }
-
 }

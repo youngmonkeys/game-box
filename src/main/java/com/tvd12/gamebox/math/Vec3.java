@@ -7,6 +7,11 @@ import lombok.Getter;
 @Getter
 @SuppressWarnings("MemberName")
 public class Vec3 {
+
+    public float x;
+    public float y;
+    public float z;
+
     public static final Vec3 ZERO = new Vec3();
     public static final Vec3 up = new Vec3(0.0f, 1f, 0.0f);
     public static final Vec3 down = new Vec3(0.0f, -1f, 0.0f);
@@ -14,9 +19,6 @@ public class Vec3 {
     public static final Vec3 right = new Vec3(1f, 0.0f, 0.0f);
     public static final Vec3 forward = new Vec3(0.0f, 0.0f, 1f);
     public static final Vec3 backward = new Vec3(0.0f, 0.0f, -1f);
-    public float x;
-    public float y;
-    public float z;
 
     public Vec3() {
         this(0.0f, 0.0f, 0.0f);
@@ -105,6 +107,7 @@ public class Vec3 {
     @Override
     public boolean equals(Object obj) {
         Vec3 other = (Vec3) obj;
+        //noinspection SuspiciousNameCombination
         return Numbers.equals(x, other.x)
             && Numbers.equals(y, other.y)
             && Numbers.equals(z, other.z);
@@ -128,12 +131,6 @@ public class Vec3 {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-            .append("(")
-            .append(x).append(", ")
-            .append(y).append(", ")
-            .append(z)
-            .append(")")
-            .toString();
+        return "(" + x + ", " + y + ", " + z + ")";
     }
 }

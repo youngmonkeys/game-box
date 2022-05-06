@@ -19,7 +19,5 @@ public class DefaultLocatedPlayerManager2Test {
         manager.setNewMaster();
 
         System.out.println(manager);
-
     }
-
 }

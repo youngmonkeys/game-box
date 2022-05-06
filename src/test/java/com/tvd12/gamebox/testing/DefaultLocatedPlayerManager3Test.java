@@ -33,7 +33,5 @@ public class DefaultLocatedPlayerManager3Test {
         System.out.println(manager.nextOf(binh4, p -> p != huongntm2 && p != havm));
         System.out.println(manager.nextOf(binh5, p -> p != huongntm2 && p != havm));
         System.out.println(manager.nextOf(huongntm3, p -> p != huongntm2 && p != havm));
-
     }
-
 }

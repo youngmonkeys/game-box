@@ -6,7 +6,6 @@ import com.tvd12.gamebox.exception.MaxRoomException;
 
 import java.util.Arrays;
 
-@SuppressWarnings("AbbreviationAsWordInName")
 public class MMOVirtualWorld extends EzyLoggable {
 
     private final MMORoomGroup[] roomGroups;
@@ -89,6 +88,5 @@ public class MMOVirtualWorld extends EzyLoggable {
         public MMOVirtualWorld build() {
             return new MMOVirtualWorld(this);
         }
-
     }
 }

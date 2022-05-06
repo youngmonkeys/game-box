@@ -6,5 +6,4 @@ public class LocationNotAvailableException extends IllegalArgumentException {
     public LocationNotAvailableException(String msg) {
         super(msg);
     }
-
 }

@@ -28,7 +28,9 @@ public class NumbersTest {
 
         Asserts.assertTrue(Numbers.equals(-2147483648.0F, Float.MIN_VALUE, 1325400065));
 
+        //noinspection divzero
         Asserts.assertFalse(Numbers.equals(0.0F / 0.0F, 1.0F, 1));
+        //noinspection divzero
         Asserts.assertFalse(Numbers.equals(1.0F, 0.0F / 0.0F, 1));
     }
 }

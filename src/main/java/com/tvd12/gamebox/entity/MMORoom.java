@@ -9,16 +9,15 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("AbbreviationAsWordInName")
 public class MMORoom extends NormalRoom {
 
+    @Getter
+    @Setter
+    protected MMOPlayer master;
     @Getter
     protected final double distanceOfInterest;
     protected final List<MMOPlayer> playerBuffer;
     protected final List<MMORoomUpdatedHandler> roomUpdatedHandlers;
-    @Getter
-    @Setter
-    protected MMOPlayer master;
 
     public MMORoom(Builder builder) {
         super(builder);

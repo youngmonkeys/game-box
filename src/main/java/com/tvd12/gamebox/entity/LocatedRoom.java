@@ -88,5 +88,4 @@ public class LocatedRoom extends Room {
             return new LocatedRoom(this);
         }
     }
-
 }

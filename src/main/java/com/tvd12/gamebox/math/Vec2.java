@@ -8,13 +8,14 @@ import lombok.Getter;
 @SuppressWarnings("MemberName")
 public class Vec2 {
 
+    public float x;
+    public float y;
+
     public static final Vec2 ZERO = new Vec2();
     public static final Vec2 LEFT = new Vec2(-1, 0);
     public static final Vec2 UP = new Vec2(0, 1);
     public static final Vec2 RIGHT = new Vec2(1, 0);
     public static final Vec2 DOWN = new Vec2(0, -1);
-    public float x;
-    public float y;
 
     public Vec2() {
         this(0.0F, 0.0F);
@@ -103,6 +104,7 @@ public class Vec2 {
     @Override
     public boolean equals(Object obj) {
         Vec2 other = (Vec2) obj;
+        //noinspection SuspiciousNameCombination
         return Numbers.equals(x, other.x)
             && Numbers.equals(y, other.y);
     }
@@ -124,11 +126,6 @@ public class Vec2 {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-            .append("(")
-            .append(x).append(", ")
-            .append(y)
-            .append(")")
-            .toString();
+        return "(" + x + ", " + y + ")";
     }
 }
