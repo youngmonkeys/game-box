@@ -31,7 +31,7 @@ Memory caching, Message Queue.
 
 # Get Started
 
-1. [https://youngmonkeys.org/game-box-getting-started/](https://youngmonkeys.org/game-box-getting-started/)
+[https://youngmonkeys.org/game-box-getting-started/](https://youngmonkeys.org/game-box-getting-started/)
 
 # Documentation
 
@@ -39,11 +39,11 @@ Memory caching, Message Queue.
 
 # Demos
 
-1. [EzySmashers (MMO Game built with game-box and Unity)](https://github.com/vu-luong/EzySmashers)
+[EzySmashers (MMO Game built with game-box and Unity)](https://github.com/vu-luong/EzySmashers)
 
 # Tutorials:
 
-1. [https://youngmonkeys.org/game-box/](https://youngmonkeys.org/game-box/)
+[https://youngmonkeys.org/game-box/](https://youngmonkeys.org/game-box/)
 
 # Contact us
 
