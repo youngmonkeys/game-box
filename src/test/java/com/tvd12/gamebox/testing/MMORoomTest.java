@@ -6,6 +6,7 @@ import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.handler.MMORoomUpdatedHandler;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.performance.Performance;
 import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
@@ -17,6 +18,30 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 public class MMORoomTest {
+
+    public static void main(String[] args) {
+        MMORoom room = MMORoom.builder()
+            .maxPlayer(800)
+            .distanceOfInterest(RandomUtil.randomSmallDouble())
+            .name("room")
+            .build();
+        for (int i = 0 ; i < room.getMaxPlayer() ; ++i) {
+            MMOPlayer player = new MMOPlayer("player" + i);
+            player.setPosition(
+                new Vec3(
+                    RandomUtil.randomFloat(),
+                    RandomUtil.randomFloat(),
+                    RandomUtil.randomFloat()
+                )
+            );
+            room.addPlayer(player);
+        }
+        long elapsedTime = Performance.create()
+            .loop(1)
+            .test(room::update)
+            .getTime();
+        System.out.println("elapsed time: " + elapsedTime);
+    }
 
     @SuppressWarnings("unchecked")
     @Test
