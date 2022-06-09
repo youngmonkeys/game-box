@@ -20,6 +20,9 @@ public class MMORoomGroupTest {
     public void createMMORoomGroupTest() throws InterruptedException {
         // given
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         EzyWrap<String> roomGroupThreadName = new EzyWrap<>();
         doAnswer(invocation -> {
             roomGroupThreadName.setValue(Thread.currentThread().getName());
@@ -43,6 +46,9 @@ public class MMORoomGroupTest {
         // given
         MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         doNothing().when(room).update();
 
         // when
@@ -91,6 +97,9 @@ public class MMORoomGroupTest {
     public void destroyGroupTest() throws InterruptedException {
         // given
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         EzyWrap<String> roomGroupThreadName = new EzyWrap<>();
         doAnswer(invocation -> {
             roomGroupThreadName.setValue(Thread.currentThread().getName());
@@ -119,6 +128,9 @@ public class MMORoomGroupTest {
         // given
         MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         doThrow(InterruptedException.class).when(room).update();
 
         // when
@@ -134,6 +146,9 @@ public class MMORoomGroupTest {
         // given
         MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         doAnswer(it -> {
             Thread.sleep(300);
             return null;
@@ -152,6 +167,9 @@ public class MMORoomGroupTest {
         // given
         MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
         MMORoom room = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(room.getName()).thenReturn(roomName);
+
         doAnswer(it -> {
             Thread.currentThread().interrupt();
             return null;

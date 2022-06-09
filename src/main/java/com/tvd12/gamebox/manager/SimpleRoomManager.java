@@ -23,16 +23,6 @@ public class SimpleRoomManager<R extends Room> extends AbstractRoomManager<R> {
         return new Builder<>();
     }
 
-    @Override
-    protected Map<Long, R> newRoomsByIdMap() {
-        return new ConcurrentHashMap<>();
-    }
-
-    @Override
-    protected Map<String, R> newRoomsByNameMap() {
-        return new ConcurrentHashMap<>();
-    }
-
     public static class Builder<R extends Room, B extends Builder<R, B>>
         extends AbstractRoomManager.Builder<R, B> {
 

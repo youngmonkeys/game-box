@@ -4,13 +4,14 @@ import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.entity.MMOVirtualWorld;
 import com.tvd12.gamebox.exception.MaxRoomException;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.base.BaseTest;
 import com.tvd12.test.reflect.FieldUtil;
+import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class MMOVirtualWorldTest {
+public class MMOVirtualWorldTest extends BaseTest {
 
     @Test
     public void createMMOVirtualWorldTest() {
@@ -42,6 +43,8 @@ public class MMOVirtualWorldTest {
         // given
         MMOVirtualWorld world = MMOVirtualWorld.builder().build();
         MMORoom expectedRoom = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(expectedRoom.getName()).thenReturn(roomName);
         long expectedRoomId = 1;
         when(expectedRoom.getId()).thenReturn(expectedRoomId);
 
@@ -51,6 +54,8 @@ public class MMOVirtualWorldTest {
         // then
         MMORoom room = world.getRoom(expectedRoomId);
         Asserts.assertEquals(expectedRoom, room);
+        verify(expectedRoom, times(2)).getId();
+        verify(expectedRoom, times(1)).getName();
     }
 
     @Test
@@ -58,6 +63,9 @@ public class MMOVirtualWorldTest {
         // given
         MMOVirtualWorld world = MMOVirtualWorld.builder().build();
         MMORoom expectedRoom = mock(MMORoom.class);
+        String roomName = RandomUtil.randomShortAlphabetString();
+        when(expectedRoom.getName()).thenReturn(roomName);
+
         long expectedRoomId = 1;
         when(expectedRoom.getId()).thenReturn(expectedRoomId);
         world.addRoom(expectedRoom);
@@ -68,6 +76,8 @@ public class MMOVirtualWorldTest {
         // then
         MMORoom room = world.getRoom(expectedRoomId);
         Asserts.assertNull(room);
+        verify(expectedRoom, times(4)).getId();
+        verify(expectedRoom, times(2)).getName();
     }
 
 
@@ -78,8 +88,17 @@ public class MMOVirtualWorldTest {
         MMOVirtualWorld world = MMOVirtualWorld.builder()
             .maxRoomCount(expectedMaxRoomCount).build();
         MMORoom room1 = mock(MMORoom.class);
+        String room1Name = RandomUtil.randomShortAlphabetString();
+        when(room1.getName()).thenReturn(room1Name);
+
         MMORoom room2 = mock(MMORoom.class);
+        String room2Name = RandomUtil.randomShortAlphabetString();
+        when(room2.getName()).thenReturn(room2Name);
+
         MMORoom room3 = mock(MMORoom.class);
+        String room3Name = RandomUtil.randomShortAlphabetString();
+        when(room3.getName()).thenReturn(room3Name);
+
         long roomId1 = 1;
         long roomId2 = 2;
         long roomId3 = 3;

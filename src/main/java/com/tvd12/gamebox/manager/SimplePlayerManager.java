@@ -23,11 +23,6 @@ public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager
         return new Builder<>();
     }
 
-    @Override
-    protected Map<String, P> newPlayersByNameMap() {
-        return new HashMap<>();
-    }
-
     public static class Builder<U extends Player, B extends Builder<U, B>>
         extends AbstractPlayerManager.Builder<U, B> {
 

@@ -2,6 +2,7 @@ package com.tvd12.gamebox.entity;
 
 import com.tvd12.gamebox.constant.RoomStatus;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.util.RandomUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -11,6 +12,7 @@ public class RoomTest {
     public void test() {
         // given
         Room sut = Room.builder()
+            .id(1)
             .name("test")
             .build();
 
@@ -38,5 +40,18 @@ public class RoomTest {
         Asserts.assertNotEquals(me, other);
         Assert.assertEquals(sut.hashCode(), me.hashCode());
         Asserts.assertNotEquals(sut.hashCode(), other.hashCode());
+    }
+
+    @Test
+    public void newRoomByNameTest() {
+        // given
+        String roomName = RandomUtil.randomShortAlphabetString();
+
+        // when
+        Room sut = new Room(roomName);
+
+        // then
+        Asserts.assertTrue(sut.getId() > 0);
+        Asserts.assertEquals(sut.getName(), roomName);
     }
 }

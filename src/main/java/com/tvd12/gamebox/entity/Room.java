@@ -20,6 +20,11 @@ public class Room {
 
     protected static final String NAME_PREFIX = "Room#";
 
+    public Room(String name) {
+        this.name = name;
+        this.id = Builder.ID_GENTOR.incrementAndGet();
+    }
+
     protected Room(Builder<?> builder) {
         this.id = builder.id;
         this.name = builder.name;
@@ -56,9 +61,9 @@ public class Room {
     @SuppressWarnings("unchecked")
     public static class Builder<B extends Builder<B>> implements EzyBuilder<Room> {
 
-        protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
         protected Long id;
         protected String name;
+        protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
 
         public B id(long id) {
             this.id = id;

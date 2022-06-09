@@ -4,7 +4,6 @@ import com.tvd12.gamebox.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -162,21 +161,6 @@ public interface PlayerManager<P extends Player> {
      * @param players the player to remove
      */
     void removePlayers(Collection<P> players);
-
-    /**
-     * Get lock mapped to player's name.
-     *
-     * @param username the player's name
-     * @return the lock
-     */
-    Lock getLock(String username);
-
-    /**
-     * Remove lock mapped to player's name.
-     *
-     * @param username the player's name
-     */
-    void removeLock(String username);
 
     /**
      * Clear all user.
