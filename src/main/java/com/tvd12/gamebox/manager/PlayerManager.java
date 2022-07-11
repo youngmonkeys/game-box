@@ -4,6 +4,7 @@ import com.tvd12.gamebox.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -174,6 +175,13 @@ public interface PlayerManager<P extends Player> {
      * @return the player count
      */
     int countPlayers(Predicate<P> tester);
+
+    /**
+     * For loop players.
+     *
+     * @param consumer the player consumer
+     */
+    void forEach(Consumer<P> consumer);
 
     /**
      * Filter player to list.

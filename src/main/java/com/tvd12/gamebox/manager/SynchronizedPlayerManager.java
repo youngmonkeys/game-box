@@ -1,11 +1,10 @@
 package com.tvd12.gamebox.manager;
 
 import com.tvd12.gamebox.entity.Player;
-import lombok.Getter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -131,6 +130,20 @@ public class SynchronizedPlayerManager<P extends Player>
     public int countPlayers(Predicate<P> tester) {
         synchronized (this) {
             return super.countPlayers(tester);
+        }
+    }
+
+    @Override
+    public void forEach(Consumer<P> consumer) {
+        synchronized (this) {
+            super.forEach(consumer);
+        }
+    }
+
+    @Override
+    public List<P> filterPlayers(Predicate<P> tester) {
+        synchronized (this) {
+            return super.filterPlayers(tester);
         }
     }
 

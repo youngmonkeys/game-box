@@ -10,10 +10,7 @@ import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class SynchronizedPlayerManagerTest {
 
@@ -92,6 +89,12 @@ public class SynchronizedPlayerManagerTest {
             sut.filterPlayers(it -> it.getName().equals("test")),
             Collections.singletonList(player1),
             false
+        );
+        List<Player> playerList = new ArrayList<>();
+        sut.forEach(playerList::add);
+        Asserts.assertEquals(
+            playerList,
+            sut.getPlayerList()
         );
 
         sut.clear();

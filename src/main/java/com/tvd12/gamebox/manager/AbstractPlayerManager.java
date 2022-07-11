@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -141,6 +142,11 @@ public abstract class AbstractPlayerManager<P extends Player>
             .stream()
             .filter(tester)
             .count();
+    }
+
+    @Override
+    public void forEach(Consumer<P> consumer) {
+        playerByName.values().forEach(consumer);
     }
 
     @Override
