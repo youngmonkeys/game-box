@@ -1,6 +1,7 @@
-package com.tvd12.gamebox.entity;
+package com.tvd12.gamebox.testing.entity;
 
 import com.tvd12.gamebox.constant.RoomStatus;
+import com.tvd12.gamebox.entity.Room;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.Assert;

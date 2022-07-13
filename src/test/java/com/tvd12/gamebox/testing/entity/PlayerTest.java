@@ -1,7 +1,8 @@
-package com.tvd12.gamebox.entity;
+package com.tvd12.gamebox.testing.entity;
 
 import com.tvd12.gamebox.constant.PlayerRole;
 import com.tvd12.gamebox.constant.PlayerStatus;
+import com.tvd12.gamebox.entity.Player;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.Assert;
 import org.testng.annotations.Test;

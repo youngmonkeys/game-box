@@ -1,5 +1,6 @@
-package com.tvd12.gamebox.entity;
+package com.tvd12.gamebox.testing.entity;
 
+import com.tvd12.gamebox.entity.NormalRoom;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.annotations.Test;
 
