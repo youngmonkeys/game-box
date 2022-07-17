@@ -180,7 +180,7 @@ public abstract class AbstractRoomManager<R extends Room>
     @Override
     public String toString() {
         return "roomByName.size = " + roomByName.size() +
-            ", roomById.size = " + roomById.size() ;
+            ", roomById.size = " + roomById.size();
     }
 
     @SuppressWarnings("unchecked")

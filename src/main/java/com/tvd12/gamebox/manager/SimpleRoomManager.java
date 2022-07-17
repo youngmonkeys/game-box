@@ -2,9 +2,6 @@ package com.tvd12.gamebox.manager;
 
 import com.tvd12.gamebox.entity.Room;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class SimpleRoomManager<R extends Room> extends AbstractRoomManager<R> {
 
     public SimpleRoomManager() {

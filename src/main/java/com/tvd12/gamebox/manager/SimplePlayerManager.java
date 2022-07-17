@@ -2,10 +2,8 @@ package com.tvd12.gamebox.manager;
 
 import com.tvd12.gamebox.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class SimplePlayerManager<P extends Player> extends AbstractPlayerManager<P> {
+public class SimplePlayerManager<P extends Player>
+    extends AbstractPlayerManager<P> {
 
     public SimplePlayerManager() {
         this(999999999);

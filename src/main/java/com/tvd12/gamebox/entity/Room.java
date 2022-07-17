@@ -22,7 +22,7 @@ public class Room {
 
     public Room(String name) {
         this.name = name;
-        this.id = Builder.ID_GENTOR.incrementAndGet();
+        this.id = Builder.ID_GENERATOR.incrementAndGet();
     }
 
     protected Room(Builder<?> builder) {
@@ -59,11 +59,13 @@ public class Room {
     }
 
     @SuppressWarnings("unchecked")
-    public static class Builder<B extends Builder<B>> implements EzyBuilder<Room> {
+    public static class Builder<B extends Builder<B>>
+        implements EzyBuilder<Room> {
 
         protected Long id;
         protected String name;
-        protected static final AtomicLong ID_GENTOR = new AtomicLong(0);
+        protected static final AtomicLong ID_GENERATOR
+            = new AtomicLong(0);
 
         public B id(long id) {
             this.id = id;
@@ -78,7 +80,7 @@ public class Room {
         @Override
         public Room build() {
             if (id == null) {
-                this.id = ID_GENTOR.incrementAndGet();
+                this.id = ID_GENERATOR.incrementAndGet();
             }
             if (name == null) {
                 this.name = NAME_PREFIX + id;

@@ -166,7 +166,8 @@ public class DefaultLocatedPlayerManager implements LocatedPlayerManager {
      * @param currentLocation current considered location
      * @param condition       condition to test player
      * @param jumpFunction    specify how to jump to next entry
-     * @param anchorSupplier  specify which entry to jump to when reaching the end (next entry = null)
+     * @param anchorSupplier  specify which entry to jump to
+     *                        when reaching the end (next entry = null)
      * @return the first player that satisfies condition (in circle, not in current position)
      */
     private LocatedPlayer findCircle(
