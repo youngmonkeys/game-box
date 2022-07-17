@@ -1,6 +1,5 @@
 package com.tvd12.gamebox.manager;
 
-import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.exception.LocationNotAvailableException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
@@ -13,14 +12,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class DefaultLocatedPlayerManager
-    extends EzyLoggable
-    implements LocatedPlayerManager {
+public class DefaultLocatedPlayerManager implements LocatedPlayerManager {
 
-    protected final Map<String, LocatedPlayer> playersByName
-        = newPlayersByNameMap();
-    protected final NavigableMap<Integer, LocatedPlayer> playersByLocation
-        = newPlayersByLocationsMap();
+    protected final Map<String, LocatedPlayer> playerByName
+        = newPlayerByNameMap();
+    protected final NavigableMap<Integer, LocatedPlayer> playerByLocation
+        = newPlayerByLocationsMap();
     @Getter
     @Setter
     protected LocatedPlayer master;
@@ -30,29 +27,29 @@ public class DefaultLocatedPlayerManager
 
     @Override
     public LocatedPlayer getPlayer(int location) {
-        return playersByLocation.get(location);
+        return playerByLocation.get(location);
     }
 
     @Override
     public void addPlayer(LocatedPlayer player, int location) {
-        LocatedPlayer current = playersByLocation.get(location);
+        LocatedPlayer current = playerByLocation.get(location);
         if (current != null) {
             throw new LocationNotAvailableException(
                 "location: " + location + " has owned by: " + current.getName());
         }
-        if (playersByName.containsKey(player.getName())) {
+        if (playerByName.containsKey(player.getName())) {
             throw new PlayerExistsException(player.getName());
         }
         player.setLocation(location);
-        playersByLocation.put(location, player);
-        playersByName.put(player.getName(), player);
+        playerByLocation.put(location, player);
+        playerByName.put(player.getName(), player);
     }
 
     @Override
     public LocatedPlayer removePlayer(int location) {
-        LocatedPlayer removed = playersByLocation.remove(location);
+        LocatedPlayer removed = playerByLocation.remove(location);
         if (removed != null) {
-            playersByName.remove(removed.getName());
+            playerByName.remove(removed.getName());
         }
         return removed;
     }
@@ -65,22 +62,22 @@ public class DefaultLocatedPlayerManager
 
     @Override
     public List<String> getPlayerNames() {
-        return new ArrayList<>(playersByName.keySet());
+        return new ArrayList<>(playerByName.keySet());
     }
 
     @Override
     public int getPlayerCount() {
-        return playersByLocation.size();
+        return playerByLocation.size();
     }
 
     @Override
     public boolean containsPlayer(String username) {
-        return playersByName.containsKey(username);
+        return playerByName.containsKey(username);
     }
 
     @Override
     public boolean isEmpty() {
-        return playersByLocation.isEmpty();
+        return playerByLocation.isEmpty();
     }
 
     @Override
@@ -90,11 +87,11 @@ public class DefaultLocatedPlayerManager
         }
 
         int currentLocation = player.getLocation();
-        LocatedPlayer leftPlayer = find(currentLocation, condition, playersByLocation::lowerEntry);
+        LocatedPlayer leftPlayer = find(currentLocation, condition, playerByLocation::lowerEntry);
         LocatedPlayer rightPlayer = find(
             currentLocation,
             condition,
-            playersByLocation::higherEntry
+            playerByLocation::higherEntry
         );
 
         return getCloserPlayer(leftPlayer, rightPlayer, currentLocation);
@@ -145,8 +142,8 @@ public class DefaultLocatedPlayerManager
         return findCircle(
             player.getLocation(),
             condition,
-            playersByLocation::higherEntry,
-            playersByLocation::firstEntry
+            playerByLocation::higherEntry,
+            playerByLocation::firstEntry
         );
     }
 
@@ -155,8 +152,8 @@ public class DefaultLocatedPlayerManager
         return findCircle(
             player.getLocation(),
             condition,
-            playersByLocation::lowerEntry,
-            playersByLocation::lastEntry
+            playerByLocation::lowerEntry,
+            playerByLocation::lastEntry
         );
     }
 
@@ -169,7 +166,8 @@ public class DefaultLocatedPlayerManager
      * @param currentLocation current considered location
      * @param condition       condition to test player
      * @param jumpFunction    specify how to jump to next entry
-     * @param anchorSupplier  specify which entry to jump to when reaching the end (next entry = null)
+     * @param anchorSupplier  specify which entry to jump to
+     *                        when reaching the end (next entry = null)
      * @return the first player that satisfies condition (in circle, not in current position)
      */
     private LocatedPlayer findCircle(
@@ -196,11 +194,11 @@ public class DefaultLocatedPlayerManager
         return next.getValue();
     }
 
-    protected Map<String, LocatedPlayer> newPlayersByNameMap() {
+    protected Map<String, LocatedPlayer> newPlayerByNameMap() {
         return new HashMap<>();
     }
 
-    protected NavigableMap<Integer, LocatedPlayer> newPlayersByLocationsMap() {
+    protected NavigableMap<Integer, LocatedPlayer> newPlayerByLocationsMap() {
         return new TreeMap<>();
     }
 
@@ -209,7 +207,7 @@ public class DefaultLocatedPlayerManager
         return "(" +
             "master: " + master + ", " +
             "speakinger: " + speakinger + ", " +
-            "playersByLocation: " + playersByLocation +
+            "playerByLocation: " + playerByLocation +
             ")";
     }
 }

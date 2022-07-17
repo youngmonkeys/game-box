@@ -1,6 +1,7 @@
 package com.tvd12.gamebox.testing.manager;
 
 import com.tvd12.gamebox.entity.LocatedRoom;
+import com.tvd12.gamebox.entity.Room;
 import com.tvd12.gamebox.exception.MaxRoomException;
 import com.tvd12.gamebox.exception.RoomExistsException;
 import com.tvd12.gamebox.manager.SynchronizedRoomManager;
@@ -35,7 +36,6 @@ public class SynchronizedRoomManagerTest {
 
         // when
         // then
-        Asserts.assertNotNull(sut.getSynchronizedLock());
         sut.addRoom(room1, false);
         sut.addRoom(room1, false);
         Throwable e1 = Asserts.assertThrows(() -> sut.addRoom(room1, true));
@@ -98,5 +98,20 @@ public class SynchronizedRoomManagerTest {
 
         sut.clear();
         sut.removeRoom((LocatedRoom) null);
+    }
+
+    @Test
+    public void toStringTest() {
+        // given
+        SynchronizedRoomManager<Room> sut = new SynchronizedRoomManager<>();
+
+        // when
+        String actual = sut.toString();
+
+        // then
+        Asserts.assertEquals(
+            actual,
+            "roomByName.size = 0, roomById.size = 0"
+        );
     }
 }

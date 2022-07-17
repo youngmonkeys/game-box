@@ -1,5 +1,8 @@
-package com.tvd12.gamebox.entity;
+package com.tvd12.gamebox.testing.entity;
 
+import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.MMORoom;
+import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.manager.DefaultPlayerManager;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 import com.tvd12.gamebox.math.Vec3;

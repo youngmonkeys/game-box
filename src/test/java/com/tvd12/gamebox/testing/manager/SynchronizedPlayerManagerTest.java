@@ -1,15 +1,16 @@
 package com.tvd12.gamebox.testing.manager;
 
+import com.tvd12.ezyfox.collect.Sets;
 import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.exception.MaxPlayerException;
 import com.tvd12.gamebox.exception.PlayerExistsException;
 import com.tvd12.gamebox.manager.SynchronizedPlayerManager;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.locks.Lock;
+import java.util.*;
 
 public class SynchronizedPlayerManagerTest {
 
@@ -38,7 +39,6 @@ public class SynchronizedPlayerManagerTest {
         // when
         // then
         Asserts.assertEquals(sut.getMaxPlayer(), 2);
-        Asserts.assertNotNull(sut.getSynchronizedLock());
         Asserts.assertEquals(sut.getPlayer("test"), player1);
         Asserts.assertNull(sut.getPlayer("unknown"));
         Asserts.assertEquals(sut.getPlayer("test", () -> null), player1);
@@ -66,8 +66,6 @@ public class SynchronizedPlayerManagerTest {
         Asserts.assertEqualsType(e2, MaxPlayerException.class);
         Asserts.assertEquals(sut.getPlayerCount(), 2);
         Asserts.assertFalse(sut.available());
-        Asserts.assertNotNull(sut.getLock("test"));
-        sut.removeLock("test");
 
         sut.removePlayers(Collections.singletonList(player1));
         Asserts.assertEquals(sut.getPlayerCount(), 1);
@@ -92,9 +90,13 @@ public class SynchronizedPlayerManagerTest {
             Collections.singletonList(player1),
             false
         );
+        List<Player> playerList = new ArrayList<>();
+        sut.forEach(playerList::add);
+        Asserts.assertEquals(
+            playerList,
+            sut.getPlayerList()
+        );
 
-        Lock lock = sut.getLock("test");
-        lock.lock();
         sut.clear();
         sut.removePlayer((MMOPlayer) null);
     }
@@ -107,5 +109,34 @@ public class SynchronizedPlayerManagerTest {
         // when
         // then
         Asserts.assertTrue(sut.available());
+    }
+
+    @Test
+    public void getPlayerListAndToStringTest() {
+        // given
+        String player1Name = RandomUtil.randomShortAlphabetString();
+        Player player1 = new Player(player1Name);
+
+        String player2Name = RandomUtil.randomShortAlphabetString();
+        Player player2 = new Player(player2Name);
+
+        SynchronizedPlayerManager<Player> sut = new SynchronizedPlayerManager<>();
+        sut.addPlayer(player1);
+        sut.addPlayer(player2);
+
+        // when
+        List<Player> actual = sut.getPlayerList();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(actual),
+            Sets.newHashSet(player1, player2),
+            false
+        );
+
+        Asserts.assertEquals(
+            sut.toString(),
+            "playerByName.size = 2"
+        );
     }
 }

@@ -75,26 +75,33 @@ public class MMORoom extends NormalRoom {
 
     @SuppressWarnings("unchecked")
     public void update() {
-        List<MMOPlayer> playerList = playerManager.getPlayerList();
-        playerList.forEach(player -> {
+        playerManager.getPlayerList(playerBuffer);
+        try {
+            updatePlayers();
+            notifyUpdatedHandlers();
+        } finally {
+            playerBuffer.clear();
+        }
+    }
+
+    protected void updatePlayers() {
+        for (MMOPlayer player : playerBuffer) {
             player.clearNearByPlayers();
-            playerList.forEach(other -> {
+        }
+        for (int i = 0; i < playerBuffer.size(); ++i) {
+            MMOPlayer player = playerBuffer.get(i);
+            for (int k = i; k < playerBuffer.size(); ++k) {
+                MMOPlayer other = playerBuffer.get(k);
                 double distance = player.getPosition().distance(other.getPosition());
                 if (distance <= this.distanceOfInterest) {
                     player.addNearbyPlayer(other);
-                } else {
-                    player.removeNearByPlayer(other);
+                    other.addNearbyPlayer(player);
                 }
-            });
-        });
-
-        notifyUpdatedHandlers();
+            }
+        }
     }
 
-    @SuppressWarnings("unchecked")
     private void notifyUpdatedHandlers() {
-        playerBuffer.clear();
-        playerManager.getPlayerList(playerBuffer);
         for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
             handler.onRoomUpdated(this, playerBuffer);
         }

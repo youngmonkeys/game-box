@@ -39,6 +39,8 @@ public interface RoomManager<R extends Room> {
 
     int getRoomCount();
 
+    int getMaxRoom();
+
     boolean containsRoom(long id);
 
     boolean containsRoom(String name);

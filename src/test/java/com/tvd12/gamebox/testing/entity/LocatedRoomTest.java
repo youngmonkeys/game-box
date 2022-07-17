@@ -1,5 +1,7 @@
-package com.tvd12.gamebox.entity;
+package com.tvd12.gamebox.testing.entity;
 
+import com.tvd12.gamebox.entity.LocatedPlayer;
+import com.tvd12.gamebox.entity.LocatedRoom;
 import com.tvd12.gamebox.exception.NoSlotException;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
 import com.tvd12.test.assertion.Asserts;

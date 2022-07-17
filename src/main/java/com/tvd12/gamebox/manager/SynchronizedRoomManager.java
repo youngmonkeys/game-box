@@ -1,15 +1,12 @@
 package com.tvd12.gamebox.manager;
 
 import com.tvd12.gamebox.entity.Room;
-import lombok.Getter;
 
 import java.util.List;
 import java.util.function.Predicate;
 
-public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager<R> {
-
-    @Getter
-    protected final Object synchronizedLock = new Object();
+public class SynchronizedRoomManager<R extends Room>
+    extends AbstractRoomManager<R> {
 
     public SynchronizedRoomManager() {
         this(10000);
@@ -30,154 +27,126 @@ public class SynchronizedRoomManager<R extends Room> extends AbstractRoomManager
 
     @Override
     public void addRoom(R room, boolean failIfAdded) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.addRoom(room, failIfAdded);
         }
-        logger.info(
-            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-            getMessagePrefix(),
-            room,
-            roomsByName.size(),
-            roomsById.size()
-        );
     }
 
     @Override
     public void addRooms(R[] rooms, boolean failIfAdded) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.addRooms(rooms, failIfAdded);
         }
     }
 
     @Override
     public void addRooms(Iterable<R> rooms, boolean failIfAdded) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.addRooms(rooms, failIfAdded);
         }
-        logger.info(
-            "{} add rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-            getMessagePrefix(),
-            rooms,
-            roomsByName.size(),
-            roomsById.size()
-        );
     }
 
     @Override
     public R getRoom(long id) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoom(id);
         }
     }
 
     @Override
     public R getRoom(String name) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoom(name);
         }
     }
 
     @Override
     public R getRoom(Predicate<R> predicate) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoom(predicate);
         }
     }
 
     @Override
     public List<R> getRoomList() {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoomList();
         }
     }
 
     @Override
     public void getRoomList(List<R> buffer) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.getRoomList(buffer);
         }
     }
 
     @Override
     public List<R> getRoomList(Predicate<R> predicate) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoomList(predicate);
         }
     }
 
     @Override
     public int getRoomCount() {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.getRoomCount();
         }
     }
 
     @Override
     public boolean containsRoom(long id) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.containsRoom(id);
         }
     }
 
     @Override
     public boolean containsRoom(String name) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.containsRoom(name);
         }
     }
 
     @Override
     public void removeRoom(R room) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.removeRoom(room);
         }
-        logger.info(
-            "{} remove room: {}, roomsByName.size = {}, roomsById.size = {}",
-            getMessagePrefix(),
-            room,
-            roomsByName.size(),
-            roomsById.size()
-        );
     }
 
     @Override
     public void removeRoom(long id) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.removeRoom(id);
         }
     }
 
     @Override
     public void removeRoom(String name) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.removeRoom(name);
         }
     }
 
     @Override
     public void removeRooms(Iterable<R> rooms) {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.removeRooms(rooms);
         }
-        logger.info(
-            "{} remove rooms: {}, roomsByName.size = {}, roomsById.size = {}",
-            getMessagePrefix(),
-            rooms,
-            roomsByName.size(),
-            roomsById.size()
-        );
     }
 
     @Override
     public boolean available() {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             return super.available();
         }
     }
 
     @Override
     public void clear() {
-        synchronized (synchronizedLock) {
+        synchronized (this) {
             super.clear();
         }
     }
