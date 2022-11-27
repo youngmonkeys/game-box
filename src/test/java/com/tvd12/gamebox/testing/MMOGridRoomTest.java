@@ -22,7 +22,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(800)
-            .distanceOfInterest(18)
+            .distanceOfInterest(4)
             .build();
         
         for (int i = 0; i < room.getMaxPlayer(); ++i) {
@@ -64,7 +64,7 @@ public class MMOGridRoomTest {
             .maxZ(maxZ)
             .cellSize(cellSize)
             .maxPlayer(maxPlayer)
-            .distanceOfInterest(RandomUtil.randomSmallDouble())
+            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
         
         // then
@@ -83,7 +83,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(RandomUtil.randomSmallDouble())
+            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
 
         Vec3 expectedPosition = new Vec3(40, 40, 40);
@@ -105,7 +105,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(RandomUtil.randomSmallDouble())
+            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
 
         MMOPlayer player1 = new MMOPlayer("player1");

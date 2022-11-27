@@ -32,7 +32,7 @@ public class MMOGridRoom extends MMORoom {
         this.maxZ = builder.maxZ;
         this.cellSize = builder.cellSize;
         this.unitByPlayer = new ConcurrentHashMap<>();
-        this.cellRangeOfInterest = 1 + (int) (builder.distanceOfInterest / this.cellSize);
+        this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
         final int maxCellX = Math.max(1, maxX / cellSize);
         final int maxCellY = Math.max(1, maxY / cellSize);
         final int maxCellZ = Math.max(1, maxZ / cellSize);
@@ -145,15 +145,9 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void handleUnit(Unit unit, Unit other) {
-        MMOPlayer player = unit.getPlayer();
         while (other != null) {
-            double distance = player.getPosition().distance(
-                other.getPlayer().getPosition()
-            );
-            if (distance <= this.distanceOfInterest) {
-                player.addNearbyPlayer(other.getPlayer());
-                other.getPlayer().addNearbyPlayer(player);
-            }
+            unit.getPlayer().addNearbyPlayer(other.getPlayer());
+            other.getPlayer().addNearbyPlayer(unit.getPlayer());
             other = other.next;
         }
     }
