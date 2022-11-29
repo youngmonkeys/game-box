@@ -99,6 +99,9 @@ public class MMOGridRoom extends MMORoom {
 
     @Override
     public void updatePlayers() {
+        for (MMOPlayer player : playerBuffer) {
+            player.clearNearByPlayers();
+        }
         for (int ix = 0; ix < cells.length; ++ix) {
             for (int iy = 0; iy < cells[ix].length; ++iy) {
                 for (int iz = 0; iz < cells[ix][iy].length; ++iz) {
