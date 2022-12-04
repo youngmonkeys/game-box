@@ -1,176 +1,169 @@
 package com.tvd12.gamebox.entity.octree;
 
-import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.PositionAware;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class OcTreeNode {
+public class OcTreeNode<T extends PositionAware> {
 
-    private final Map<String, MMOPlayer> playerByName = new ConcurrentHashMap<>();
-    private final List<OcTreeNode> children = new ArrayList<>();
+    private static final int NUM_CHILDREN = 8;
+    private final Set<T> items = ConcurrentHashMap.newKeySet();
+    private final List<OcTreeNode<T>> children = new ArrayList<>();
     @Setter
-    private OcTreeNode parentNode = null;
+    private OcTreeNode<T> parentNode = null;
     private final OcVolume ocVolume;
-    private final OcTree ocTree;
-    private final int maxPoints;
+    private final int maxItems;
 
-    public OcTreeNode(OcTree ocTree, OcVolume ocVolume) {
-        this.ocTree = ocTree;
+    public OcTreeNode(OcVolume ocVolume, int maxItems) {
         this.ocVolume = ocVolume;
-        this.maxPoints = ocTree.getMaxPoints();
+        this.maxItems = maxItems;
     }
 
-    public OcTreeNode(
-        OcTree ocTree,
-        Vec3 topLeftFront,
-        Vec3 bottomRightBack
-    ) {
-        this(ocTree, new OcVolume(topLeftFront, bottomRightBack));
-    }
-
-    public boolean insert(MMOPlayer player, Vec3 position) {
-        if (!this.ocVolume.containsPoint(position)) {
-            return false;
+    public OcTreeNode<T> insert(T newItem, Vec3 position) {
+        if (!this.ocVolume.containsPosition(position)) {
+            return null;
         }
 
-        if (this.playerByName.size() < maxPoints) {
-            player.setPosition(position);
-            this.playerByName.put(player.getName(), player);
-            this.ocTree.saveNodeByPlayerName(player.getName(), this);
-            return true;
+        if (this.items.size() < maxItems) {
+            this.items.add(newItem);
+            return this;
         }
 
-        if (this.children.size() == 0) {
+        if (isLeaf()) {
             createOctants();
         }
-        
-        this.playerByName.values().forEach(
-            mmoPlayer -> insertPlayerToOneOctant(mmoPlayer, mmoPlayer.getPosition())
+
+        this.items.forEach(
+            item -> insertItemToOneOctant(item, item.getPosition())
         );
-        this.playerByName.clear();
-        return insertPlayerToOneOctant(player, position);
+        this.items.clear();
+        return insertItemToOneOctant(newItem, position);
     }
 
-    public boolean remove(MMOPlayer player) {
-        if (!this.ocVolume.containsPoint(player.getPosition())) {
+    private OcTreeNode<T> insertItemToOneOctant(T item, Vec3 position) {
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            OcTreeNode<T> nodeHavingInsertedItem = this.children.get(i)
+                .insert(item, position);
+            if (nodeHavingInsertedItem != null) {
+                return nodeHavingInsertedItem;
+            }
+        }
+        return null;
+    }
+
+    public boolean remove(T item) {
+        if (!this.ocVolume.containsPosition(item.getPosition())) {
             return false;
         }
         if (this.children.size() > 0) {
-            for (int i = 0; i < 8; i++) {
-                boolean isPlayerDeleted = this.children.get(i)
-                    .remove(player);
-                if (isPlayerDeleted) {
+            for (int i = 0; i < NUM_CHILDREN; i++) {
+                boolean isPlayerRemoved = this.children.get(i)
+                    .remove(item);
+                if (isPlayerRemoved) {
                     return true;
                 }
             }
             return false;
         }
-        if (!playerByName.containsKey(player.getName())) {
+        if (!this.items.contains(item)) {
             return false;
         } else {
-            playerByName.remove(player.getName());
+            this.items.remove(item);
             tryMergingChildrenOfParentNode();
             return true;
         }
     }
 
     private void tryMergingChildrenOfParentNode() {
-        if (parentNode != null && parentNode.countPoints() <= maxPoints) {
-            this.parentNode.merge();
-        }
-    }
-    
-    private void merge() {
-        List<MMOPlayer> players = new ArrayList<>();
-        merge(players);
-        players.forEach(player -> this.playerByName.put(player.getName(), player));
-        this.children.clear();
-        tryMergingChildrenOfParentNode();
-    }
-    
-    private void merge(List<MMOPlayer> players) {
-        if (this.children.size() == 0) {
-            players.addAll(this.playerByName.values());
-            playerByName.clear();
-            return;
-        }
-        for (int i = 0; i < 8; i++) {
-            this.children.get(i).merge(players);
+        if (this.parentNode != null && this.parentNode.countItems() <= maxItems) {
+            this.parentNode.mergeChildren();
         }
     }
 
-    public int countPoints() {
-        if (this.children.size() == 0) {
-            return playerByName.size();
+    private void mergeChildren() {
+        List<T> itemsInChildren = new ArrayList<>();
+        getItemsInChildren(itemsInChildren);
+        this.items.addAll(itemsInChildren);
+        this.children.clear();
+        tryMergingChildrenOfParentNode();
+    }
+
+    private void getItemsInChildren(List<T> players) {
+        if (isLeaf()) {
+            players.addAll(this.items);
+            this.items.clear();
+            return;
+        }
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            this.children.get(i).getItemsInChildren(players);
+        }
+    }
+
+    public int countItems() {
+        if (isLeaf()) {
+            return this.items.size();
         }
         int count = 0;
-        for (int i = 0; i < 8; i++) {
-            count += this.children.get(i).countPoints();
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            count += this.children.get(i).countItems();
         }
         return count;
     }
-    
-    public List<MMOPlayer> search(OcVolume searchVolume, List<MMOPlayer> matches) {
+
+    public List<T> search(OcVolume searchVolume, List<T> matches) {
         if (matches == null) {
             matches = new ArrayList<>();
         }
         if (!this.ocVolume.doesOverlap(searchVolume)) {
             return matches;
-        } else {
-            for (MMOPlayer player : playerByName.values()) {
-                if (searchVolume.containsPoint(player.getPosition())) {
-                    matches.add(player);
+        }
+        if (isLeaf()) {
+            for (T item : this.items) {
+                if (searchVolume.containsPosition(item.getPosition())) {
+                    matches.add(item);
                 }
             }
-            if (this.children.size() > 0) {
-                for (int i = 0; i < 8; i++) {
-                    children.get(i)
-                        .search(searchVolume, matches);
-                }
-            }
+            return matches;
+        }
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            this.children.get(i)
+                .search(searchVolume, matches);
         }
         return matches;
     }
-    
-    private boolean insertPlayerToOneOctant(MMOPlayer player, Vec3 position) {
-        for (int i = 0; i < 8; i++) {
-            boolean isPlayerAdded = this.children.get(i)
-                .insert(player, position);
-            if (isPlayerAdded) {
-                return true;
-            }
-        }
-        return false;
-    }
-   
+
     private void createOctants() {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < NUM_CHILDREN; i++) {
             OcVolume volume = this.ocVolume.getOctant(OcLocation.of(i));
-            OcTreeNode child = new OcTreeNode(ocTree, volume);
-            children.add(child);
+            OcTreeNode<T> child = new OcTreeNode<>(volume, maxItems);
+            this.children.add(child);
             child.setParentNode(this);
         }
     }
 
-    public OcTreeNode findNodeByPosition(Vec3 position) {
-        if (!ocVolume.containsPoint(position)) {
+    public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
+        if (!this.ocVolume.containsPosition(position)) {
             return null;
         }
-        if (this.children.size() == 0) {
+        if (isLeaf()) {
             return this;
         }
-        for (int i = 0; i < 8; i++) {
-            OcTreeNode node = this.children.get(i)
-                .findNodeByPosition(position);
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            OcTreeNode<T> node = this.children.get(i)
+                .findNodeContainingPosition(position);
             if (node != null) {
                 return node;
             }
         }
         return null;
+    }
+    
+    public boolean isLeaf() {
+        return this.children.size() == 0;
     }
 }

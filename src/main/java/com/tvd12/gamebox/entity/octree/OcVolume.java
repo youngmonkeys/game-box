@@ -14,7 +14,7 @@ public class OcVolume {
     private Vec3 topLeftFront;
     private Vec3 bottomRightBack;
 
-    public boolean containsPoint(Vec3 position) {
+    public boolean containsPosition(Vec3 position) {
         return position.x >= this.topLeftFront.x && position.x < this.bottomRightBack.x
             && position.y >= this.topLeftFront.y && position.y < this.bottomRightBack.y
             && position.z >= this.topLeftFront.z && position.z < this.bottomRightBack.z;

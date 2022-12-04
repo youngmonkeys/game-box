@@ -1,7 +1,6 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.gamebox.entity.octree.OcTree;
-import com.tvd12.gamebox.entity.octree.OcTreeNode;
 import com.tvd12.gamebox.entity.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
 
@@ -9,36 +8,39 @@ import java.util.List;
 
 public class MMOOcTreeRoom extends MMORoom {
 
-    private final OcTree ocTree;
+    private final OcTree<MMOPlayer> ocTree;
 
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
-        this.ocTree = new OcTree(
+        this.ocTree = new OcTree<>(
             builder.maxPointsPerNode,
             new OcVolume(builder.topLeftFront, builder.bottomRightBack)
         );
     }
 
-    @Override
-    public void addPlayer(Player player) {
-        super.addPlayer(player);
-        this.ocTree.insert((MMOPlayer) player);
+    public void setPlayerPosition(MMOPlayer player, Vec3 position) {
+        if (!this.ocTree.contains(player)) {
+            addNewPlayer(player, position);
+        } else {
+            updateExistingPlayer(player, position);
+        }
     }
 
-    public void setPlayerPosition(MMOPlayer player, Vec3 position) {
-        if (!this.ocTree.containsPlayer(player)) {
-            super.addPlayer(player);
-            this.ocTree.insert(player, position);
-            return;
-        }
-        OcTreeNode currentNode = this.ocTree.getNodeByPlayerName(player.getName());
-        OcTreeNode newNode = this.ocTree.findNodeByPosition(position);
-        if (currentNode == newNode) {
+    private void addNewPlayer(MMOPlayer player, Vec3 position) {
+        super.addPlayer(player);
+        boolean isPlayerInserted = this.ocTree.insert(player, position);
+        if (isPlayerInserted) {
             player.setPosition(position);
-            return;
         }
-        this.ocTree.remove(player);
-        this.ocTree.insert(player, position);
+    }
+
+    private void updateExistingPlayer(MMOPlayer player, Vec3 position) {
+        if (this.ocTree.checkItemRemainingAtSameNode(player, position)) {
+            player.setPosition(position);
+        } else {
+            this.ocTree.remove(player);
+            this.ocTree.insert(player, position);
+        }
     }
 
     @Override
@@ -54,7 +56,7 @@ public class MMOOcTreeRoom extends MMORoom {
             nearByPlayers.forEach(player::addNearbyPlayer);
         }
     }
-    
+
     public static Builder builder() {
         return new Builder();
     }

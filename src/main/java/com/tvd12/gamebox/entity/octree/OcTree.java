@@ -1,6 +1,6 @@
 package com.tvd12.gamebox.entity.octree;
 
-import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.PositionAware;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 
@@ -9,61 +9,67 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class OcTree {
+public class OcTree<T extends PositionAware> {
 
-    private final OcTreeNode root;
-    private final Map<String, OcTreeNode> nodeByPlayerName = new ConcurrentHashMap<>();
+    private final OcTreeNode<T> root;
+    private final Map<T, OcTreeNode<T>> nodeByItem = new ConcurrentHashMap<>();
 
     @Getter
-    private final int maxPoints;
+    private final int maxItemsPerNode;
 
-    public OcTree(int maxPoints, OcVolume ocVolume) {
-        this.maxPoints = maxPoints;
-        this.root = new OcTreeNode(this, ocVolume);
+    public OcTree(int maxItemsPerNode, OcVolume ocVolume) {
+        this.maxItemsPerNode = maxItemsPerNode;
+        this.root = new OcTreeNode<>(ocVolume, maxItemsPerNode);
     }
     
-    public boolean insert(MMOPlayer player) {
-        return insert(player, player.getPosition());
+    public boolean insert(T item) {
+        return insert(item, item.getPosition());
     }
 
-    public boolean insert(MMOPlayer player, Vec3 position) {
-        return this.root.insert(player, position);
+    public boolean insert(T item, Vec3 position) {
+        OcTreeNode<T> nodeHavingInsertedItem = this.root.insert(item, position);
+        if (nodeHavingInsertedItem != null) {
+            nodeByItem.put(item, nodeHavingInsertedItem);
+        }
+        return (nodeHavingInsertedItem != null);
     }
     
-    public boolean remove(MMOPlayer player) {
-        if (!nodeByPlayerName.containsKey(player.getName())) {
+    public boolean remove(T item) {
+        if (!nodeByItem.containsKey(item)) {
             return false;
         }
-        boolean isPlayerRemoved = this.root.remove(player);
-        if (isPlayerRemoved) {
-            nodeByPlayerName.remove(player.getName());
+        boolean isItemRemoved = this.root.remove(item);
+        if (isItemRemoved) {
+            nodeByItem.remove(item);
         }
-        return isPlayerRemoved;
+        return isItemRemoved;
     }
 
-    public List<MMOPlayer> search(MMOPlayer player, float range) {
-        Vec3 topLeftFront = new Vec3(player.getPosition());
+    public List<T> search(T item, float range) {
+        Vec3 topLeftFront = new Vec3(item.getPosition());
         topLeftFront.subtract(new Vec3(range, range, range));
-        Vec3 bottomRightBack = new Vec3(player.getPosition());
+        Vec3 bottomRightBack = new Vec3(item.getPosition());
         bottomRightBack.add(new Vec3(range, range, range));
         OcVolume searchVolume = new OcVolume(topLeftFront, bottomRightBack);
-        List<MMOPlayer> matches = new ArrayList<>();
+        List<T> matches = new ArrayList<>();
         return this.root.search(searchVolume, matches);
     }
     
-    public void saveNodeByPlayerName(String playerName, OcTreeNode node) {
-        nodeByPlayerName.put(playerName, node);
+    public boolean contains(T item) {
+        return nodeByItem.containsKey(item);
     }
     
-    public boolean containsPlayer(MMOPlayer player) {
-        return nodeByPlayerName.containsKey(player.getName());
-    }
-    
-    public OcTreeNode getNodeByPlayerName(String playerName) {
-        return nodeByPlayerName.get(playerName);
+    public OcTreeNode<T> getNodeContainingItem(T item) {
+        return nodeByItem.get(item);
     }
 
-    public OcTreeNode findNodeByPosition(Vec3 position) {
-        return this.root.findNodeByPosition(position);
+    public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
+        return this.root.findNodeContainingPosition(position);
+    }
+    
+    public boolean checkItemRemainingAtSameNode(T item, Vec3 newPosition) {
+        OcTreeNode<T> currentNode = getNodeContainingItem(item);
+        OcTreeNode<T> newNode = findNodeContainingPosition(newPosition);
+        return (currentNode == newNode);
     }
 }
