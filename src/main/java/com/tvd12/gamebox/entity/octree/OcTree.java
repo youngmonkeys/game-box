@@ -22,16 +22,12 @@ public class OcTree<T extends PositionAware> {
         this.root = new OcTreeNode<>(ocVolume, maxItemsPerNode);
     }
     
-    public boolean insert(T item) {
-        return insert(item, item.getPosition());
-    }
-
     public boolean insert(T item, Vec3 position) {
-        OcTreeNode<T> nodeHavingInsertedItem = this.root.insert(item, position);
-        if (nodeHavingInsertedItem != null) {
-            nodeByItem.put(item, nodeHavingInsertedItem);
+        OcTreeNode<T> nodeContainingInsertedItem = this.root.insert(item, position);
+        if (nodeContainingInsertedItem != null) {
+            nodeByItem.put(item, nodeContainingInsertedItem);
         }
-        return (nodeHavingInsertedItem != null);
+        return (nodeContainingInsertedItem != null);
     }
     
     public boolean remove(T item) {
@@ -46,11 +42,7 @@ public class OcTree<T extends PositionAware> {
     }
 
     public List<T> search(T item, float range) {
-        Vec3 topLeftFront = new Vec3(item.getPosition());
-        topLeftFront.subtract(new Vec3(range, range, range));
-        Vec3 bottomRightBack = new Vec3(item.getPosition());
-        bottomRightBack.add(new Vec3(range, range, range));
-        OcVolume searchVolume = new OcVolume(topLeftFront, bottomRightBack);
+        OcVolume searchVolume = OcVolume.fromCenterAndRange(item.getPosition(), range);
         List<T> matches = new ArrayList<>();
         return this.root.search(searchVolume, matches);
     }
@@ -67,7 +59,7 @@ public class OcTree<T extends PositionAware> {
         return this.root.findNodeContainingPosition(position);
     }
     
-    public boolean checkItemRemainingAtSameNode(T item, Vec3 newPosition) {
+    public boolean isItemRemainingAtSameNode(T item, Vec3 newPosition) {
         OcTreeNode<T> currentNode = getNodeContainingItem(item);
         OcTreeNode<T> newNode = findNodeContainingPosition(newPosition);
         return (currentNode == newNode);

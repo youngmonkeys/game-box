@@ -35,22 +35,35 @@ public class OcTreeNode<T extends PositionAware> {
         }
 
         if (isLeaf()) {
-            createOctants();
+            createChildren();
         }
 
-        this.items.forEach(
-            item -> insertItemToOneOctant(item, item.getPosition())
-        );
-        this.items.clear();
-        return insertItemToOneOctant(newItem, position);
+        passItemsToChildren();
+        return insertItemToChildren(newItem, position);
     }
 
-    private OcTreeNode<T> insertItemToOneOctant(T item, Vec3 position) {
+    private void createChildren() {
         for (int i = 0; i < NUM_CHILDREN; i++) {
-            OcTreeNode<T> nodeHavingInsertedItem = this.children.get(i)
+            OcVolume volume = this.ocVolume.getOctant(OcLocation.of(i));
+            OcTreeNode<T> child = new OcTreeNode<>(volume, maxItems);
+            this.children.add(child);
+            child.setParentNode(this);
+        }
+    }
+
+    private void passItemsToChildren() {
+        this.items.forEach(
+            item -> insertItemToChildren(item, item.getPosition())
+        );
+        this.items.clear();
+    }
+
+    private OcTreeNode<T> insertItemToChildren(T item, Vec3 position) {
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            OcTreeNode<T> nodeContainingInsertedItem = this.children.get(i)
                 .insert(item, position);
-            if (nodeHavingInsertedItem != null) {
-                return nodeHavingInsertedItem;
+            if (nodeContainingInsertedItem != null) {
+                return nodeContainingInsertedItem;
             }
         }
         return null;
@@ -60,23 +73,30 @@ public class OcTreeNode<T extends PositionAware> {
         if (!this.ocVolume.containsPosition(item.getPosition())) {
             return false;
         }
-        if (this.children.size() > 0) {
-            for (int i = 0; i < NUM_CHILDREN; i++) {
-                boolean isPlayerRemoved = this.children.get(i)
-                    .remove(item);
-                if (isPlayerRemoved) {
-                    return true;
-                }
-            }
-            return false;
+        if (isLeaf()) {
+            return removeItemFromThisLeaf(item);
         }
+        return removeFromChildren(item);
+    }
+
+    private boolean removeItemFromThisLeaf(T item) {
         if (!this.items.contains(item)) {
             return false;
-        } else {
-            this.items.remove(item);
-            tryMergingChildrenOfParentNode();
-            return true;
         }
+        this.items.remove(item);
+        tryMergingChildrenOfParentNode();
+        return true;
+    }
+
+    private boolean removeFromChildren(T item) {
+        for (int i = 0; i < NUM_CHILDREN; i++) {
+            boolean isPlayerRemoved = this.children.get(i)
+                .remove(item);
+            if (isPlayerRemoved) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void tryMergingChildrenOfParentNode() {
@@ -108,6 +128,10 @@ public class OcTreeNode<T extends PositionAware> {
         if (isLeaf()) {
             return this.items.size();
         }
+        return countItemsFromChildren();
+    }
+
+    private int countItemsFromChildren() {
         int count = 0;
         for (int i = 0; i < NUM_CHILDREN; i++) {
             count += this.children.get(i).countItems();
@@ -123,27 +147,26 @@ public class OcTreeNode<T extends PositionAware> {
             return matches;
         }
         if (isLeaf()) {
-            for (T item : this.items) {
-                if (searchVolume.containsPosition(item.getPosition())) {
-                    matches.add(item);
-                }
-            }
-            return matches;
+            return searchFromThisLeaf(searchVolume, matches);
         }
+        return searchFromChildren(searchVolume, matches);
+    }
+
+    private List<T> searchFromThisLeaf(OcVolume searchVolume, List<T> matches) {
+        for (T item : this.items) {
+            if (searchVolume.containsPosition(item.getPosition())) {
+                matches.add(item);
+            }
+        }
+        return matches;
+    }
+
+    private List<T> searchFromChildren(OcVolume searchVolume, List<T> matches) {
         for (int i = 0; i < NUM_CHILDREN; i++) {
             this.children.get(i)
                 .search(searchVolume, matches);
         }
         return matches;
-    }
-
-    private void createOctants() {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
-            OcVolume volume = this.ocVolume.getOctant(OcLocation.of(i));
-            OcTreeNode<T> child = new OcTreeNode<>(volume, maxItems);
-            this.children.add(child);
-            child.setParentNode(this);
-        }
     }
 
     public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
@@ -153,6 +176,10 @@ public class OcTreeNode<T extends PositionAware> {
         if (isLeaf()) {
             return this;
         }
+        return findNodeContainingPositionFromChildren(position);
+    }
+
+    private OcTreeNode<T> findNodeContainingPositionFromChildren(Vec3 position) {
         for (int i = 0; i < NUM_CHILDREN; i++) {
             OcTreeNode<T> node = this.children.get(i)
                 .findNodeContainingPosition(position);

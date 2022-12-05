@@ -91,4 +91,12 @@ public class OcVolume {
                 return null;
         }
     }
+    
+    public static OcVolume fromCenterAndRange(Vec3 center, float range) {
+        Vec3 topLeftFront = new Vec3(center);
+        topLeftFront.subtract(new Vec3(range, range, range));
+        Vec3 bottomRightBack = new Vec3(center);
+        bottomRightBack.add(new Vec3(range, range, range));
+        return new OcVolume(topLeftFront, bottomRightBack);
+    }
 }

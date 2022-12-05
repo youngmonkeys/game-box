@@ -35,7 +35,7 @@ public class MMOOcTreeRoom extends MMORoom {
     }
 
     private void updateExistingPlayer(MMOPlayer player, Vec3 position) {
-        if (this.ocTree.checkItemRemainingAtSameNode(player, position)) {
+        if (this.ocTree.isItemRemainingAtSameNode(player, position)) {
             player.setPosition(position);
         } else {
             this.ocTree.remove(player);
