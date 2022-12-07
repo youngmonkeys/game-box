@@ -7,11 +7,10 @@ import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.performance.Performance;
 import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MMOGridRoomTest {
     
@@ -97,7 +96,7 @@ public class MMOGridRoomTest {
     }
 
     @Test
-    public void updateMMOGridRoomTest() {
+    public void updateMMOGridRoomTest1() {
         // given
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
             .maxX(50)
@@ -148,5 +147,53 @@ public class MMOGridRoomTest {
         Asserts.assertEquals(buffer1, expectedNearbyPlayerNames1);
         Asserts.assertEquals(buffer2, expectedNearbyPlayerNames2);
         Asserts.assertEquals(buffer3, expectedNearbyPlayerNames3);
+    }
+
+    @Test
+    public void updateMMOGridRoomTest2() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(500)
+            .maxY(500)
+            .maxZ(500)
+            .cellSize(50)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+
+        MMOPlayer player1 = new MMOPlayer("player1");
+        player1.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(player1);
+
+        MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(player2);
+
+        MMOPlayer player3 = new MMOPlayer("player3");
+        player3.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(player3);
+
+        // when
+        room.setPlayerPosition(player1, new Vec3(55, 55, 0));
+        room.setPlayerPosition(player2, new Vec3(125, 125, 0));
+        room.setPlayerPosition(player3, new Vec3(0, 0, 0));
+        room.update();
+
+        // then
+        List<String> buffer1 = new ArrayList<>();
+        List<String> buffer2 = new ArrayList<>();
+        List<String> buffer3 = new ArrayList<>();
+
+        player1.getNearbyPlayerNames(buffer1);
+        player2.getNearbyPlayerNames(buffer2);
+        player3.getNearbyPlayerNames(buffer3);
+
+        List<String> expectedNearbyPlayerNames1 = Arrays.asList("player2", "player3");
+        List<String> expectedNearbyPlayerNames2 = Collections.singletonList("player1");
+        List<String> expectedNearbyPlayerNames3 = Collections.singletonList("player1");
+
+        Assert.assertEquals(buffer1, expectedNearbyPlayerNames1);
+        Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
+        Assert.assertEquals(buffer3, expectedNearbyPlayerNames3);
     }
 }

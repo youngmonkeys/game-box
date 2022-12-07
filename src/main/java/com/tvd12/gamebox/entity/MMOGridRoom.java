@@ -68,8 +68,8 @@ public class MMOGridRoom extends MMORoom {
             final Unit oldUnit = unitByPlayer.get(player);
             
             if (oldUnit == null) {
-                addUnit(player);
                 player.setPosition(position);
+                addUnit(player);
                 return;
             }
             
@@ -80,6 +80,8 @@ public class MMOGridRoom extends MMORoom {
             int cellX = (int) position.x / cellSize;
             int cellY = (int) position.y / cellSize;
             int cellZ = (int) position.z / cellSize;
+            
+            player.setPosition(position);
 
             if (oldCellX != cellX || oldCellY != cellY || oldCellZ != cellZ) {
                 if (oldUnit.prev != null) {
@@ -93,12 +95,14 @@ public class MMOGridRoom extends MMORoom {
                 }
                 addUnit(player);
             }
-            player.setPosition(position);
         }
     }
 
     @Override
     public void updatePlayers() {
+        for (MMOPlayer player : playerBuffer) {
+            player.clearNearByPlayers();
+        }
         for (int ix = 0; ix < cells.length; ++ix) {
             for (int iy = 0; iy < cells[ix].length; ++iy) {
                 for (int iz = 0; iz < cells[ix][iy].length; ++iz) {
