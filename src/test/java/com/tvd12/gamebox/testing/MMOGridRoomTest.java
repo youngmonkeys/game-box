@@ -188,9 +188,9 @@ public class MMOGridRoomTest {
         player2.getNearbyPlayerNames(buffer2);
         player3.getNearbyPlayerNames(buffer3);
 
-        List<String> expectedNearbyPlayerNames1 = Arrays.asList("player2", "player3");
-        List<String> expectedNearbyPlayerNames2 = Collections.singletonList("player1");
-        List<String> expectedNearbyPlayerNames3 = Collections.singletonList("player1");
+        List<String> expectedNearbyPlayerNames1 = Arrays.asList("player1", "player2", "player3");
+        List<String> expectedNearbyPlayerNames2 = Arrays.asList("player1", "player2");
+        List<String> expectedNearbyPlayerNames3 = Arrays.asList("player1", "player3");
 
         Assert.assertEquals(buffer1, expectedNearbyPlayerNames1);
         Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
