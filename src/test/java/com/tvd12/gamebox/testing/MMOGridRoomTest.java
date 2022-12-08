@@ -53,8 +53,8 @@ public class MMOGridRoomTest {
         int maxX = RandomUtil.randomInt(50, 100);
         int maxY = RandomUtil.randomInt(50, 100);
         int maxZ = RandomUtil.randomInt(50, 100);
-        int cellSize = RandomUtil.randomSmallInt();
-        int maxPlayer = RandomUtil.randomSmallInt();
+        int cellSize = 1 + RandomUtil.randomSmallInt();
+        int maxPlayer = 1 + RandomUtil.randomSmallInt();
         
         // when
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
@@ -95,8 +95,9 @@ public class MMOGridRoomTest {
         Asserts.assertEquals(player.getPosition(), expectedPosition);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void updateMMOGridRoomTest1() {
+    public void updateMMOGridRoomTest() {
         // given
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
             .maxX(50)
@@ -108,21 +109,15 @@ public class MMOGridRoomTest {
             .build();
 
         MMOPlayer player1 = new MMOPlayer("player1");
-        player1.setPosition(new Vec3(0, 0, 0));
         room.addPlayer(player1);
 
         MMOPlayer player2 = new MMOPlayer("player2");
-        player2.setPosition(new Vec3(0, 0, 0));
         room.addPlayer(player2);
 
         MMOPlayer player3 = new MMOPlayer("player3");
-        player3.setPosition(new Vec3(0, 0, 0));
         room.addPlayer(player3);
         
         // when
-        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
-        room.setPlayerPosition(player2, new Vec3(1, 1, 1));
-        room.setPlayerPosition(player3, new Vec3(25, 25, 25));
         room.update();
 
         // then
@@ -150,7 +145,7 @@ public class MMOGridRoomTest {
     }
 
     @Test
-    public void updateMMOGridRoomTest2() {
+    public void updateMMOGridRoomWithChangingNearbyPlayersTest() {
         // given
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
             .maxX(500)

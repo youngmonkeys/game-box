@@ -20,12 +20,12 @@ public class MMOGridRoom extends MMORoom {
     
     @Getter
     private final int cellSize;
-    
-    private final Cell[][][] cells;
-    private final int cellRangeOfInterest;
+
     private final Map<Player, Cell> cellByPlayer;
-    private final List<MMOPlayer> cellPlayerBuffer = new ArrayList<>();
-    private final Set<Cell> visitedCells = ConcurrentHashMap.newKeySet();
+    private final int cellRangeOfInterest;
+    private final Cell[][][] cells;
+    private final List<MMOPlayer> cellPlayerBuffer;
+    private final Set<Cell> visitedCells;
 
     public MMOGridRoom(Builder builder) {
         super(builder);
@@ -39,6 +39,8 @@ public class MMOGridRoom extends MMORoom {
         final int maxCellY = Math.max(1, maxY / cellSize);
         final int maxCellZ = Math.max(1, maxZ / cellSize);
         this.cells = new Cell[maxCellX][maxCellY][maxCellZ];
+        this.cellPlayerBuffer = new ArrayList<>();
+        this.visitedCells = ConcurrentHashMap.newKeySet();;
     }
 
     @Override
@@ -55,16 +57,20 @@ public class MMOGridRoom extends MMORoom {
     }
     
     private void addPlayerToCell(MMOPlayer player, int cellX, int cellY, int cellZ) {
-        Cell cell = this.cells[cellX][cellY][cellZ];
-        if (cell == null) {
-            cell = new Cell();
-        }
-        cell.setCellX(cellX);
-        cell.setCellY(cellY);
-        cell.setCellZ(cellZ);
+        Cell cell = createCellIfAbsent(cellX, cellY, cellZ);
         cell.addPlayer(player);
-        this.cells[cellX][cellY][cellZ] = cell;
         cellByPlayer.put(player, cell);
+    }
+
+    private Cell createCellIfAbsent(int cellX, int cellY, int cellZ) {
+        if (this.cells[cellX][cellY][cellZ] == null) {
+            Cell cell = new Cell();
+            cell.setCellX(cellX);
+            cell.setCellY(cellY);
+            cell.setCellZ(cellZ);
+            this.cells[cellX][cellY][cellZ] = cell;
+        }
+        return this.cells[cellX][cellY][cellZ];
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -98,7 +104,7 @@ public class MMOGridRoom extends MMORoom {
         for (MMOPlayer player : playerBuffer) {
             player.clearNearByPlayers();
         }
-        visitedCells.clear();;
+        visitedCells.clear();
         for (MMOPlayer player : playerBuffer) {
             Cell cell = cellByPlayer.get(player);
             if (visitedCells.contains(cell)) {
@@ -124,8 +130,9 @@ public class MMOGridRoom extends MMORoom {
             
             // Handle players in the current cell
             for (int j = i; j < cellPlayerBuffer.size(); ++j) {
-                currentPlayer.addNearbyPlayer(cellPlayerBuffer.get(j));
-                cellPlayerBuffer.get(j).addNearbyPlayer(currentPlayer);
+                MMOPlayer nearByPlayer = cellPlayerBuffer.get(j);
+                currentPlayer.addNearbyPlayer(nearByPlayer);
+                nearByPlayer.addNearbyPlayer(currentPlayer);
             }
             
             // Handle players in neighboring cells
@@ -153,10 +160,10 @@ public class MMOGridRoom extends MMORoom {
         if (cell == null || cell.getNumberOfPlayers() == 0) {
             return;
         }
-        Collection<MMOPlayer> players = cell.getPlayerCollection();
-        for (MMOPlayer otherPlayer : players) {
-            currentPlayer.addNearbyPlayer(otherPlayer);
-            otherPlayer.addNearbyPlayer(currentPlayer);
+        Collection<MMOPlayer> nearByPlayers = cell.getPlayerCollection();
+        for (MMOPlayer nearByPlayer : nearByPlayers) {
+            currentPlayer.addNearbyPlayer(nearByPlayer);
+            nearByPlayer.addNearbyPlayer(currentPlayer);
         } 
     }
 
@@ -181,8 +188,8 @@ public class MMOGridRoom extends MMORoom {
             return this;
         }
 
-        public Builder maxZ(int height) {
-            this.maxZ = height;
+        public Builder maxZ(int maxZ) {
+            this.maxZ = maxZ;
             return this;
         }
 
@@ -192,7 +199,7 @@ public class MMOGridRoom extends MMORoom {
         }
 
         @Override
-        public MMORoom.Builder distanceOfInterest(double distance) {
+        public Builder distanceOfInterest(double distance) {
             this.distanceOfInterest = distance;
             return this;
         }
@@ -204,13 +211,17 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private static class Cell {
-        private final Map<String, MMOPlayer> playerByName = new ConcurrentHashMap<>();
+        
         @Setter
         private int cellX;
+        
         @Setter
         private int cellY;
+        
         @Setter
         private int cellZ;
+        
+        private final Map<String, MMOPlayer> playerByName = new ConcurrentHashMap<>();
         
         public void addPlayer(MMOPlayer player) {
             playerByName.put(player.getName(), player);
