@@ -10,16 +10,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MMOGridRoom extends MMORoom {
 
     @Getter
-    private final int maxX;
+    private final float maxX;
     
     @Getter
-    private final int maxY;
+    private final float maxY;
     
     @Getter
-    private final int maxZ;
+    private final float maxZ;
     
     @Getter
-    private final int cellSize;
+    private final float cellSize;
 
     private final Map<Player, Cell> cellByPlayer;
     private final int cellRangeOfInterest;
@@ -35,12 +35,12 @@ public class MMOGridRoom extends MMORoom {
         this.cellSize = builder.cellSize;
         this.cellByPlayer = new ConcurrentHashMap<>();
         this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
-        final int maxCellX = Math.max(1, maxX / cellSize);
-        final int maxCellY = Math.max(1, maxY / cellSize);
-        final int maxCellZ = Math.max(1, maxZ / cellSize);
+        final int maxCellX = Math.max(1, (int) (maxX / cellSize));
+        final int maxCellY = Math.max(1, (int) (maxY / cellSize));
+        final int maxCellZ = Math.max(1, (int) (maxZ / cellSize));
         this.cells = new Cell[maxCellX][maxCellY][maxCellZ];
         this.cellPlayerBuffer = new ArrayList<>();
-        this.visitedCells = ConcurrentHashMap.newKeySet();;
+        this.visitedCells = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -50,9 +50,9 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void addPlayerToCell(MMOPlayer player) {
-        int cellX = (int) player.getPosition().x / cellSize;
-        int cellY = (int) player.getPosition().y / cellSize;
-        int cellZ = (int) player.getPosition().z / cellSize;
+        int cellX = (int) (player.getPosition().x / cellSize);
+        int cellY = (int) (player.getPosition().y / cellSize);
+        int cellZ = (int) (player.getPosition().z / cellSize);
         addPlayerToCell(player, cellX, cellY, cellZ);
     }
     
@@ -74,29 +74,34 @@ public class MMOGridRoom extends MMORoom {
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
-        if (position.x >= 0 && position.x <= maxX
-            && position.y >= 0 && position.y <= maxY
-            && position.z >= 0 && position.z <= maxZ
-        ) {
-            final Cell oldCell = cellByPlayer.get(player);
-            
-            if (oldCell == null) {
-                player.setPosition(position);
-                addPlayerToCell(player);
-                return;
-            }
-
-            int cellX = (int) position.x / cellSize;
-            int cellY = (int) position.y / cellSize;
-            int cellZ = (int) position.z / cellSize;
-            
-            player.setPosition(position);
-
-            if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
-                oldCell.removePlayer(player.getName());
-                addPlayerToCell(player, cellX, cellY, cellZ);
-            }
+        if (!isPositionInsideRoom(position)) {
+            throw new IllegalArgumentException("Position is outside of the room's area");
         }
+
+        final Cell oldCell = cellByPlayer.get(player);
+
+        if (oldCell == null) {
+            player.setPosition(position);
+            addPlayerToCell(player);
+            return;
+        }
+
+        int cellX = (int) (position.x / cellSize);
+        int cellY = (int) (position.y / cellSize);
+        int cellZ = (int) (position.z / cellSize);
+
+        player.setPosition(position);
+
+        if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
+            oldCell.removePlayer(player);
+            addPlayerToCell(player, cellX, cellY, cellZ);
+        }
+    }
+    
+    private boolean isPositionInsideRoom(Vec3 position) {
+        return position.x >= 0 && position.x <= maxX
+            && position.y >= 0 && position.y <= maxY
+            && position.z >= 0 && position.z <= maxZ;
     }
 
     @Override
@@ -160,8 +165,7 @@ public class MMOGridRoom extends MMORoom {
         if (cell == null || cell.getNumberOfPlayers() == 0) {
             return;
         }
-        Collection<MMOPlayer> nearByPlayers = cell.getPlayerCollection();
-        for (MMOPlayer nearByPlayer : nearByPlayers) {
+        for (MMOPlayer nearByPlayer : cell.players) {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
         } 
@@ -173,27 +177,27 @@ public class MMOGridRoom extends MMORoom {
 
     public static class Builder extends MMORoom.Builder {
 
-        private int maxX;
-        private int maxY;
-        private int maxZ;
-        private int cellSize;
+        private float maxX;
+        private float maxY;
+        private float maxZ;
+        private float cellSize;
 
-        public Builder maxX(int maxX) {
+        public Builder maxX(float maxX) {
             this.maxX = maxX;
             return this;
         }
 
-        public Builder maxY(int maxY) {
+        public Builder maxY(float maxY) {
             this.maxY = maxY;
             return this;
         }
 
-        public Builder maxZ(int maxZ) {
+        public Builder maxZ(float maxZ) {
             this.maxZ = maxZ;
             return this;
         }
 
-        public Builder cellSize(int cellSize) {
+        public Builder cellSize(float cellSize) {
             this.cellSize = cellSize;
             return this;
         }
@@ -221,26 +225,22 @@ public class MMOGridRoom extends MMORoom {
         @Setter
         private int cellZ;
         
-        private final Map<String, MMOPlayer> playerByName = new ConcurrentHashMap<>();
+        private final Set<MMOPlayer> players = ConcurrentHashMap.newKeySet();
         
         public void addPlayer(MMOPlayer player) {
-            playerByName.put(player.getName(), player);
+            players.add(player);
         }
         
-        public void removePlayer(String playerName) {
-            playerByName.remove(playerName);
+        public void removePlayer(MMOPlayer player) {
+            players.remove(player);
         }
         
-        public void getPlayerList(List<MMOPlayer> players) {
-            players.addAll(playerByName.values());
-        }
-        
-        public Collection<MMOPlayer> getPlayerCollection() {
-            return playerByName.values();
+        public void getPlayerList(List<MMOPlayer> playerList) {
+            playerList.addAll(players);
         }
         
         public int getNumberOfPlayers() {
-            return playerByName.size();
+            return players.size();
         }
     }
 }

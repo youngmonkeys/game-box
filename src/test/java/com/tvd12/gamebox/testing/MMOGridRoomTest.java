@@ -50,10 +50,10 @@ public class MMOGridRoomTest {
     @Test
     public void createMMOGridRoomTest() {
         // given
-        int maxX = RandomUtil.randomInt(50, 100);
-        int maxY = RandomUtil.randomInt(50, 100);
-        int maxZ = RandomUtil.randomInt(50, 100);
-        int cellSize = 1 + RandomUtil.randomSmallInt();
+        float maxX = RandomUtil.randomFloat(50, 100);
+        float maxY = RandomUtil.randomFloat(50, 100);
+        float maxZ = RandomUtil.randomFloat(50, 100);
+        float cellSize = 1 + RandomUtil.randomSmallFloat();
         int maxPlayer = 1 + RandomUtil.randomSmallInt();
         
         // when
