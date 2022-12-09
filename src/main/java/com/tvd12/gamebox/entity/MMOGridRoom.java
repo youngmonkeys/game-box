@@ -24,8 +24,10 @@ public class MMOGridRoom extends MMORoom {
     private final Map<Player, Cell> cellByPlayer;
     private final int cellRangeOfInterest;
     private final Cell[][][] cells;
-    private final List<MMOPlayer> cellPlayerBuffer;
-    private final Set<Cell> visitedCells;
+
+    private final int maxCellX;
+    private final int maxCellY;
+    private final int maxCellZ;
 
     public MMOGridRoom(Builder builder) {
         super(builder);
@@ -35,12 +37,10 @@ public class MMOGridRoom extends MMORoom {
         this.cellSize = builder.cellSize;
         this.cellByPlayer = new ConcurrentHashMap<>();
         this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
-        final int maxCellX = Math.max(1, (int) (maxX / cellSize));
-        final int maxCellY = Math.max(1, (int) (maxY / cellSize));
-        final int maxCellZ = Math.max(1, (int) (maxZ / cellSize));
+        maxCellX = Math.max(1, (int) (maxX / cellSize));
+        maxCellY = Math.max(1, (int) (maxY / cellSize));
+        maxCellZ = Math.max(1, (int) (maxZ / cellSize));
         this.cells = new Cell[maxCellX][maxCellY][maxCellZ];
-        this.cellPlayerBuffer = new ArrayList<>();
-        this.visitedCells = ConcurrentHashMap.newKeySet();
     }
 
     @Override
@@ -60,6 +60,17 @@ public class MMOGridRoom extends MMORoom {
         Cell cell = createCellIfAbsent(cellX, cellY, cellZ);
         cell.addPlayer(player);
         cellByPlayer.put(player, cell);
+
+        updateNearbyPlayers(player, cellX, cellY, cellZ);
+    }
+
+    private void updateNearbyPlayers(MMOPlayer player, int cellX, int cellY, int cellZ) {
+        for (String otherPlayerName : player.getNearbyPlayerNames()) {
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
+            otherPlayer.removeNearByPlayer(player);
+        }
+        player.clearNearByPlayers();
+        handleNeighboringCells(player, cellX, cellY, cellZ);
     }
 
     private Cell createCellIfAbsent(int cellX, int cellY, int cellZ) {
@@ -104,63 +115,28 @@ public class MMOGridRoom extends MMORoom {
             && position.z >= 0 && position.z <= maxZ;
     }
 
-    @Override
-    public void updatePlayers() {
-        for (MMOPlayer player : playerBuffer) {
-            player.clearNearByPlayers();
-        }
-        visitedCells.clear();
-        for (MMOPlayer player : playerBuffer) {
-            Cell cell = cellByPlayer.get(player);
-            if (visitedCells.contains(cell)) {
-                continue;
-            }
-            handleCell(cell);
-            visitedCells.add(cell);
-        }
-    }
-    
-    private void handleCell(Cell cell) {
-        final int cellOfInterestEndX = Math.min(cells.length - 1, cell.cellX + cellRangeOfInterest);
-        final int cellOfInterestEndY = Math.min(cells.length - 1, cell.cellY + cellRangeOfInterest);
-        final int cellOfInterestEndZ = Math.min(cells.length - 1, cell.cellZ + cellRangeOfInterest);
-        final int cellOfInterestStartY = Math.max(0, cell.cellY - cellRangeOfInterest);
-        final int cellOfInterestStartZ = Math.max(0, cell.cellZ - cellRangeOfInterest);
-        
-        cellPlayerBuffer.clear();
-        cell.getPlayerList(cellPlayerBuffer);
-        
-        for (int i = 0; i < cellPlayerBuffer.size(); ++i) {
-            MMOPlayer currentPlayer = cellPlayerBuffer.get(i);
-            
-            // Handle players in the current cell
-            for (int j = i; j < cellPlayerBuffer.size(); ++j) {
-                MMOPlayer nearByPlayer = cellPlayerBuffer.get(j);
-                currentPlayer.addNearbyPlayer(nearByPlayer);
-                nearByPlayer.addNearbyPlayer(currentPlayer);
-            }
-            
-            // Handle players in neighboring cells
-            for (int ix = cell.cellX + 1; ix <= cellOfInterestEndX; ++ix) {
-                for (int iy = cellOfInterestStartY; iy <= cellOfInterestEndY; ++iy) {
-                    for (int iz = cellOfInterestStartZ; iz <= cellOfInterestEndZ; ++iz) {
-                        addNearbyPlayersInCell(currentPlayer, cells[ix][iy][iz]);
-                    }
-                }
-            }
-            for (int iy = cell.cellY + 1; iy <= cellOfInterestEndY; ++iy) {
+    private void handleNeighboringCells(
+        MMOPlayer currentPlayer,
+        int cellX,
+        int cellY,
+        int cellZ
+    ) {
+        final int cellOfInterestEndX = Math.min(maxCellX - 1, cellX + cellRangeOfInterest);
+        final int cellOfInterestEndY = Math.min(maxCellY - 1, cellY + cellRangeOfInterest);
+        final int cellOfInterestEndZ = Math.min(maxCellZ - 1, cellZ + cellRangeOfInterest);
+        final int cellOfInterestStartX = Math.max(0, cellX - cellRangeOfInterest);
+        final int cellOfInterestStartY = Math.max(0, cellY - cellRangeOfInterest);
+        final int cellOfInterestStartZ = Math.max(0, cellZ - cellRangeOfInterest);
+
+        for (int ix = cellOfInterestStartX; ix <= cellOfInterestEndX; ++ix) {
+            for (int iy = cellOfInterestStartY; iy <= cellOfInterestEndY; ++iy) {
                 for (int iz = cellOfInterestStartZ; iz <= cellOfInterestEndZ; ++iz) {
-                    addNearbyPlayersInCell(currentPlayer, cells[cell.cellX][iy][iz]);
-                }
-            }
-            for (int iz = cellOfInterestStartZ; iz <= cellOfInterestEndZ; ++iz) {
-                if (iz != cell.cellZ) {
-                    addNearbyPlayersInCell(currentPlayer, cells[cell.cellX][cell.cellY][iz]);
+                    addNearbyPlayersInCell(currentPlayer, cells[ix][iy][iz]);
                 }
             }
         }
     }
-    
+
     public void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
         if (cell == null || cell.getNumberOfPlayers() == 0) {
             return;
@@ -169,6 +145,15 @@ public class MMOGridRoom extends MMORoom {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
         } 
+    }
+
+    @Override
+    public void update() {
+        notifyUpdatedHandlers();
+    }
+
+    @Override
+    public void updatePlayers() {
     }
 
     public static Builder builder() {
@@ -233,10 +218,6 @@ public class MMOGridRoom extends MMORoom {
         
         public void removePlayer(MMOPlayer player) {
             players.remove(player);
-        }
-        
-        public void getPlayerList(List<MMOPlayer> playerList) {
-            playerList.addAll(players);
         }
         
         public int getNumberOfPlayers() {

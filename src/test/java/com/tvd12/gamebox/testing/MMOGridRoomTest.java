@@ -10,7 +10,10 @@ import com.tvd12.test.util.RandomUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class MMOGridRoomTest {
     
@@ -24,10 +27,13 @@ public class MMOGridRoomTest {
             .distanceOfInterest(4)
             .build();
         
+        ArrayList<MMOPlayer> players = new ArrayList<>();
+        
         for (int i = 0; i < room.getMaxPlayer(); ++i) {
             final MMOPlayer player = MMOPlayer.builder()
                 .name("player" + i)
                 .build();
+            players.add(player);
             room.setPlayerPosition(
                 player,
                 new Vec3(
@@ -41,8 +47,18 @@ public class MMOGridRoomTest {
         
         final long elapsedTime = Performance
             .create()
-            .loop(1)
-            .test(room::update)
+            .loop(100000)
+            .test(() -> {
+                MMOPlayer player = players.get(RandomUtil.randomInt(0, room.getMaxPlayer()));
+                room.setPlayerPosition(
+                    player,
+                    new Vec3(
+                        RandomUtil.randomFloat(0, room.getMaxX()),
+                        RandomUtil.randomFloat(0, room.getMaxY()),
+                        RandomUtil.randomFloat(0, room.getMaxZ())
+                    )
+                ); 
+            })
             .getTime();
         System.out.println("elapsed time: " + elapsedTime);
     }
