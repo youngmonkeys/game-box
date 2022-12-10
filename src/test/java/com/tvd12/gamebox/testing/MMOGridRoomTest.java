@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.testing;
 
+import com.tvd12.ezyfox.collect.Lists;
 import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.math.Vec3;
@@ -10,10 +11,8 @@ import com.tvd12.test.util.RandomUtil;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class MMOGridRoomTest {
     
@@ -57,7 +56,7 @@ public class MMOGridRoomTest {
                         RandomUtil.randomFloat(0, room.getMaxY()),
                         RandomUtil.randomFloat(0, room.getMaxZ())
                     )
-                ); 
+                );
             })
             .getTime();
         System.out.println("elapsed time: " + elapsedTime);
@@ -90,7 +89,7 @@ public class MMOGridRoomTest {
     }
     
     @Test
-    public void setPlayerPositionTest() {
+    public void setSinglePlayerPositionTest() {
         // given
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
             .maxX(50)
@@ -111,6 +110,139 @@ public class MMOGridRoomTest {
         Asserts.assertEquals(player.getPosition(), expectedPosition);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void setMultiplePlayerPositionsTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(5)
+            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .build();
+        
+        for (int i = 0; i < room.getMaxPlayer(); ++i) {
+            MMOPlayer player = new MMOPlayer("player" + i);
+            room.addPlayer(player);
+        }
+        List<MMOPlayer> players = room.getPlayerManager().getPlayerList();
+        int numberOfRandomMoves = 1000;
+        
+        for (int i = 0; i < numberOfRandomMoves; ++i) {
+            // when
+            for (MMOPlayer player : players) {
+                room.setPlayerPosition(
+                    player,
+                    new Vec3(
+                        RandomUtil.randomFloat(0, room.getMaxX()),
+                        RandomUtil.randomFloat(0, room.getMaxY()),
+                        RandomUtil.randomFloat(0, room.getMaxZ())
+                    )
+                );
+            }
+            
+            // then
+            Map<String, List<String>> expectedNearbyPlayerNamesByPlayerName =
+                computeExpectedNearbyPlayers(
+                    players,
+                    room.getCellSize(),
+                    room.getCellRangeOfInterest()
+                );
+            
+            for (MMOPlayer thisPlayer : players) {
+                Asserts.assertEquals(
+                    thisPlayer.getNearbyPlayerNames(),
+                    expectedNearbyPlayerNamesByPlayerName.get(thisPlayer.getName())
+                );
+            }
+        }
+    }
+    
+    private Map<String, List<String>> computeExpectedNearbyPlayers(
+        List<MMOPlayer> players,
+        float cellSize,
+        int cellRangeOfInterest
+    ) {
+        Map<String, List<String>> nearbyPlayerNamesByPlayerName = new HashMap<>();
+        for (int i = 0; i < players.size(); ++i) {
+            MMOPlayer thisPlayer = players.get(i);
+            int cellX = (int) (thisPlayer.getPosition().x / cellSize);
+            int cellY = (int) (thisPlayer.getPosition().y / cellSize);
+            int cellZ = (int) (thisPlayer.getPosition().z / cellSize);
+            for (int j = i; j < players.size(); ++j) {
+                MMOPlayer otherPlayer = players.get(j);
+                int otherCellX = (int) (otherPlayer.getPosition().x / cellSize);
+                int otherCellY = (int) (otherPlayer.getPosition().y / cellSize);
+                int otherCellZ = (int) (otherPlayer.getPosition().z / cellSize);
+                
+                int cellDistance = Stream.of(
+                        Math.abs(cellX - otherCellX),
+                        Math.abs(cellY - otherCellY),
+                        Math.abs(cellZ - otherCellZ)
+                    )
+                    .max(Integer::compareTo).get();
+                
+                if (cellDistance <= cellRangeOfInterest) {
+                    addNearbyPlayers(nearbyPlayerNamesByPlayerName, thisPlayer, otherPlayer);
+                }
+            }
+        }
+        return nearbyPlayerNamesByPlayerName;
+    }
+    
+    private void addNearbyPlayers(
+        Map<String, List<String>> nearbyPlayerNamesByPlayerName,
+        MMOPlayer thisPlayer,
+        MMOPlayer otherPlayer
+    ) {
+        List<String> thisNearbyPlayers = nearbyPlayerNamesByPlayerName
+            .computeIfAbsent(thisPlayer.getName(), s -> new ArrayList<>());
+        thisNearbyPlayers.add(otherPlayer.getName());
+        
+        if (thisPlayer != otherPlayer) {
+            List<String> otherNearbyPlayers = nearbyPlayerNamesByPlayerName
+                .computeIfAbsent(otherPlayer.getName(), s -> new ArrayList<>());
+            otherNearbyPlayers.add(thisPlayer.getName());
+        }
+    }
+    
+    @Test
+    public void setPlayerPositionOutsideAreaTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .build();
+        
+        List<Vec3> invalidPositions = Lists.newArrayList(
+            new Vec3(50.1f, 50, 50),
+            new Vec3(50.1f, 50.1f, 50),
+            new Vec3(50.1f, 50, 50.1f),
+            new Vec3(50.1f, 50.1f, 50.1f),
+            new Vec3(50, 50.1f, 50),
+            new Vec3(50, 50.1f, 50.1f),
+            new Vec3(50, 50, 50.1f),
+            new Vec3(-50, 50, 50),
+            new Vec3(50, -50, 50),
+            new Vec3(50, 50, -50)
+        );
+        MMOPlayer player = new MMOPlayer("player");
+        
+        for (Vec3 invalidPosition : invalidPositions) {
+            // when
+            Throwable e = Asserts.assertThrows(() -> room.setPlayerPosition(player, invalidPosition));
+            
+            // then
+            Asserts.assertEquals(IllegalArgumentException.class.toString(), e.getClass().toString());
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     public void updateMMOGridRoomTest() {
@@ -147,14 +279,14 @@ public class MMOGridRoomTest {
 
         List<String> expectedNearbyPlayerNames1 =
             new ArrayList<>(((Map<String, MMOPlayer>) FieldUtil.getFieldValue(player1, "nearbyPlayers"))
-                                .keySet());
+                .keySet());
         List<String> expectedNearbyPlayerNames2 =
             new ArrayList<>(((Map<String, MMOPlayer>) FieldUtil.getFieldValue(player2, "nearbyPlayers"))
-                                .keySet());
+                .keySet());
         List<String> expectedNearbyPlayerNames3 =
             new ArrayList<>(((Map<String, MMOPlayer>) FieldUtil.getFieldValue(player3, "nearbyPlayers"))
-                                .keySet());
-
+                .keySet());
+        
         Asserts.assertEquals(buffer1, expectedNearbyPlayerNames1);
         Asserts.assertEquals(buffer2, expectedNearbyPlayerNames2);
         Asserts.assertEquals(buffer3, expectedNearbyPlayerNames3);

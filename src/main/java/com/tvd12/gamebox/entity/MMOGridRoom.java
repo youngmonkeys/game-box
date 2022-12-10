@@ -20,11 +20,12 @@ public class MMOGridRoom extends MMORoom {
     
     @Getter
     private final float cellSize;
-
-    private final Map<Player, Cell> cellByPlayer;
+    
+    @Getter
     private final int cellRangeOfInterest;
+    
+    private final Map<Player, Cell> cellByPlayer;
     private final Cell[][][] cells;
-
     private final int maxCellX;
     private final int maxCellY;
     private final int maxCellZ;
@@ -150,10 +151,6 @@ public class MMOGridRoom extends MMORoom {
     @Override
     public void update() {
         notifyUpdatedHandlers();
-    }
-
-    @Override
-    public void updatePlayers() {
     }
 
     public static Builder builder() {
