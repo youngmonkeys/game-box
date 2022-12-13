@@ -101,7 +101,7 @@ public class MMORoom extends NormalRoom {
         }
     }
 
-    private void notifyUpdatedHandlers() {
+    protected void notifyUpdatedHandlers() {
         for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
             handler.onRoomUpdated(this, playerBuffer);
         }
