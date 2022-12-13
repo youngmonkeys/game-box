@@ -4,9 +4,48 @@ import com.tvd12.gamebox.entity.MMOOcTreeRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.performance.Performance;
+import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+
 public class MMOOcTreeRoomTest {
+    
+    public static void main(String[] args) {
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .topLeftFront(new Vec3(0, 0, 0))
+            .bottomRightBack(new Vec3(50, 50, 50))
+            .maxPointsPerNode(5)
+            .maxPlayer(800)
+            .distanceOfInterest(7.5f)
+            .build();
+    
+        ArrayList<MMOPlayer> players = new ArrayList<>();
+    
+        for (int i = 0; i < room.getMaxPlayer(); ++i) {
+            final MMOPlayer player = MMOPlayer.builder()
+                .name("player" + i)
+                .build();
+            players.add(player);
+            room.setPlayerPosition(
+                player,
+                new Vec3(
+                    RandomUtil.randomFloat(room.getTopLeftFront().x, room.getBottomRightBack().x),
+                    RandomUtil.randomFloat(room.getTopLeftFront().y, room.getBottomRightBack().y),
+                    RandomUtil.randomFloat(room.getTopLeftFront().z, room.getBottomRightBack().z)
+                )
+            );
+            room.addPlayer(player);
+        }
+    
+        final long elapsedTime = Performance
+            .create()
+            .loop(1000)
+            .test(room::update)
+            .getTime();
+        System.out.println("elapsed time: " + elapsedTime);
+    }
 
     @Test
     public void setPlayerPositionTest() {

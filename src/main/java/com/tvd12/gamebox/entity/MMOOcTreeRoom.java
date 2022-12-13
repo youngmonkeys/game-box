@@ -3,11 +3,18 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.entity.octree.OcTree;
 import com.tvd12.gamebox.entity.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
+import lombok.Getter;
 
 import java.util.List;
 
 public class MMOOcTreeRoom extends MMORoom {
-
+    
+    @Getter
+    private final Vec3 topLeftFront;
+    
+    @Getter
+    private final Vec3 bottomRightBack;
+    
     private final OcTree<MMOPlayer> ocTree;
 
     public MMOOcTreeRoom(Builder builder) {
@@ -16,6 +23,8 @@ public class MMOOcTreeRoom extends MMORoom {
             builder.maxPointsPerNode,
             new OcVolume(builder.topLeftFront, builder.bottomRightBack)
         );
+        this.topLeftFront = builder.topLeftFront;
+        this.bottomRightBack = builder.bottomRightBack;
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -24,8 +33,33 @@ public class MMOOcTreeRoom extends MMORoom {
         } else {
             updateExistingPlayer(player, position);
         }
+        updateNearbyPlayers(player);
     }
-
+    
+    private void updateNearbyPlayers(MMOPlayer player) {
+        clearCurrentNearbyPlayers(player);
+        addNewNearbyPlayers(player);
+    }
+    
+    private void clearCurrentNearbyPlayers(MMOPlayer player) {
+        for (String otherPlayerName : player.getNearbyPlayerNames()) {
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
+            otherPlayer.removeNearByPlayer(player);
+        }
+        player.clearNearByPlayers();
+    }
+    
+    private void addNewNearbyPlayers(MMOPlayer player) {
+        List<MMOPlayer> nearByPlayers = this.ocTree.search(
+            player,
+            (float) this.distanceOfInterest
+        );
+        nearByPlayers.forEach(nearbyPlayer -> {
+            player.addNearbyPlayer(nearbyPlayer);
+            nearbyPlayer.addNearbyPlayer(player);
+        });
+    }
+    
     private void addNewPlayer(MMOPlayer player, Vec3 position) {
         super.addPlayer(player);
         boolean isPlayerInserted = this.ocTree.insert(player, position);
@@ -42,21 +76,12 @@ public class MMOOcTreeRoom extends MMORoom {
             this.ocTree.insert(player, position);
         }
     }
-
+    
     @Override
-    protected void updatePlayers() {
-        for (MMOPlayer player : playerBuffer) {
-            player.clearNearByPlayers();
-        }
-        for (MMOPlayer player : playerBuffer) {
-            List<MMOPlayer> nearByPlayers = this.ocTree.search(
-                player,
-                (float) this.distanceOfInterest
-            );
-            nearByPlayers.forEach(player::addNearbyPlayer);
-        }
+    public void update() {
+        notifyUpdatedHandlers();
     }
-
+    
     public static Builder builder() {
         return new Builder();
     }
