@@ -73,7 +73,10 @@ public class MMOOcTreeRoom extends MMORoom {
             player.setPosition(position);
         } else {
             this.ocTree.remove(player);
-            this.ocTree.insert(player, position);
+            boolean isPlayerInserted = this.ocTree.insert(player, position);
+            if (isPlayerInserted) {
+                player.setPosition(position);
+            }
         }
     }
     

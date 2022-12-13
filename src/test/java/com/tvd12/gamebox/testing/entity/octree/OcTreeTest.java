@@ -5,7 +5,13 @@ import com.tvd12.gamebox.entity.octree.OcTree;
 import com.tvd12.gamebox.entity.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class OcTreeTest {
 
@@ -16,7 +22,7 @@ public class OcTreeTest {
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
         OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree ocTree = new OcTree(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new OcTree<>(maxPoints, ocVolume);
 
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -42,7 +48,7 @@ public class OcTreeTest {
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
         OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree ocTree = new OcTree(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new OcTree<>(maxPoints, ocVolume);
 
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -73,5 +79,35 @@ public class OcTreeTest {
         Asserts.assertTrue(isPlayer3Added);
         Asserts.assertTrue(isPlayer4Added);
         Asserts.assertTrue(isPlayer1Removed);
+    }
+    
+    @Test
+    public void searchingTest() {
+        // given
+        int maxPoints = 3;
+        Vec3 topLeftFront = new Vec3(0, 0, 0);
+        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
+        OcTree<MMOPlayer> ocTree = new OcTree<>(maxPoints, ocVolume);
+    
+        MMOPlayer player1 = MMOPlayer.builder()
+            .name("player1")
+            .build();
+    
+        MMOPlayer player2 = MMOPlayer.builder()
+            .name("player2")
+            .build();
+        
+        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.5f, 0.5f, 0.5f));
+        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
+        float searchRange = 0.2f;
+    
+        // when
+        List<MMOPlayer> nearbyPlayers = ocTree.search(player1, searchRange);
+    
+        // then
+        Asserts.assertTrue(isPlayer1Added);
+        Asserts.assertTrue(isPlayer2Added);
+        Assert.assertEquals(nearbyPlayers, Arrays.asList(player1, player2));
     }
 }

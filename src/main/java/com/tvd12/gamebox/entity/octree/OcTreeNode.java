@@ -29,16 +29,15 @@ public class OcTreeNode<T extends PositionAware> {
             return null;
         }
 
-        if (this.items.size() < maxItems) {
-            this.items.add(newItem);
-            return this;
-        }
-
         if (isLeaf()) {
+            if (this.items.size() < maxItems) {
+                this.items.add(newItem);
+                return this;
+            }
             createChildren();
+            passItemsToChildren();
         }
 
-        passItemsToChildren();
         return insertItemToChildren(newItem, position);
     }
 
@@ -140,9 +139,6 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     public List<T> search(OcVolume searchVolume, List<T> matches) {
-        if (matches == null) {
-            matches = new ArrayList<>();
-        }
         if (!this.ocVolume.doesOverlap(searchVolume)) {
             return matches;
         }

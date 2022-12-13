@@ -2,13 +2,7 @@ package com.tvd12.gamebox.entity.octree;
 
 import com.tvd12.gamebox.math.Vec3;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
-@Getter
-@Setter
-@ToString
 @AllArgsConstructor
 public class OcVolume {
     private Vec3 topLeftFront;
@@ -21,22 +15,22 @@ public class OcVolume {
     }
     
     public boolean doesOverlap(OcVolume otherVolume) {
-        if (otherVolume.getBottomRightBack().x < this.topLeftFront.x) {
+        if (otherVolume.bottomRightBack.x < this.topLeftFront.x) {
             return false;
         }
-        if (otherVolume.getTopLeftFront().x > this.bottomRightBack.x) {
+        if (otherVolume.topLeftFront.x > this.bottomRightBack.x) {
             return false;
         }
-        if (otherVolume.getBottomRightBack().y < this.topLeftFront.y) {
+        if (otherVolume.bottomRightBack.y < this.topLeftFront.y) {
             return false;
         }
-        if (otherVolume.getTopLeftFront().y > this.bottomRightBack.y) {
+        if (otherVolume.topLeftFront.y > this.bottomRightBack.y) {
             return false;
         }
-        if (otherVolume.getBottomRightBack().z < this.topLeftFront.z) {
+        if (otherVolume.bottomRightBack.z < this.topLeftFront.z) {
             return false;
         }
-        if (otherVolume.getTopLeftFront().z > this.bottomRightBack.z) {
+        if (otherVolume.topLeftFront.z > this.bottomRightBack.z) {
             return false;
         }
         return true;
