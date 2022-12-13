@@ -1,7 +1,7 @@
 package com.tvd12.gamebox.entity;
 
-import com.tvd12.gamebox.entity.octree.OcTree;
-import com.tvd12.gamebox.entity.octree.OcVolume;
+import com.tvd12.gamebox.octree.OcTree;
+import com.tvd12.gamebox.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 

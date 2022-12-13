@@ -1,4 +1,4 @@
-package com.tvd12.gamebox.entity.octree;
+package com.tvd12.gamebox.octree;
 
 import com.tvd12.gamebox.entity.PositionAware;
 import com.tvd12.gamebox.math.Vec3;

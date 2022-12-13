@@ -1,16 +1,14 @@
-package com.tvd12.gamebox.testing.entity.octree;
+package com.tvd12.gamebox.testing.octree;
 
 import com.tvd12.gamebox.entity.MMOPlayer;
-import com.tvd12.gamebox.entity.octree.OcTree;
-import com.tvd12.gamebox.entity.octree.OcVolume;
+import com.tvd12.gamebox.octree.OcTree;
+import com.tvd12.gamebox.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class OcTreeTest {
@@ -31,6 +29,10 @@ public class OcTreeTest {
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+    
+        MMOPlayer player3 = MMOPlayer.builder()
+            .name("player3")
+            .build();
 
         // when
         boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.49f, 0.5f, 0.5f));
@@ -47,6 +49,7 @@ public class OcTreeTest {
         int maxPoints = 3;
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 outsidePosition = new Vec3(3, 3, 3);
         OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
         OcTree<MMOPlayer> ocTree = new OcTree<>(maxPoints, ocVolume);
 
@@ -69,16 +72,19 @@ public class OcTreeTest {
         // when
         boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.49f, 0.5f, 0.5f));
         boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
-        boolean isPlayer3Added = ocTree.insert(player3, new Vec3(0.2f, 0.2f, 0.3f));
-        boolean isPlayer4Added = ocTree.insert(player4, new Vec3(0.4f, 0.3f, 0.2f));
+        boolean isPlayer3Added = ocTree.insert(player3, new Vec3(0.3f, 0.3f, 0.3f));
+        player3.setPosition(outsidePosition);
         boolean isPlayer1Removed = ocTree.remove(player1);
+        boolean isPlayer3Removed = ocTree.remove(player3);
+        boolean isPlayer4Removed = ocTree.remove(player4);
 
         // then
         Asserts.assertTrue(isPlayer1Added);
         Asserts.assertTrue(isPlayer2Added);
         Asserts.assertTrue(isPlayer3Added);
-        Asserts.assertTrue(isPlayer4Added);
         Asserts.assertTrue(isPlayer1Removed);
+        Asserts.assertFalse(isPlayer3Removed);
+        Asserts.assertFalse(isPlayer4Removed);
     }
     
     @Test

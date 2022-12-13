@@ -1,6 +1,6 @@
-package com.tvd12.gamebox.testing.entity.octree;
+package com.tvd12.gamebox.testing.octree;
 
-import com.tvd12.gamebox.entity.octree.OcLocation;
+import com.tvd12.gamebox.octree.OcLocation;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;

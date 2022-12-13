@@ -1,20 +1,19 @@
-package com.tvd12.gamebox.entity.octree;
+package com.tvd12.gamebox.octree;
 
 import com.tvd12.gamebox.entity.PositionAware;
 import com.tvd12.gamebox.math.Vec3;
-import lombok.Getter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class OcTree<T extends PositionAware> {
     
-    @Getter
-    private final int maxItemsPerNode;
     private final OcTreeNode<T> root;
     private final Set<T> items;
 
     public OcTree(int maxItemsPerNode, OcVolume ocVolume) {
-        this.maxItemsPerNode = maxItemsPerNode;
         this.root = new OcTreeNode<>(ocVolume, maxItemsPerNode);
         this.items = new HashSet<>();
     }

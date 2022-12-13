@@ -1,4 +1,4 @@
-package com.tvd12.gamebox.entity.octree;
+package com.tvd12.gamebox.octree;
 
 import com.tvd12.gamebox.math.Vec3;
 import lombok.AllArgsConstructor;
@@ -76,13 +76,11 @@ public class OcVolume {
                     new Vec3(midX, midY, midZ),
                     bottomRightBack
                 );
-            case BOTTOM_LEFT_BACK:
+            default: // BOTTOM_LEFT_BACK:
                 return new OcVolume(
                     new Vec3(topLeftFront.x, midY, midZ),
                     new Vec3(midX, bottomRightBack.y, bottomRightBack.z)
                 );
-            default:
-                return null;
         }
     }
     
