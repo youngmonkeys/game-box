@@ -16,7 +16,7 @@ public class OcTreeTest {
     @Test
     public void insertionTest() {
         // given
-        int maxPoints = 3;
+        int maxPoints = 1;
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
         OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
@@ -35,12 +35,14 @@ public class OcTreeTest {
             .build();
 
         // when
-        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.49f, 0.5f, 0.5f));
+        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.5f, 1.5f, 1.5f));
         boolean isPlayer2Added = ocTree.insert(player2, new Vec3(2.5f, 1.0f, 1.0f));
+        boolean isPlayer3Added = ocTree.insert(player3, new Vec3(0.5f, 1.5f, 1.5f));
 
         // then
         Asserts.assertTrue(isPlayer1Added);
         Asserts.assertFalse(isPlayer2Added);
+        Asserts.assertTrue(isPlayer3Added);
     }
 
     @Test
@@ -85,6 +87,35 @@ public class OcTreeTest {
         Asserts.assertTrue(isPlayer1Removed);
         Asserts.assertFalse(isPlayer3Removed);
         Asserts.assertFalse(isPlayer4Removed);
+    }
+    
+    @Test
+    public void invalidRemovalTest() {
+        // given
+        int maxPoints = 1;
+        Vec3 topLeftFront = new Vec3(0, 0, 0);
+        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
+        OcTree<MMOPlayer> ocTree = new OcTree<>(maxPoints, ocVolume);
+        
+        MMOPlayer player1 = MMOPlayer.builder()
+            .name("player1")
+            .build();
+        
+        MMOPlayer player2 = MMOPlayer.builder()
+            .name("player2")
+            .build();
+        
+        // when
+        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.3f, 0.3f, 0.3f));
+        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
+        player1.setPosition(new Vec3(1.5f, 1.5f, 1.5f));
+        boolean isPlayer1Removed = ocTree.remove(player1);
+        
+        // then
+        Asserts.assertTrue(isPlayer1Added);
+        Asserts.assertTrue(isPlayer2Added);
+        Asserts.assertFalse(isPlayer1Removed);
     }
     
     @Test

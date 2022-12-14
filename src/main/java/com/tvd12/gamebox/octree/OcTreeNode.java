@@ -42,7 +42,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     private void createChildren() {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             OcVolume volume = this.ocVolume.getOctant(OcLocation.of(i));
             OcTreeNode<T> child = new OcTreeNode<>(volume, maxItems);
             this.children.add(child);
@@ -58,7 +58,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     private OcTreeNode<T> insertItemToChildren(T item, Vec3 position) {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             OcTreeNode<T> nodeContainingInsertedItem = this.children.get(i)
                 .insert(item, position);
             if (nodeContainingInsertedItem != null) {
@@ -88,7 +88,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     private boolean removeFromChildren(T item) {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             boolean isPlayerRemoved = this.children.get(i)
                 .remove(item);
             if (isPlayerRemoved) {
@@ -118,7 +118,7 @@ public class OcTreeNode<T extends PositionAware> {
             this.items.clear();
             return;
         }
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             this.children.get(i).getItemsInChildren(players);
         }
     }
@@ -132,7 +132,7 @@ public class OcTreeNode<T extends PositionAware> {
 
     private int countItemsFromChildren() {
         int count = 0;
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             count += this.children.get(i).countItems();
         }
         return count;
@@ -158,7 +158,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     private List<T> searchFromChildren(OcVolume searchVolume, List<T> matches) {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             this.children.get(i)
                 .search(searchVolume, matches);
         }
@@ -176,7 +176,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     private OcTreeNode<T> findNodeContainingPositionFromChildren(Vec3 position) {
-        for (int i = 0; i < NUM_CHILDREN; i++) {
+        for (int i = 0; i < NUM_CHILDREN; ++i) {
             OcTreeNode<T> node = this.children.get(i)
                 .findNodeContainingPosition(position);
             if (node != null) {
