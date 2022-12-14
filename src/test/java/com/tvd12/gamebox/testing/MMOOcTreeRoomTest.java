@@ -195,7 +195,7 @@ public class MMOOcTreeRoomTest {
     
     @SuppressWarnings("unchecked")
     @Test
-    public void updateMMOGridRoomTest() {
+    public void updateMMOOcTreeRoomTest() {
         // given
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
             .topLeftFront(new Vec3(0, 0, 0))
