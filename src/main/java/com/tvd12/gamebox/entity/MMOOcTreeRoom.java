@@ -3,6 +3,7 @@ package com.tvd12.gamebox.entity;
 import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import lombok.Getter;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class MMOOcTreeRoom extends MMORoom {
 
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
-        this.ocTree = new OcTree<>(
+        this.ocTree = new SynchronizedOcTree<>(
             builder.maxPointsPerNode,
             new OcVolume(builder.topLeftFront, builder.bottomRightBack)
         );

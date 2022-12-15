@@ -5,14 +5,14 @@ import com.tvd12.gamebox.math.Vec3;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class OcTreeNode<T extends PositionAware> {
 
     private static final int NUM_CHILDREN = 8;
-    private final Set<T> items = ConcurrentHashMap.newKeySet();
+    private final Set<T> items = new HashSet<>();
     private final List<OcTreeNode<T>> children = new ArrayList<>();
     @Setter
     private OcTreeNode<T> parentNode = null;
