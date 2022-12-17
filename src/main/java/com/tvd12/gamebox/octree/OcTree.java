@@ -13,8 +13,17 @@ public class OcTree<T extends PositionAware> {
     private final OcTreeNode<T> root;
     private final Set<T> items;
 
-    public OcTree(int maxItemsPerNode, OcVolume ocVolume) {
-        this.root = new OcTreeNode<>(ocVolume, maxItemsPerNode);
+    public OcTree(
+        Vec3 topLeftFront,
+        Vec3 bottomRightBack,
+        int maxItemsPerNode,
+        float minNodeSize
+    ) {
+        this.root = new OcTreeNode<>(
+            new OcBound(topLeftFront, bottomRightBack),
+            maxItemsPerNode,
+            minNodeSize
+        );
         this.items = new HashSet<>();
     }
     
@@ -38,9 +47,9 @@ public class OcTree<T extends PositionAware> {
     }
 
     public List<T> search(T item, float range) {
-        OcVolume searchVolume = OcVolume.fromCenterAndRange(item.getPosition(), range);
+        OcBound searchBound = OcBound.fromCenterAndRange(item.getPosition(), range);
         List<T> matches = new ArrayList<>();
-        return this.root.search(searchVolume, matches);
+        return this.root.search(searchBound, matches);
     }
     
     public boolean contains(T item) {
@@ -55,5 +64,13 @@ public class OcTree<T extends PositionAware> {
         OcTreeNode<T> currentNode = findNodeContainingPosition(item.getPosition());
         OcTreeNode<T> newNode = findNodeContainingPosition(newPosition);
         return (currentNode == newNode);
+    }
+    
+    @Override
+    public String toString() {
+        return '{' +
+            "root=" + root +
+            ", items=" + items +
+            '}';
     }
 }

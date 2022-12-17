@@ -10,27 +10,30 @@ import java.util.List;
 import java.util.Set;
 
 public class OcTreeNode<T extends PositionAware> {
-
-    private static final int NUM_CHILDREN = 8;
-    private final Set<T> items = new HashSet<>();
-    private final List<OcTreeNode<T>> children = new ArrayList<>();
+    
     @Setter
     private OcTreeNode<T> parentNode = null;
-    private final OcVolume ocVolume;
     private final int maxItems;
+    private final float minNodeSize;
+    private final OcBound bound;
+    private final Set<T> items = new HashSet<>();
+    private final List<OcTreeNode<T>> children = new ArrayList<>();
+    
+    private static final int NUM_CHILDREN = 8;
 
-    public OcTreeNode(OcVolume ocVolume, int maxItems) {
-        this.ocVolume = ocVolume;
+    public OcTreeNode(OcBound bound, int maxItems, float minNodeSize) {
+        this.bound = bound;
         this.maxItems = maxItems;
+        this.minNodeSize = minNodeSize;
     }
 
     public OcTreeNode<T> insert(T newItem, Vec3 position) {
-        if (!this.ocVolume.containsPosition(position)) {
+        if (!this.bound.containsPosition(position)) {
             return null;
         }
 
         if (isLeaf()) {
-            if (this.items.size() < maxItems) {
+            if (this.items.size() < maxItems || this.bound.getMaxDimension() < 2 * minNodeSize) {
                 this.items.add(newItem);
                 return this;
             }
@@ -43,8 +46,8 @@ public class OcTreeNode<T extends PositionAware> {
 
     private void createChildren() {
         for (int i = 0; i < NUM_CHILDREN; ++i) {
-            OcVolume volume = this.ocVolume.getOctant(OcLocation.of(i));
-            OcTreeNode<T> child = new OcTreeNode<>(volume, maxItems);
+            OcBound bound = this.bound.getOctant(OcLocation.of(i));
+            OcTreeNode<T> child = new OcTreeNode<>(bound, maxItems, minNodeSize);
             this.children.add(child);
             child.setParentNode(this);
         }
@@ -69,7 +72,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     public boolean remove(T item) {
-        if (!this.ocVolume.containsPosition(item.getPosition())) {
+        if (!this.bound.containsPosition(item.getPosition())) {
             return false;
         }
         if (isLeaf()) {
@@ -138,35 +141,35 @@ public class OcTreeNode<T extends PositionAware> {
         return count;
     }
 
-    public List<T> search(OcVolume searchVolume, List<T> matches) {
-        if (!this.ocVolume.doesOverlap(searchVolume)) {
+    public List<T> search(OcBound searchBound, List<T> matches) {
+        if (!this.bound.doesOverlap(searchBound)) {
             return matches;
         }
         if (isLeaf()) {
-            return searchFromThisLeaf(searchVolume, matches);
+            return searchFromThisLeaf(searchBound, matches);
         }
-        return searchFromChildren(searchVolume, matches);
+        return searchFromChildren(searchBound, matches);
     }
 
-    private List<T> searchFromThisLeaf(OcVolume searchVolume, List<T> matches) {
+    private List<T> searchFromThisLeaf(OcBound searchBound, List<T> matches) {
         for (T item : this.items) {
-            if (searchVolume.containsPosition(item.getPosition())) {
+            if (searchBound.containsPosition(item.getPosition())) {
                 matches.add(item);
             }
         }
         return matches;
     }
 
-    private List<T> searchFromChildren(OcVolume searchVolume, List<T> matches) {
+    private List<T> searchFromChildren(OcBound searchBound, List<T> matches) {
         for (int i = 0; i < NUM_CHILDREN; ++i) {
             this.children.get(i)
-                .search(searchVolume, matches);
+                .search(searchBound, matches);
         }
         return matches;
     }
 
     public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
-        if (!this.ocVolume.containsPosition(position)) {
+        if (!this.bound.containsPosition(position)) {
             return null;
         }
         if (isLeaf()) {
@@ -187,6 +190,15 @@ public class OcTreeNode<T extends PositionAware> {
     }
     
     public boolean isLeaf() {
-        return this.children.size() == 0;
+        return this.children.isEmpty();
+    }
+    
+    @Override
+    public String toString() {
+        return '(' +
+            "bound=" + bound +
+            ", items=" + items +
+            ", children=" + children +
+            ')';
     }
 }

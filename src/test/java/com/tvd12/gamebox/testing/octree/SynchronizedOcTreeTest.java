@@ -1,9 +1,8 @@
 package com.tvd12.gamebox.testing.octree;
 
 import com.tvd12.gamebox.entity.MMOPlayer;
-import com.tvd12.gamebox.octree.OcTree;
-import com.tvd12.gamebox.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.Assert;
@@ -20,8 +19,12 @@ public class SynchronizedOcTreeTest {
         int maxPoints = 1;
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
-        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            topLeftFront,
+            bottomRightBack,
+            maxPoints,
+            0.01f
+        );
 
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -53,8 +56,12 @@ public class SynchronizedOcTreeTest {
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
         Vec3 outsidePosition = new Vec3(3, 3, 3);
-        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            topLeftFront,
+            bottomRightBack,
+            maxPoints,
+            0.01f
+        );
 
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -96,8 +103,12 @@ public class SynchronizedOcTreeTest {
         int maxPoints = 1;
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
-        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            topLeftFront,
+            bottomRightBack,
+            maxPoints,
+            0.01f
+        );
         
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -125,8 +136,12 @@ public class SynchronizedOcTreeTest {
         int maxPoints = 3;
         Vec3 topLeftFront = new Vec3(0, 0, 0);
         Vec3 bottomRightBack = new Vec3(2, 2, 2);
-        OcVolume ocVolume = new OcVolume(topLeftFront, bottomRightBack);
-        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(maxPoints, ocVolume);
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            topLeftFront,
+            bottomRightBack,
+            maxPoints,
+            0.01f
+        );
     
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")

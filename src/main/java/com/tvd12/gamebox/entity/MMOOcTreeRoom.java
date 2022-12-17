@@ -1,8 +1,7 @@
 package com.tvd12.gamebox.entity;
 
-import com.tvd12.gamebox.octree.OcTree;
-import com.tvd12.gamebox.octree.OcVolume;
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import lombok.Getter;
 
@@ -21,8 +20,10 @@ public class MMOOcTreeRoom extends MMORoom {
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
         this.ocTree = new SynchronizedOcTree<>(
+            builder.topLeftFront,
+            builder.bottomRightBack,
             builder.maxPointsPerNode,
-            new OcVolume(builder.topLeftFront, builder.bottomRightBack)
+            builder.minNodeSize
         );
         this.topLeftFront = builder.topLeftFront;
         this.bottomRightBack = builder.bottomRightBack;
@@ -95,6 +96,7 @@ public class MMOOcTreeRoom extends MMORoom {
         private Vec3 topLeftFront;
         private Vec3 bottomRightBack;
         private int maxPointsPerNode;
+        private float minNodeSize = 0.000001f;
 
         public Builder topLeftFront(Vec3 topLeftFront) {
             this.topLeftFront = topLeftFront;
@@ -108,6 +110,11 @@ public class MMOOcTreeRoom extends MMORoom {
 
         public Builder maxPointsPerNode(int maxPointsPerNode) {
             this.maxPointsPerNode = maxPointsPerNode;
+            return this;
+        }
+        
+        public Builder minNodeSize(float minNodeSize) {
+            this.minNodeSize = minNodeSize;
             return this;
         }
 
