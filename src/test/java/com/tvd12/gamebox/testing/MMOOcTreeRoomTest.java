@@ -112,6 +112,7 @@ public class MMOOcTreeRoomTest {
             .topLeftFront(new Vec3(0, 0, 0))
             .bottomRightBack(new Vec3(50, 50, 50))
             .maxPointsPerNode(2)
+            .minNodeSize(1f)
             .maxPlayer(5)
             .distanceOfInterest(7.5)
             .build();
