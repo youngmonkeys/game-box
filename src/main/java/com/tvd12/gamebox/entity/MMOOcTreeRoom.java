@@ -10,23 +10,23 @@ import java.util.List;
 public class MMOOcTreeRoom extends MMORoom {
     
     @Getter
-    private final Vec3 topLeftFront;
+    private final Vec3 leftBottomBack;
     
     @Getter
-    private final Vec3 bottomRightBack;
+    private final Vec3 rightTopFront;
     
     private final OcTree<MMOPlayer> ocTree;
 
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
         this.ocTree = new SynchronizedOcTree<>(
-            builder.topLeftFront,
-            builder.bottomRightBack,
+            builder.leftBottomBack,
+            builder.rightTopFront,
             builder.maxPointsPerNode,
             builder.minNodeSize
         );
-        this.topLeftFront = builder.topLeftFront;
-        this.bottomRightBack = builder.bottomRightBack;
+        this.leftBottomBack = builder.leftBottomBack;
+        this.rightTopFront = builder.rightTopFront;
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -93,18 +93,18 @@ public class MMOOcTreeRoom extends MMORoom {
 
     public static class Builder extends MMORoom.Builder {
 
-        private Vec3 topLeftFront;
-        private Vec3 bottomRightBack;
+        private Vec3 leftBottomBack;
+        private Vec3 rightTopFront;
         private int maxPointsPerNode;
         private float minNodeSize = 0.000001f;
 
-        public Builder topLeftFront(Vec3 topLeftFront) {
-            this.topLeftFront = topLeftFront;
+        public Builder leftBottomBack(Vec3 leftBottomBack) {
+            this.leftBottomBack = leftBottomBack;
             return this;
         }
 
-        public Builder bottomRightBack(Vec3 bottomRightBack) {
-            this.bottomRightBack = bottomRightBack;
+        public Builder rightTopFront(Vec3 rightTopFront) {
+            this.rightTopFront = rightTopFront;
             return this;
         }
 

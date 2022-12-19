@@ -1,6 +1,7 @@
 package com.tvd12.gamebox.octree;
 
 import com.tvd12.gamebox.entity.PositionAware;
+import com.tvd12.gamebox.math.Bounds;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Setter;
 
@@ -15,25 +16,25 @@ public class OcTreeNode<T extends PositionAware> {
     private OcTreeNode<T> parentNode = null;
     private final int maxItems;
     private final float minNodeSize;
-    private final OcBound bound;
+    private final Bounds bounds;
     private final Set<T> items = new HashSet<>();
     private final List<OcTreeNode<T>> children = new ArrayList<>();
     
     private static final int NUM_CHILDREN = 8;
 
-    public OcTreeNode(OcBound bound, int maxItems, float minNodeSize) {
-        this.bound = bound;
+    public OcTreeNode(Bounds bounds, int maxItems, float minNodeSize) {
+        this.bounds = bounds;
         this.maxItems = maxItems;
         this.minNodeSize = minNodeSize;
     }
 
     public OcTreeNode<T> insert(T newItem, Vec3 position) {
-        if (!this.bound.containsPosition(position)) {
+        if (!this.bounds.containsPosition(position)) {
             return null;
         }
 
         if (isLeaf()) {
-            if (this.items.size() < maxItems || this.bound.getMaxDimension() < 2 * minNodeSize) {
+            if (this.items.size() < maxItems || this.bounds.getMaxDimension() < 2 * minNodeSize) {
                 this.items.add(newItem);
                 return this;
             }
@@ -46,8 +47,8 @@ public class OcTreeNode<T extends PositionAware> {
 
     private void createChildren() {
         for (int i = 0; i < NUM_CHILDREN; ++i) {
-            OcBound bound = this.bound.getOctant(OcLocation.of(i));
-            OcTreeNode<T> child = new OcTreeNode<>(bound, maxItems, minNodeSize);
+            Bounds bounds = this.bounds.getOctant(i);
+            OcTreeNode<T> child = new OcTreeNode<>(bounds, maxItems, minNodeSize);
             this.children.add(child);
             child.setParentNode(this);
         }
@@ -72,7 +73,7 @@ public class OcTreeNode<T extends PositionAware> {
     }
 
     public boolean remove(T item) {
-        if (!this.bound.containsPosition(item.getPosition())) {
+        if (!this.bounds.containsPosition(item.getPosition())) {
             return false;
         }
         if (isLeaf()) {
@@ -141,35 +142,35 @@ public class OcTreeNode<T extends PositionAware> {
         return count;
     }
 
-    public List<T> search(OcBound searchBound, List<T> matches) {
-        if (!this.bound.doesOverlap(searchBound)) {
+    public List<T> search(Bounds searchBounds, List<T> matches) {
+        if (!this.bounds.doesOverlap(searchBounds)) {
             return matches;
         }
         if (isLeaf()) {
-            return searchFromThisLeaf(searchBound, matches);
+            return searchFromThisLeaf(searchBounds, matches);
         }
-        return searchFromChildren(searchBound, matches);
+        return searchFromChildren(searchBounds, matches);
     }
 
-    private List<T> searchFromThisLeaf(OcBound searchBound, List<T> matches) {
+    private List<T> searchFromThisLeaf(Bounds searchBounds, List<T> matches) {
         for (T item : this.items) {
-            if (searchBound.containsPosition(item.getPosition())) {
+            if (searchBounds.containsPosition(item.getPosition())) {
                 matches.add(item);
             }
         }
         return matches;
     }
 
-    private List<T> searchFromChildren(OcBound searchBound, List<T> matches) {
+    private List<T> searchFromChildren(Bounds searchBounds, List<T> matches) {
         for (int i = 0; i < NUM_CHILDREN; ++i) {
             this.children.get(i)
-                .search(searchBound, matches);
+                .search(searchBounds, matches);
         }
         return matches;
     }
 
     public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
-        if (!this.bound.containsPosition(position)) {
+        if (!this.bounds.containsPosition(position)) {
             return null;
         }
         if (isLeaf()) {
@@ -196,7 +197,7 @@ public class OcTreeNode<T extends PositionAware> {
     @Override
     public String toString() {
         return '(' +
-            "bound=" + bound +
+            "bounds=" + bounds +
             ", items=" + items +
             ", children=" + children +
             ')';

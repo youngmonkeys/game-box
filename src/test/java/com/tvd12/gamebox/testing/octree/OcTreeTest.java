@@ -23,19 +23,21 @@ public class OcTreeTest {
             5f
         );
     
-        String expectedOcTreeString = "{" +
-            "root=(" +
-                "bound=(0.0, 0.0, 0.0)->(10.0, 0.0, 10.0), " +
-                "items=[], " +
-                "children=[" +
-                    "(bound=(0.0, 0.0, 0.0)->(5.0, 0.0, 5.0), items=[player2, player3], children=[]), " +
-                    "(bound=(5.0, 0.0, 0.0)->(10.0, 0.0, 5.0), items=[], children=[]), " +
-                    "(bound=(5.0, 0.0, 0.0)->(10.0, 0.0, 5.0), items=[], children=[]), " +
-                    "(bound=(0.0, 0.0, 0.0)->(5.0, 0.0, 5.0), items=[], children=[]), " +
-                    "(bound=(0.0, 0.0, 5.0)->(5.0, 0.0, 10.0), items=[], children=[]), " +
-                    "(bound=(5.0, 0.0, 5.0)->(10.0, 0.0, 10.0), items=[player1], children=[]), " +
-                    "(bound=(5.0, 0.0, 5.0)->(10.0, 0.0, 10.0), items=[], children=[]), " +
-                    "(bound=(0.0, 0.0, 5.0)->(5.0, 0.0, 10.0), items=[], children=[])]), " +
+        String expectedOcTreeString = 
+            "{" +
+                "root=(" +
+                    "bounds=(0.0, 0.0, 0.0)->(10.0, 0.0, 10.0), " +
+                    "items=[], children=[" +
+                        "(bounds=(0.0, 0.0, 0.0)->(5.0, 0.0, 5.0), items=[player2, player3], children=[]), " +
+                        "(bounds=(0.0, 0.0, 5.0)->(5.0, 0.0, 10.0), items=[], children=[]), " +
+                        "(bounds=(0.0, 0.0, 0.0)->(5.0, 0.0, 5.0), items=[], children=[]), " +
+                        "(bounds=(0.0, 0.0, 5.0)->(5.0, 0.0, 10.0), items=[], children=[]), " +
+                        "(bounds=(5.0, 0.0, 0.0)->(10.0, 0.0, 5.0), items=[], children=[]), " +
+                        "(bounds=(5.0, 0.0, 5.0)->(10.0, 0.0, 10.0), items=[player1], children=[]), " +
+                        "(bounds=(5.0, 0.0, 0.0)->(10.0, 0.0, 5.0), items=[], children=[]), " +
+                        "(bounds=(5.0, 0.0, 5.0)->(10.0, 0.0, 10.0), items=[], children=[])" +
+                    "]" +
+                "), " +
                 "items=[player1, player2, player3]" +
             "}";
         

@@ -19,8 +19,8 @@ public class MMOOcTreeRoomTest {
     
     public static void main(String[] args) {
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(50, 50, 50))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(50, 50, 50))
             .maxPointsPerNode(5)
             .maxPlayer(800)
             .distanceOfInterest(7.5f)
@@ -36,9 +36,9 @@ public class MMOOcTreeRoomTest {
             room.setPlayerPosition(
                 player,
                 new Vec3(
-                    RandomUtil.randomFloat(room.getTopLeftFront().x, room.getBottomRightBack().x),
-                    RandomUtil.randomFloat(room.getTopLeftFront().y, room.getBottomRightBack().y),
-                    RandomUtil.randomFloat(room.getTopLeftFront().z, room.getBottomRightBack().z)
+                    RandomUtil.randomFloat(room.getLeftBottomBack().x, room.getRightTopFront().x),
+                    RandomUtil.randomFloat(room.getLeftBottomBack().y, room.getRightTopFront().y),
+                    RandomUtil.randomFloat(room.getLeftBottomBack().z, room.getRightTopFront().z)
                 )
             );
             room.addPlayer(player);
@@ -52,9 +52,9 @@ public class MMOOcTreeRoomTest {
                 room.setPlayerPosition(
                     player,
                     new Vec3(
-                        RandomUtil.randomFloat(room.getTopLeftFront().x, room.getBottomRightBack().x),
-                        RandomUtil.randomFloat(room.getTopLeftFront().y, room.getBottomRightBack().y),
-                        RandomUtil.randomFloat(room.getTopLeftFront().z, room.getBottomRightBack().z)
+                        RandomUtil.randomFloat(room.getLeftBottomBack().x, room.getRightTopFront().x),
+                        RandomUtil.randomFloat(room.getLeftBottomBack().y, room.getRightTopFront().y),
+                        RandomUtil.randomFloat(room.getLeftBottomBack().z, room.getRightTopFront().z)
                     )
                 );
             })
@@ -66,8 +66,8 @@ public class MMOOcTreeRoomTest {
     public void createRoomWithoutSettingMaxPointsPerNodeTest() {
         // given
         MMOOcTreeRoom.Builder roomBuilder = (MMOOcTreeRoom.Builder) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(2, 2, 2))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(2, 2, 2))
             .maxPlayer(3)
             .distanceOfInterest(0.5);
         
@@ -82,8 +82,8 @@ public class MMOOcTreeRoomTest {
     public void setPlayerPositionOutsideRoomAreaTest() {
         // given
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(2, 2, 2))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(2, 2, 2))
             .maxPointsPerNode(3)
             .maxPlayer(3)
             .distanceOfInterest(0.5)
@@ -109,8 +109,8 @@ public class MMOOcTreeRoomTest {
     public void setMultiplePlayerPositionsTest() {
         // given
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(50, 50, 50))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(50, 50, 50))
             .maxPointsPerNode(2)
             .minNodeSize(1f)
             .maxPlayer(5)
@@ -130,9 +130,9 @@ public class MMOOcTreeRoomTest {
                 room.setPlayerPosition(
                     player,
                     new Vec3(
-                        RandomUtil.randomFloat(room.getTopLeftFront().x, room.getBottomRightBack().x),
-                        RandomUtil.randomFloat(room.getTopLeftFront().y, room.getBottomRightBack().y),
-                        RandomUtil.randomFloat(room.getTopLeftFront().z, room.getBottomRightBack().z)
+                        RandomUtil.randomFloat(room.getLeftBottomBack().x, room.getRightTopFront().x),
+                        RandomUtil.randomFloat(room.getLeftBottomBack().y, room.getRightTopFront().y),
+                        RandomUtil.randomFloat(room.getLeftBottomBack().z, room.getRightTopFront().z)
                     )
                 );
             }
@@ -199,8 +199,8 @@ public class MMOOcTreeRoomTest {
     public void updateMMOOcTreeRoomTest() {
         // given
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(50, 50, 50))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(50, 50, 50))
             .maxPointsPerNode(5)
             .maxPlayer(5)
             .distanceOfInterest(7.5)
@@ -246,8 +246,8 @@ public class MMOOcTreeRoomTest {
     public void searchNearByPlayersTest() {
         // given
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
-            .topLeftFront(new Vec3(0, 0, 0))
-            .bottomRightBack(new Vec3(2, 2, 2))
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(2, 2, 2))
             .maxPointsPerNode(3)
             .maxPlayer(4)
             .distanceOfInterest(0.3)

@@ -4,7 +4,7 @@ import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.PositionAware;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.gamebox.octree.OcTreeNode;
-import com.tvd12.gamebox.octree.OcBound;
+import com.tvd12.gamebox.math.Bounds;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.MethodUtil;
 import org.testng.annotations.Test;
@@ -16,11 +16,11 @@ public class OcTreeNodeTest {
     @Test
     public void insertItemToChildrenWithNullOutputTest() throws NoSuchMethodException {
         // given
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         Vec3 outsidePosition = new Vec3(3, 3, 3);
-        OcBound bound = new OcBound(topLeftFront, bottomRightBack);
-        OcTreeNode<MMOPlayer> node = new OcTreeNode<>(bound, 1, 0.01f);
+        Bounds bounds = new Bounds(leftBottomBack, rightTopFront);
+        OcTreeNode<MMOPlayer> node = new OcTreeNode<>(bounds, 1, 0.01f);
         
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
@@ -59,11 +59,11 @@ public class OcTreeNodeTest {
     public void findNodeContainingPositionFromChildrenWithNullOutputTest()
         throws NoSuchMethodException {
         // given
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         Vec3 outsidePosition = new Vec3(3, 3, 3);
-        OcBound bound = new OcBound(topLeftFront, bottomRightBack);
-        OcTreeNode<MMOPlayer> node = new OcTreeNode<>(bound, 1, 0.01f);
+        Bounds bounds = new Bounds(leftBottomBack, rightTopFront);
+        OcTreeNode<MMOPlayer> node = new OcTreeNode<>(bounds, 1, 0.01f);
         
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")

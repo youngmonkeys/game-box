@@ -8,12 +8,12 @@ import java.util.List;
 public class SynchronizedOcTree<T extends PositionAware> extends OcTree<T> {
     
     public SynchronizedOcTree(
-        Vec3 topLeftFront,
-        Vec3 bottomRightBack,
+        Vec3 leftBottomBack,
+        Vec3 rightTopFront,
         int maxItemsPerNode,
         float minNodeSize
     ) {
-        super(topLeftFront, bottomRightBack, maxItemsPerNode, minNodeSize);
+        super(leftBottomBack, rightTopFront, maxItemsPerNode, minNodeSize);
     }
     
     public boolean insert(T item, Vec3 position) {

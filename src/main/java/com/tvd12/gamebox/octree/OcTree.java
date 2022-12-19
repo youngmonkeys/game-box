@@ -1,6 +1,7 @@
 package com.tvd12.gamebox.octree;
 
 import com.tvd12.gamebox.entity.PositionAware;
+import com.tvd12.gamebox.math.Bounds;
 import com.tvd12.gamebox.math.Vec3;
 
 import java.util.ArrayList;
@@ -14,13 +15,13 @@ public class OcTree<T extends PositionAware> {
     private final Set<T> items;
 
     public OcTree(
-        Vec3 topLeftFront,
-        Vec3 bottomRightBack,
+        Vec3 leftBottomBack,
+        Vec3 rightTopFront,
         int maxItemsPerNode,
         float minNodeSize
     ) {
         this.root = new OcTreeNode<>(
-            new OcBound(topLeftFront, bottomRightBack),
+            new Bounds(leftBottomBack, rightTopFront),
             maxItemsPerNode,
             minNodeSize
         );
@@ -47,9 +48,9 @@ public class OcTree<T extends PositionAware> {
     }
 
     public List<T> search(T item, float range) {
-        OcBound searchBound = OcBound.fromCenterAndRange(item.getPosition(), range);
+        Bounds searchBounds = Bounds.fromCenterAndRange(item.getPosition(), range);
         List<T> matches = new ArrayList<>();
-        return this.root.search(searchBound, matches);
+        return this.root.search(searchBounds, matches);
     }
     
     public boolean contains(T item) {

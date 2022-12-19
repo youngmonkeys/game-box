@@ -17,11 +17,11 @@ public class SynchronizedOcTreeTest {
     public void insertionTest() {
         // given
         int maxPoints = 1;
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
-            topLeftFront,
-            bottomRightBack,
+            leftBottomBack,
+            rightTopFront,
             maxPoints,
             0.01f
         );
@@ -53,12 +53,12 @@ public class SynchronizedOcTreeTest {
     public void removalTest() {
         // given
         int maxPoints = 3;
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         Vec3 outsidePosition = new Vec3(3, 3, 3);
         OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
-            topLeftFront,
-            bottomRightBack,
+            leftBottomBack,
+            rightTopFront,
             maxPoints,
             0.01f
         );
@@ -101,11 +101,11 @@ public class SynchronizedOcTreeTest {
     public void invalidRemovalTest() {
         // given
         int maxPoints = 1;
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
-            topLeftFront,
-            bottomRightBack,
+            leftBottomBack,
+            rightTopFront,
             maxPoints,
             0.01f
         );
@@ -134,11 +134,11 @@ public class SynchronizedOcTreeTest {
     public void searchingTest() {
         // given
         int maxPoints = 3;
-        Vec3 topLeftFront = new Vec3(0, 0, 0);
-        Vec3 bottomRightBack = new Vec3(2, 2, 2);
+        Vec3 leftBottomBack = new Vec3(0, 0, 0);
+        Vec3 rightTopFront = new Vec3(2, 2, 2);
         OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
-            topLeftFront,
-            bottomRightBack,
+            leftBottomBack,
+            rightTopFront,
             maxPoints,
             0.01f
         );
