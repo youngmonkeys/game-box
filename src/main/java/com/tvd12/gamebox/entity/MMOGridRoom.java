@@ -149,8 +149,8 @@ public class MMOGridRoom extends MMORoom {
     }
 
     @Override
-    public void update() {
-        notifyUpdatedHandlers();
+    protected void updatePlayers() {
+        // do nothing
     }
 
     public static Builder builder() {
