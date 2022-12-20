@@ -33,7 +33,7 @@ public class OcTree<T extends PositionAware> {
         if (nodeContainingInsertedItem != null) {
             items.add(item);
         }
-        return (nodeContainingInsertedItem != null);
+        return nodeContainingInsertedItem != null;
     }
     
     public boolean remove(T item) {
