@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
-public class MMOPlayer extends Player {
+public class MMOPlayer extends Player implements PositionAware {
 
     protected Vec3 position = new Vec3();
     protected Vec3 rotation = new Vec3();
