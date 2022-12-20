@@ -2,6 +2,7 @@ package com.tvd12.gamebox.testing;
 
 import com.tvd12.gamebox.entity.MMOOcTreeRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.performance.Performance;
@@ -89,19 +90,21 @@ public class MMOOcTreeRoomTest {
             .distanceOfInterest(0.5)
             .build();
 
-        Vec3 expectedPlayer1Position = new Vec3(0, 0, 0);
-        Vec3 expectedPlayer2Position = new Vec3(1, 1, 1);
         MMOPlayer player1 = new MMOPlayer("player1");
         MMOPlayer player2 = new MMOPlayer("player2");
 
         // when
-        room.setPlayerPosition(player1, new Vec3(2.1f, 1.5f, 1.5f));
-        room.setPlayerPosition(player2, expectedPlayer2Position);
-        room.setPlayerPosition(player2, new Vec3(2.1f, 1.5f, 1.5f));
+        Throwable e1 = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player1, new Vec3(2.1f, 1.5f, 1.5f))
+        );
+        room.setPlayerPosition(player2, new Vec3(1, 1, 1));
+        Throwable e2 = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player2, new Vec3(2.1f, 1.5f, 1.5f))
+        );
 
         // then
-        Asserts.assertEquals(player1.getPosition(), expectedPlayer1Position);
-        Asserts.assertEquals(player2.getPosition(), expectedPlayer2Position);
+        Asserts.assertEquals(IllegalArgumentException.class.toString(), e1.getClass().toString());
+        Asserts.assertEquals(IllegalArgumentException.class.toString(), e2.getClass().toString());
     }
     
     @SuppressWarnings("unchecked")
@@ -267,5 +270,23 @@ public class MMOOcTreeRoomTest {
         
         // then
         Asserts.assertEquals(player3.getNearbyPlayerNames().size(), 4);
+    }
+    
+    @Test
+    public void createRoomWithMinNodeSizeEqualsZeroTest() {
+        // given
+        MMORoom.Builder builder = MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(2, 2, 2))
+            .minNodeSize(0f)
+            .maxPointsPerNode(3)
+            .maxPlayer(4)
+            .distanceOfInterest(0.3);
+        
+        // when
+        Throwable e = Asserts.assertThrows(builder::build);
+        
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class.toString(), e.getClass().toString());
     }
 }

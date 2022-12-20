@@ -29,19 +29,22 @@ public class SynchronizedOcTreeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.5f, 1.5f, 1.5f));
         
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(2.5f, 1.0f, 1.0f));
     
         MMOPlayer player3 = MMOPlayer.builder()
             .name("player3")
             .build();
+        player3.setPosition(new Vec3(0.5f, 1.5f, 1.5f));
 
         // when
-        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.5f, 1.5f, 1.5f));
-        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(2.5f, 1.0f, 1.0f));
-        boolean isPlayer3Added = ocTree.insert(player3, new Vec3(0.5f, 1.5f, 1.5f));
+        boolean isPlayer1Added = ocTree.insert(player1);
+        boolean isPlayer2Added = ocTree.insert(player2);
+        boolean isPlayer3Added = ocTree.insert(player3);
 
         // then
         Asserts.assertTrue(isPlayer1Added);
@@ -66,23 +69,26 @@ public class SynchronizedOcTreeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.49f, 0.5f, 0.5f));
 
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
 
         MMOPlayer player3 = MMOPlayer.builder()
             .name("player3")
             .build();
+        player3.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
 
         MMOPlayer player4 = MMOPlayer.builder()
             .name("player4")
             .build();
 
         // when
-        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.49f, 0.5f, 0.5f));
-        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
-        boolean isPlayer3Added = ocTree.insert(player3, new Vec3(0.3f, 0.3f, 0.3f));
+        boolean isPlayer1Added = ocTree.insert(player1);
+        boolean isPlayer2Added = ocTree.insert(player2);
+        boolean isPlayer3Added = ocTree.insert(player3);
         player3.setPosition(outsidePosition);
         boolean isPlayer1Removed = ocTree.remove(player1);
         boolean isPlayer3Removed = ocTree.remove(player3);
@@ -113,14 +119,16 @@ public class SynchronizedOcTreeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
         
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
         
         // when
-        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.3f, 0.3f, 0.3f));
-        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
+        boolean isPlayer1Added = ocTree.insert(player1);
+        boolean isPlayer2Added = ocTree.insert(player2);
         player1.setPosition(new Vec3(1.5f, 1.5f, 1.5f));
         boolean isPlayer1Removed = ocTree.remove(player1);
         
@@ -146,13 +154,15 @@ public class SynchronizedOcTreeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.5f, 0.5f, 0.5f));
     
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
         
-        boolean isPlayer1Added = ocTree.insert(player1, new Vec3(0.5f, 0.5f, 0.5f));
-        boolean isPlayer2Added = ocTree.insert(player2, new Vec3(0.3f, 0.3f, 0.3f));
+        boolean isPlayer1Added = ocTree.insert(player1);
+        boolean isPlayer2Added = ocTree.insert(player2);
         float searchRange = 0.2f;
     
         // when

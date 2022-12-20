@@ -16,9 +16,9 @@ public class SynchronizedOcTree<T extends PositionAware> extends OcTree<T> {
         super(leftBottomBack, rightTopFront, maxItemsPerNode, minNodeSize);
     }
     
-    public boolean insert(T item, Vec3 position) {
+    public boolean insert(T item) {
         synchronized (this) {
-            return super.insert(item, position);
+            return super.insert(item);
         }
     }
     

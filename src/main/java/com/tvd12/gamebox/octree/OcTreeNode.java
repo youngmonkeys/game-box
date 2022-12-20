@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class OcTreeNode<T extends PositionAware> {
     
@@ -23,13 +24,19 @@ public class OcTreeNode<T extends PositionAware> {
     private static final int NUM_CHILDREN = 8;
 
     public OcTreeNode(Bounds bounds, int maxItems, float minNodeSize) {
+        if (minNodeSize <= 0) {
+            throw new IllegalArgumentException(
+                "minNodeSize must > 0 to avoid StackOverflow"
+            );
+        }
+        
         this.bounds = bounds;
         this.maxItems = maxItems;
         this.minNodeSize = minNodeSize;
     }
 
-    public OcTreeNode<T> insert(T newItem, Vec3 position) {
-        if (!this.bounds.containsPosition(position)) {
+    public OcTreeNode<T> insert(T newItem) {
+        if (!this.bounds.containsPosition(newItem.getPosition())) {
             return null;
         }
 
@@ -42,7 +49,7 @@ public class OcTreeNode<T extends PositionAware> {
             passItemsToChildren();
         }
 
-        return insertItemToChildren(newItem, position);
+        return insertItemToChildren(newItem);
     }
 
     private void createChildren() {
@@ -56,15 +63,15 @@ public class OcTreeNode<T extends PositionAware> {
 
     private void passItemsToChildren() {
         this.items.forEach(
-            item -> insertItemToChildren(item, item.getPosition())
+            this::insertItemToChildren
         );
         this.items.clear();
     }
 
-    private OcTreeNode<T> insertItemToChildren(T item, Vec3 position) {
+    private OcTreeNode<T> insertItemToChildren(T item) {
         for (int i = 0; i < NUM_CHILDREN; ++i) {
             OcTreeNode<T> nodeContainingInsertedItem = this.children.get(i)
-                .insert(item, position);
+                .insert(item);
             if (nodeContainingInsertedItem != null) {
                 return nodeContainingInsertedItem;
             }
@@ -169,7 +176,7 @@ public class OcTreeNode<T extends PositionAware> {
         return matches;
     }
 
-    public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
+    protected OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
         if (!this.bounds.containsPosition(position)) {
             return null;
         }
@@ -201,5 +208,22 @@ public class OcTreeNode<T extends PositionAware> {
             ", items=" + items +
             ", children=" + children +
             ')';
+    }
+    
+    public String toPrettyString(int level) {
+        String spaces = level <= 0
+            ? ""
+            : String.format("%" + level * 2 + 's', "");
+        return spaces + "(\n" +
+            spaces + "  bounds=" + bounds + ",\n" +
+            spaces + "  items=" + items + ",\n" +
+            spaces + (
+                children.isEmpty()
+                    ? "  children=[]\n"
+                    : "  children=[\n" + children.stream()
+                        .map(it -> it.toPrettyString(level + 1))
+                        .collect(Collectors.joining(",\n")) +
+                        '\n' + spaces + "  ]\n"
+            ) + spaces + ')';
     }
 }

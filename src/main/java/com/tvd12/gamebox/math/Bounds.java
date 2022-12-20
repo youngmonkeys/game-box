@@ -17,12 +17,12 @@ public class Bounds {
         }
         if (leftBottomBack.y > rightTopFront.y) {
             throw new IllegalArgumentException(
-                "invalid bounds, required: leftBottomBack.y > rightTopFront.y"
+                "invalid bounds, required: leftBottomBack.y < rightTopFront.y"
             );
         }
         if (leftBottomBack.z > rightTopFront.z) {
             throw new IllegalArgumentException(
-                "invalid bounds, required: leftBottomBack.z > rightTopFront.z"
+                "invalid bounds, required: leftBottomBack.z < rightTopFront.z"
             );
         }
         this.leftBottomBack = leftBottomBack;
@@ -61,7 +61,7 @@ public class Bounds {
             || other.rightTopFront.z < this.leftBottomBack.z
             || other.leftBottomBack.z > this.rightTopFront.z);
     }
-
+    
     public Bounds getOctant(int index) {
         OcLocation ocLocation = Bounds.OcLocation.of(index);
         float midX = (leftBottomBack.x + rightTopFront.x) / 2;
@@ -128,8 +128,7 @@ public class Bounds {
         RIGHT_BOTTOM_BACK(4),
         RIGHT_BOTTOM_FRONT(5),
         RIGHT_TOP_BACK(6),
-        RIGHT_TOP_FRONT(7)
-        ;
+        RIGHT_TOP_FRONT(7);
         
         private final int location;
         

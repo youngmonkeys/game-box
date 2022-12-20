@@ -28,8 +28,8 @@ public class OcTree<T extends PositionAware> {
         this.items = new HashSet<>();
     }
     
-    public boolean insert(T item, Vec3 position) {
-        OcTreeNode<T> nodeContainingInsertedItem = this.root.insert(item, position);
+    public boolean insert(T item) {
+        OcTreeNode<T> nodeContainingInsertedItem = this.root.insert(item);
         if (nodeContainingInsertedItem != null) {
             items.add(item);
         }
@@ -57,14 +57,14 @@ public class OcTree<T extends PositionAware> {
         return items.contains(item);
     }
     
-    public OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
+    protected OcTreeNode<T> findNodeContainingPosition(Vec3 position) {
         return this.root.findNodeContainingPosition(position);
     }
     
     public boolean isItemRemainingAtSameNode(T item, Vec3 newPosition) {
         OcTreeNode<T> currentNode = findNodeContainingPosition(item.getPosition());
         OcTreeNode<T> newNode = findNodeContainingPosition(newPosition);
-        return (currentNode == newNode);
+        return currentNode == newNode;
     }
     
     @Override
@@ -73,5 +73,12 @@ public class OcTree<T extends PositionAware> {
             "root=" + root +
             ", items=" + items +
             '}';
+    }
+    
+    public String toPrettyString() {
+        return "{\n" +
+            "root=" + root.toPrettyString(0) +
+            ",\nitems=" + items +
+            "\n}";
     }
 }

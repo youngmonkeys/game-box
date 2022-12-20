@@ -25,30 +25,31 @@ public class OcTreeNodeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.5f, 0.5f, 0.5f));
         
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(1.5f, 1.5f, 1.5f));
         
         MMOPlayer player3 = MMOPlayer.builder()
             .name("player3")
             .build();
+        player3.setPosition(outsidePosition);
         
-        node.insert(player1, new Vec3(0.5f, 0.5f, 0.5f));
-        node.insert(player2, new Vec3(1.5f, 1.5f, 1.5f));
+        node.insert(player1);
+        node.insert(player2);
         
         // when
         Method method = OcTreeNode.class.getDeclaredMethod(
             "insertItemToChildren",
-            PositionAware.class,
-            Vec3.class
+            PositionAware.class
         );
         method.setAccessible(true);
         Object nodeContainingInsertedItem = MethodUtil.invokeMethod(
             method,
             node,
-            player3,
-            outsidePosition
+            player3
         );
         
         // then
@@ -68,13 +69,15 @@ public class OcTreeNodeTest {
         MMOPlayer player1 = MMOPlayer.builder()
             .name("player1")
             .build();
+        player1.setPosition(new Vec3(0.5f, 0.5f, 0.5f));
         
         MMOPlayer player2 = MMOPlayer.builder()
             .name("player2")
             .build();
+        player2.setPosition(new Vec3(1.5f, 1.5f, 1.5f));
         
-        node.insert(player1, new Vec3(0.5f, 0.5f, 0.5f));
-        node.insert(player2, new Vec3(1.5f, 1.5f, 1.5f));
+        node.insert(player1);
+        node.insert(player2);
         
         // when
         Method method = OcTreeNode.class.getDeclaredMethod(

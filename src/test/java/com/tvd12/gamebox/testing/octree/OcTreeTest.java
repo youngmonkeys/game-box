@@ -13,8 +13,11 @@ public class OcTreeTest {
     public void insertSamePositionsTest() {
         // given
         MMOPlayer player1 = new MMOPlayer("player1");
+        player1.setPosition(new Vec3(6, 0, 6));
         MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(0, 0, 0));
         MMOPlayer player3 = new MMOPlayer("player3");
+        player3.setPosition(new Vec3(0, 0, 0));
         
         OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
             new Vec3(0, 0, 0),
@@ -42,14 +45,12 @@ public class OcTreeTest {
             "}";
         
         // when
-        ocTree.insert(player1, new Vec3(6, 0, 6));
-        player1.setPosition(6, 0, 6);
-        ocTree.insert(player2, new Vec3(0, 0, 0));
-        player2.setPosition(0, 0, 0);
-        ocTree.insert(player3, new Vec3(0, 0, 0));
-        player3.setPosition(0, 0, 0);
+        ocTree.insert(player1);
+        ocTree.insert(player2);
+        ocTree.insert(player3);
     
         // then
         Asserts.assertEquals(ocTree.toString(), expectedOcTreeString);
+        System.out.println(ocTree.toPrettyString());
     }
 }

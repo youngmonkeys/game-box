@@ -30,10 +30,16 @@ public class MMOOcTreeRoom extends MMORoom {
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
+        boolean isSuccessful;
         if (!this.ocTree.contains(player)) {
-            addNewPlayer(player, position);
+            isSuccessful = addNewPlayer(player, position);
         } else {
-            updateExistingPlayer(player, position);
+            isSuccessful = updateExistingPlayer(player, position);
+        }
+        if (!isSuccessful) {
+            throw new IllegalArgumentException(
+                "Can't set " + player.getName() + " to position=" + position
+            );
         }
         updateNearbyPlayers(player);
     }
@@ -62,29 +68,26 @@ public class MMOOcTreeRoom extends MMORoom {
         });
     }
     
-    private void addNewPlayer(MMOPlayer player, Vec3 position) {
+    private boolean addNewPlayer(MMOPlayer player, Vec3 newPosition) {
         super.addPlayer(player);
-        boolean isPlayerInserted = this.ocTree.insert(player, position);
-        if (isPlayerInserted) {
-            player.setPosition(position);
-        }
+        player.setPosition(newPosition);
+        return this.ocTree.insert(player);
     }
 
-    private void updateExistingPlayer(MMOPlayer player, Vec3 position) {
-        if (this.ocTree.isItemRemainingAtSameNode(player, position)) {
-            player.setPosition(position);
+    private boolean updateExistingPlayer(MMOPlayer player, Vec3 newPosition) {
+        if (this.ocTree.isItemRemainingAtSameNode(player, newPosition)) {
+            player.setPosition(newPosition);
+            return true;
         } else {
             this.ocTree.remove(player);
-            boolean isPlayerInserted = this.ocTree.insert(player, position);
-            if (isPlayerInserted) {
-                player.setPosition(position);
-            }
+            player.setPosition(newPosition);
+            return this.ocTree.insert(player);
         }
     }
     
     @Override
-    public void update() {
-        notifyUpdatedHandlers();
+    protected void updatePlayers() {
+        // do nothing
     }
     
     public static Builder builder() {
