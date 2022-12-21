@@ -42,6 +42,21 @@ public class MMOGridRoom extends MMORoom {
         maxCellY = Math.max(1, (int) (maxY / cellSize));
         maxCellZ = Math.max(1, (int) (maxZ / cellSize));
         this.cells = new Cell[maxCellX][maxCellY][maxCellZ];
+        initializeCells();
+    }
+
+    private void initializeCells() {
+        for (int ix = 0; ix < maxCellX; ++ix) {
+            for (int iy = 0; iy < maxCellY; ++iy) {
+                for (int iz = 0; iz < maxCellZ; ++iz) {
+                    Cell cell = new Cell();
+                    cell.setCellX(ix);
+                    cell.setCellY(iy);
+                    cell.setCellZ(iz);
+                    this.cells[ix][iy][iz] = cell;
+                }
+            }
+        }
     }
 
     @Override
@@ -58,7 +73,7 @@ public class MMOGridRoom extends MMORoom {
     }
     
     private void addPlayerToCell(MMOPlayer player, int cellX, int cellY, int cellZ) {
-        Cell cell = createCellIfAbsent(cellX, cellY, cellZ);
+        Cell cell = this.cells[cellX][cellY][cellZ];
         cell.addPlayer(player);
         cellByPlayer.put(player, cell);
 
@@ -72,48 +87,6 @@ public class MMOGridRoom extends MMORoom {
         }
         player.clearNearByPlayers();
         handleNeighboringCells(player, cellX, cellY, cellZ);
-    }
-
-    private Cell createCellIfAbsent(int cellX, int cellY, int cellZ) {
-        if (this.cells[cellX][cellY][cellZ] == null) {
-            Cell cell = new Cell();
-            cell.setCellX(cellX);
-            cell.setCellY(cellY);
-            cell.setCellZ(cellZ);
-            this.cells[cellX][cellY][cellZ] = cell;
-        }
-        return this.cells[cellX][cellY][cellZ];
-    }
-
-    public void setPlayerPosition(MMOPlayer player, Vec3 position) {
-        if (!isPositionInsideRoom(position)) {
-            throw new IllegalArgumentException("Position is outside of the room's area");
-        }
-
-        final Cell oldCell = cellByPlayer.get(player);
-
-        if (oldCell == null) {
-            player.setPosition(position);
-            addPlayerToCell(player);
-            return;
-        }
-
-        int cellX = (int) (position.x / cellSize);
-        int cellY = (int) (position.y / cellSize);
-        int cellZ = (int) (position.z / cellSize);
-
-        player.setPosition(position);
-
-        if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
-            oldCell.removePlayer(player);
-            addPlayerToCell(player, cellX, cellY, cellZ);
-        }
-    }
-    
-    private boolean isPositionInsideRoom(Vec3 position) {
-        return position.x >= 0 && position.x <= maxX
-            && position.y >= 0 && position.y <= maxY
-            && position.z >= 0 && position.z <= maxZ;
     }
 
     private void handleNeighboringCells(
@@ -146,6 +119,37 @@ public class MMOGridRoom extends MMORoom {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
         } 
+    }
+
+    public void setPlayerPosition(MMOPlayer player, Vec3 position) {
+        if (!isPositionInsideRoom(position)) {
+            throw new IllegalArgumentException("Position is outside of the room's area");
+        }
+
+        final Cell oldCell = cellByPlayer.get(player);
+
+        if (oldCell == null) {
+            player.setPosition(position);
+            addPlayerToCell(player);
+            return;
+        }
+
+        int cellX = (int) (position.x / cellSize);
+        int cellY = (int) (position.y / cellSize);
+        int cellZ = (int) (position.z / cellSize);
+
+        player.setPosition(position);
+
+        if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
+            oldCell.removePlayer(player);
+            addPlayerToCell(player, cellX, cellY, cellZ);
+        }
+    }
+
+    private boolean isPositionInsideRoom(Vec3 position) {
+        return position.x >= 0 && position.x <= maxX
+            && position.y >= 0 && position.y <= maxY
+            && position.z >= 0 && position.z <= maxZ;
     }
 
     @Override
