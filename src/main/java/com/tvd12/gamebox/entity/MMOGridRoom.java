@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.ezyfox.io.EzyCollections;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 import lombok.Setter;
@@ -111,8 +112,8 @@ public class MMOGridRoom extends MMORoom {
         }
     }
 
-    public void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
-        if (cell == null || cell.getNumberOfPlayers() == 0) {
+    private void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
+        if (EzyCollections.isEmpty(cell.players)) {
             return;
         }
         for (MMOPlayer nearByPlayer : cell.players) {
@@ -219,10 +220,6 @@ public class MMOGridRoom extends MMORoom {
         
         public void removePlayer(MMOPlayer player) {
             players.remove(player);
-        }
-        
-        public int getNumberOfPlayers() {
-            return players.size();
         }
     }
 }
