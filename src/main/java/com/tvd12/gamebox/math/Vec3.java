@@ -13,12 +13,12 @@ public class Vec3 {
     public float z;
 
     public static final Vec3 ZERO = new Vec3();
-    public static final Vec3 up = new Vec3(0.0f, 1f, 0.0f);
-    public static final Vec3 down = new Vec3(0.0f, -1f, 0.0f);
-    public static final Vec3 left = new Vec3(-1f, 0.0f, 0.0f);
-    public static final Vec3 right = new Vec3(1f, 0.0f, 0.0f);
-    public static final Vec3 forward = new Vec3(0.0f, 0.0f, 1f);
-    public static final Vec3 backward = new Vec3(0.0f, 0.0f, -1f);
+    public static final Vec3 UP = new Vec3(0.0f, 1f, 0.0f);
+    public static final Vec3 DOWN = new Vec3(0.0f, -1f, 0.0f);
+    public static final Vec3 LEFT = new Vec3(-1f, 0.0f, 0.0f);
+    public static final Vec3 RIGHT = new Vec3(1f, 0.0f, 0.0f);
+    public static final Vec3 FORWARD = new Vec3(0.0f, 0.0f, 1f);
+    public static final Vec3 BACKWARD = new Vec3(0.0f, 0.0f, -1f);
 
     public Vec3() {
         this(0.0f, 0.0f, 0.0f);
