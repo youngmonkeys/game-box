@@ -63,7 +63,7 @@ public class Bounds {
     }
     
     public Bounds getOctant(int index) {
-        OcLocation ocLocation = Bounds.OcLocation.of(index);
+        OcLocation ocLocation = OcLocation.of(index);
         float midX = (leftBottomBack.x + rightTopFront.x) / 2;
         float midY = (leftBottomBack.y + rightTopFront.y) / 2;
         float midZ = (leftBottomBack.z + rightTopFront.z) / 2;
@@ -121,6 +121,7 @@ public class Bounds {
     }
     
     private enum OcLocation {
+
         LEFT_BOTTOM_BACK(0),
         LEFT_BOTTOM_FRONT(1),
         LEFT_TOP_BACK(2),

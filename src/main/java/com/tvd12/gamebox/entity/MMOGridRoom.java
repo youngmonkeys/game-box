@@ -111,10 +111,7 @@ public class MMOGridRoom extends MMORoom {
         }
     }
 
-    public void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
-        if (cell == null || cell.getNumberOfPlayers() == 0) {
-            return;
-        }
+    private void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
         for (MMOPlayer nearByPlayer : cell.players) {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
@@ -219,10 +216,6 @@ public class MMOGridRoom extends MMORoom {
         
         public void removePlayer(MMOPlayer player) {
             players.remove(player);
-        }
-        
-        public int getNumberOfPlayers() {
-            return players.size();
         }
     }
 }
