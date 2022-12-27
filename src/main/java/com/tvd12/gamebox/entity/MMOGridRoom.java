@@ -1,6 +1,5 @@
 package com.tvd12.gamebox.entity;
 
-import com.tvd12.ezyfox.io.EzyCollections;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 import lombok.Setter;
@@ -113,9 +112,6 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
-        if (EzyCollections.isEmpty(cell.players)) {
-            return;
-        }
         for (MMOPlayer nearByPlayer : cell.players) {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
