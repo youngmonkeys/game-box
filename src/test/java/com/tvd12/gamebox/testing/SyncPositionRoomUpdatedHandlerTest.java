@@ -35,7 +35,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
         int clientTimeTick = RandomUtil.randomInt();
 
         EzyArrayResponse arrayResponse = mock(EzyArrayResponse.class);
-        when(arrayResponse.udpTransport()).thenReturn(arrayResponse);
+        when(arrayResponse.udpOrTcpTransport()).thenReturn(arrayResponse);
         when(arrayResponse.command(Commands.SYNC_POSITION)).thenReturn(arrayResponse);
         when(arrayResponse.param(playerName)).thenReturn(arrayResponse);
         when(arrayResponse.param(position.toArray())).thenReturn(arrayResponse);
@@ -77,7 +77,7 @@ public class SyncPositionRoomUpdatedHandlerTest {
 
         // then
         verify(responseFactory, times(1)).newArrayResponse();
-        verify(arrayResponse, times(1)).udpTransport();
+        verify(arrayResponse, times(1)).udpOrTcpTransport();
         verify(arrayResponse, times(1)).command(Commands.SYNC_POSITION);
         verify(arrayResponse, times(1)).param(playerName);
         verify(arrayResponse, times(1)).param(position.toArray());
