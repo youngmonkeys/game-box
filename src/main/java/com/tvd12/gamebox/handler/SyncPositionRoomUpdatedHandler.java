@@ -26,7 +26,7 @@ public class SyncPositionRoomUpdatedHandler implements MMORoomUpdatedHandler {
             // Check if player's position or rotation is updated
             if (player.isStateChanged()) {
                 responseFactory.newArrayResponse()
-                    .udpTransport()
+                    .udpOrTcpTransport()
                     .command(Commands.SYNC_POSITION)
                     .param(player.getName())
                     .param(player.getPosition().toArray())
