@@ -9,13 +9,13 @@
     </parent>
 
     <artifactId>game-box</artifactId>
-    <version>1.1.9</version>
+    <version>1.2.0</version>
 
     <name>game-box</name>
     <url>https://youngmonkeys.org/</url>
 
     <properties>
-        <ezy.server.version>1.2.6</ezy.server.version>
+        <ezy.server.version>1.2.7</ezy.server.version>
     </properties>
 
     <dependencies>
