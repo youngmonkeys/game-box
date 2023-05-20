@@ -74,7 +74,9 @@ public class MMOGridRoom extends MMORoom {
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
         for (String otherPlayerName : player.getNearbyPlayerNames()) {
             MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
-            otherPlayer.removeNearByPlayer(player);
+            if (otherPlayer != null) {
+                otherPlayer.removeNearByPlayer(player);
+            }
         }
         player.clearNearByPlayers();
     }
