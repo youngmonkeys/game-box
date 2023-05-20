@@ -89,6 +89,43 @@ public class MMOGridRoomTest {
     }
     
     @Test
+    public void removePlayerTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(2)
+            .distanceOfInterest(1)
+            .build();
+
+        MMOPlayer player1 = new MMOPlayer("player1");
+        player1.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(player1);
+
+        MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(1, 1, 1));
+        room.addPlayer(player2);
+
+        // when
+        room.removePlayer(player2);
+
+        // then
+        List<String> buffer1 = new ArrayList<>();
+        List<String> buffer2 = new ArrayList<>();
+
+        player1.getNearbyPlayerNames(buffer1);
+        player2.getNearbyPlayerNames(buffer2);
+
+        List<String> expectedNearbyPlayerNames1 = Collections.singletonList("player1");
+        List<String> expectedNearbyPlayerNames2 = Collections.emptyList();
+
+        Assert.assertEquals(buffer1, expectedNearbyPlayerNames1);
+        Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
+    }
+
+    @Test
     public void setSinglePlayerPositionTest() {
         // given
         final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()

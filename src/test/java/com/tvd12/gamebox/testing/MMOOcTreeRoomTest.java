@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.testing;
 
+import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOOcTreeRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
@@ -8,12 +9,10 @@ import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.performance.Performance;
 import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class MMOOcTreeRoomTest {
@@ -288,5 +287,40 @@ public class MMOOcTreeRoomTest {
         
         // then
         Asserts.assertEquals(IllegalArgumentException.class.toString(), e.getClass().toString());
+    }
+
+
+    @Test
+    public void removePlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+
+        MMOPlayer player1 = new MMOPlayer("player1");
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player2, new Vec3(1, 1, 1));
+
+        // when
+        room.removePlayer(player2);
+
+        // then
+        List<String> buffer1 = new ArrayList<>();
+        List<String> buffer2 = new ArrayList<>();
+
+        player1.getNearbyPlayerNames(buffer1);
+        player2.getNearbyPlayerNames(buffer2);
+
+        List<String> expectedNearbyPlayerNames1 = Collections.singletonList("player1");
+        List<String> expectedNearbyPlayerNames2 = Collections.emptyList();
+
+        Assert.assertEquals(buffer1, expectedNearbyPlayerNames1);
+        Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
     }
 }

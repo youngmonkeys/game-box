@@ -65,6 +65,22 @@ public class MMOGridRoom extends MMORoom {
         addPlayerToCell((MMOPlayer) player);
     }
 
+    @Override
+    public void removePlayer(Player player) {
+        clearCurrentNearbyPlayers((MMOPlayer) player);
+        super.removePlayer(player);
+    }
+
+    private void clearCurrentNearbyPlayers(MMOPlayer player) {
+        for (String otherPlayerName : player.getNearbyPlayerNames()) {
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
+            if (otherPlayer != null) {
+                otherPlayer.removeNearByPlayer(player);
+            }
+        }
+        player.clearNearByPlayers();
+    }
+
     private void addPlayerToCell(MMOPlayer player) {
         int cellX = (int) (player.getPosition().x / cellSize);
         int cellY = (int) (player.getPosition().y / cellSize);
@@ -81,11 +97,7 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void updateNearbyPlayers(MMOPlayer player, int cellX, int cellY, int cellZ) {
-        for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
-            otherPlayer.removeNearByPlayer(player);
-        }
-        player.clearNearByPlayers();
+        clearCurrentNearbyPlayers(player);
         handleNeighboringCells(player, cellX, cellY, cellZ);
     }
 
