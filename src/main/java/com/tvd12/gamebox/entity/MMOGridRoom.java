@@ -67,6 +67,9 @@ public class MMOGridRoom extends MMORoom {
 
     @Override
     public void removePlayer(Player player) {
+        cellByPlayer.get(player)
+            .removePlayer((MMOPlayer) player);
+        cellByPlayer.remove(player);
         clearCurrentNearbyPlayers((MMOPlayer) player);
         super.removePlayer(player);
     }
