@@ -87,6 +87,7 @@ public class MMOOcTreeRoom extends MMORoom {
     
     @Override
     public void removePlayer(Player player) {
+        this.ocTree.remove((MMOPlayer) player);
         clearCurrentNearbyPlayers((MMOPlayer) player);
         super.removePlayer(player);
     }
