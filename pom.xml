@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>game-box</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
 
     <name>game-box</name>
     <url>https://youngmonkeys.org/</url>
