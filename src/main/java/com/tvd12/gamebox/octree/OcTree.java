@@ -29,6 +29,9 @@ public class OcTree<T extends PositionAware> {
     }
     
     public boolean insert(T item) {
+        if (items.contains(item)) {
+            return false;
+        }
         OcTreeNode<T> nodeContainingInsertedItem = this.root.insert(item);
         if (nodeContainingInsertedItem != null) {
             items.add(item);
@@ -40,11 +43,11 @@ public class OcTree<T extends PositionAware> {
         if (!items.contains(item)) {
             return false;
         }
-        boolean isItemRemoved = this.root.remove(item);
-        if (isItemRemoved) {
-            items.remove(item);
+        if (!this.root.remove(item)) {
+            this.root.removeFromAnyNode(item);
         }
-        return isItemRemoved;
+        items.remove(item);
+        return true;
     }
 
     public List<T> search(T item, float range) {

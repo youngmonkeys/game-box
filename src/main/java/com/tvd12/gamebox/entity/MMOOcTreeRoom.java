@@ -1,5 +1,6 @@
 package com.tvd12.gamebox.entity;
 
+import com.tvd12.gamebox.math.Bounds;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
@@ -15,6 +16,7 @@ public class MMOOcTreeRoom extends MMORoom {
     @Getter
     private final Vec3 rightTopFront;
     
+    private final Bounds bounds;
     private final OcTree<MMOPlayer> ocTree;
 
     public MMOOcTreeRoom(Builder builder) {
@@ -27,21 +29,29 @@ public class MMOOcTreeRoom extends MMORoom {
         );
         this.leftBottomBack = builder.leftBottomBack;
         this.rightTopFront = builder.rightTopFront;
+        this.bounds = new Bounds(builder.leftBottomBack, builder.rightTopFront);
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
-        boolean isSuccessful;
-        if (!this.ocTree.contains(player)) {
-            isSuccessful = addNewPlayer(player, position);
-        } else {
-            isSuccessful = updateExistingPlayer(player, position);
-        }
-        if (!isSuccessful) {
+        if (!this.bounds.containsPosition(position)) {
             throw new IllegalArgumentException(
                 "Can't set " + player.getName() + " to position=" + position
             );
         }
-        updateNearbyPlayers(player);
+        synchronized (this) {
+            boolean isSuccessful;
+            if (!this.ocTree.contains(player)) {
+                isSuccessful = addNewPlayer(player, position);
+            } else {
+                isSuccessful = updateExistingPlayer(player, position);
+            }
+            if (!isSuccessful) {
+                throw new IllegalArgumentException(
+                    "Can't set " + player.getName() + " to position=" + position
+                );
+            }
+            updateNearbyPlayers(player);
+        }
     }
     
     private void updateNearbyPlayers(MMOPlayer player) {
@@ -51,6 +61,10 @@ public class MMOOcTreeRoom extends MMORoom {
     
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
         for (String otherPlayerName : player.getNearbyPlayerNames()) {
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
+            if (otherPlayer != null) {
+                otherPlayer.removeNearByPlayer(player);
+            }
             MMOPlayer otherPlayer = (MMOPlayer) playerManager
                 .getPlayer(otherPlayerName);
             if (otherPlayer != null) {
@@ -74,7 +88,11 @@ public class MMOOcTreeRoom extends MMORoom {
     private boolean addNewPlayer(MMOPlayer player, Vec3 newPosition) {
         super.addPlayer(player);
         player.setPosition(newPosition);
-        return this.ocTree.insert(player);
+        if (this.ocTree.insert(player)) {
+            return true;
+        }
+        super.removePlayer(player);
+        return false;
     }
 
     private boolean updateExistingPlayer(MMOPlayer player, Vec3 newPosition) {
@@ -90,9 +108,13 @@ public class MMOOcTreeRoom extends MMORoom {
     
     @Override
     public void removePlayer(Player player) {
-        this.ocTree.remove((MMOPlayer) player);
-        clearCurrentNearbyPlayers((MMOPlayer) player);
-        super.removePlayer(player);
+        synchronized (this) {
+            if (player instanceof MMOPlayer) {
+                this.ocTree.remove((MMOPlayer) player);
+                clearCurrentNearbyPlayers((MMOPlayer) player);
+            }
+            super.removePlayer(player);
+        }
     }
 
     @Override

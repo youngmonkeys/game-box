@@ -325,6 +325,77 @@ public class MMOOcTreeRoomTest {
     }
 
     @Test
+    public void setOutsidePositionForNewPlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player, new Vec3(11, 0, 0))
+        );
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+    }
+
+    @Test
+    public void setOutsidePositionForExistingPlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(1, 1, 1));
+        room.setPlayerPosition(player2, new Vec3(2, 2, 2));
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player2, new Vec3(11, 0, 0))
+        );
+        room.setPlayerPosition(player1, new Vec3(1, 1, 1));
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        Asserts.assertEquals(player2.getPosition(), new Vec3(2, 2, 2));
+        Asserts.assertEquals(
+            new HashSet<>(player1.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2"))
+        );
+    }
+
+    @Test
+    public void removeNotAddedPlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+
+        // when
+        room.removePlayer(player);
+
+        // then
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+    }
+
+    @Test
     public void removePlayerWithNearbyPlayerNotInRoomTest() {
         final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
             .leftBottomBack(new Vec3(0, 0, 0))
