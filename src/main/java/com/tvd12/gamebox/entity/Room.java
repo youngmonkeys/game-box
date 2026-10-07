@@ -42,6 +42,9 @@ public class Room {
         if (this == obj) {
             return true;
         }
+        if (!(obj instanceof Room)) {
+            return false;
+        }
         return id == ((Room) obj).id;
     }
 

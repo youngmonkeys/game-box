@@ -55,4 +55,14 @@ public class RoomTest {
         Asserts.assertTrue(sut.getId() > 0);
         Asserts.assertEquals(sut.getName(), roomName);
     }
+
+    @Test
+    public void equalsOtherTypeTest() {
+        // given
+        Room sut = new Room("room");
+
+        // when
+        // then
+        Asserts.assertFalse(sut.equals(sut.getId()));
+    }
 }

@@ -35,7 +35,7 @@ public class MMOVirtualWorld extends EzyLoggable {
     }
 
     private MMORoomGroup getRoomGroupByRoomId(long roomId) {
-        int roomGroupIndex = (int) (roomId % roomGroupCount);
+        int roomGroupIndex = (int) Math.floorMod(roomId, (long) roomGroupCount);
         return roomGroups[roomGroupIndex];
     }
 
@@ -62,6 +62,12 @@ public class MMOVirtualWorld extends EzyLoggable {
         return Arrays.stream(roomGroups)
             .map(MMORoomGroup::getRoomCount)
             .reduce(0, Integer::sum);
+    }
+
+    public void destroy() {
+        for (MMORoomGroup roomGroup : roomGroups) {
+            roomGroup.destroy();
+        }
     }
 
     public static class Builder implements EzyBuilder<MMOVirtualWorld> {

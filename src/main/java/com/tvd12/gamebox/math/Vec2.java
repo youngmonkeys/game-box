@@ -103,6 +103,12 @@ public class Vec2 {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Vec2)) {
+            return false;
+        }
         Vec2 other = (Vec2) obj;
         //noinspection SuspiciousNameCombination
         return Numbers.equals(x, other.x)

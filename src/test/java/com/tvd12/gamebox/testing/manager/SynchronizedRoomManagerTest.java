@@ -114,4 +114,38 @@ public class SynchronizedRoomManagerTest {
             "roomByName.size = 0, roomById.size = 0"
         );
     }
+
+    @Test
+    public void addRoomsWithoutFailIfAddedRespectsMaxRoomTest() {
+        // given
+        SynchronizedRoomManager<Room> sut = new SynchronizedRoomManager<>(1);
+        Room room1 = Room.builder().name("room1").build();
+        Room room2 = Room.builder().name("room2").build();
+
+        // when
+        Throwable e = Asserts.assertThrows(
+            () -> sut.addRooms(Arrays.asList(room1, room2), false)
+        );
+
+        // then
+        Asserts.assertEqualsType(e, MaxRoomException.class);
+        Asserts.assertEquals(sut.getRoomCount(), 0);
+    }
+
+    @Test
+    public void replaceRoomWithSameNameTest() {
+        // given
+        SynchronizedRoomManager<Room> sut = new SynchronizedRoomManager<>(1);
+        Room oldRoom = Room.builder().name("room").build();
+        Room newRoom = Room.builder().name("room").build();
+        sut.addRoom(oldRoom);
+
+        // when
+        sut.addRoom(newRoom, false);
+
+        // then
+        Asserts.assertFalse(sut.containsRoom(oldRoom.getId()));
+        Asserts.assertTrue(sut.getRoom(newRoom.getId()) == newRoom);
+        Asserts.assertEquals(sut.getRoomCount(), 1);
+    }
 }

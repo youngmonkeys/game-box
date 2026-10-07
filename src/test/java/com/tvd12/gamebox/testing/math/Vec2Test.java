@@ -74,4 +74,16 @@ public class Vec2Test {
         Asserts.assertEquals(a.toArray(), EzyEntityFactory.newArrayBuilder().append(3.0F, 6.0F).build());
         System.out.println(a);
     }
+
+    @Test
+    public void equalsNullAndOtherTypeTest() {
+        // given
+        Vec2 sut = new Vec2(1, 2);
+
+        // when
+        // then
+        Asserts.assertFalse(sut.equals(null));
+        Asserts.assertFalse(sut.equals("(1.0, 2.0)"));
+        Asserts.assertTrue(sut.equals(new Vec2(1, 2)));
+    }
 }

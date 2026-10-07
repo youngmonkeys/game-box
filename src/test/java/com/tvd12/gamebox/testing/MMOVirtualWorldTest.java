@@ -115,4 +115,22 @@ public class MMOVirtualWorldTest extends BaseTest {
         // then
         Asserts.assertTrue(world.getRoomCount() == 1);
     }
+
+    @Test
+    public void negativeRoomIdTest() {
+        // given
+        MMOVirtualWorld world = MMOVirtualWorld.builder()
+            .roomGroupCount(3)
+            .build();
+        MMORoom room = mock(MMORoom.class);
+        when(room.getName()).thenReturn("negative");
+        when(room.getId()).thenReturn(-1L);
+
+        // when
+        world.addRoom(room);
+
+        // then
+        Asserts.assertTrue(world.getRoom(-1L) == room);
+        world.destroy();
+    }
 }

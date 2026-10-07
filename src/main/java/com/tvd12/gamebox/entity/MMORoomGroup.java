@@ -29,13 +29,13 @@ class MMORoomGroup extends EzyLoggable {
     }
 
     private void start() {
+        this.active = true;
         Thread newThread = new Thread(this::loop);
         newThread.setName("game-box-mmo-room-group-" + COUNTER.incrementAndGet());
         newThread.start();
     }
 
     private void loop() {
-        this.active = true;
         List<MMORoom> roomBuffer = new ArrayList<>();
         while (active) {
             try {
