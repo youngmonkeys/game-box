@@ -61,17 +61,31 @@ public class MMOGridRoom extends MMORoom {
 
     @Override
     public void addPlayer(Player player) {
-        super.addPlayer(player);
-        addPlayerToCell((MMOPlayer) player);
+        synchronized (this) {
+            if (player instanceof MMOPlayer
+                && !isPositionInsideRoom(((MMOPlayer) player).getPosition())
+            ) {
+                throw new IllegalArgumentException("Position is outside of the room's area");
+            }
+            super.addPlayer(player);
+            if (!cellByPlayer.containsKey(player)) {
+                addPlayerToCell((MMOPlayer) player);
+            }
+        }
     }
 
     @Override
     public void removePlayer(Player player) {
-        cellByPlayer.get(player)
-            .removePlayer((MMOPlayer) player);
-        cellByPlayer.remove(player);
-        clearCurrentNearbyPlayers((MMOPlayer) player);
-        super.removePlayer(player);
+        synchronized (this) {
+            Cell cell = cellByPlayer.remove(player);
+            if (cell != null) {
+                cell.removePlayer((MMOPlayer) player);
+            }
+            if (player instanceof MMOPlayer) {
+                clearCurrentNearbyPlayers((MMOPlayer) player);
+            }
+            super.removePlayer(player);
+        }
     }
 
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
@@ -86,10 +100,17 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void addPlayerToCell(MMOPlayer player) {
-        int cellX = (int) (player.getPosition().x / cellSize);
-        int cellY = (int) (player.getPosition().y / cellSize);
-        int cellZ = (int) (player.getPosition().z / cellSize);
-        addPlayerToCell(player, cellX, cellY, cellZ);
+        Vec3 position = player.getPosition();
+        addPlayerToCell(
+            player,
+            toCellIndex(position.x, maxCellX),
+            toCellIndex(position.y, maxCellY),
+            toCellIndex(position.z, maxCellZ)
+        );
+    }
+
+    private int toCellIndex(float value, int maxCell) {
+        return Math.min(maxCell - 1, (int) (value / cellSize));
     }
     
     private void addPlayerToCell(
@@ -157,20 +178,25 @@ public class MMOGridRoom extends MMORoom {
             );
         }
 
-        final Cell oldCell = cellByPlayer.get(player);
+        synchronized (this) {
+            final Cell oldCell = cellByPlayer.get(player);
 
-        if (oldCell == null) {
+            if (oldCell == null) {
+                player.setPosition(position);
+                addPlayer(player);
+                return;
+            }
+
+            int cellX = toCellIndex(position.x, maxCellX);
+            int cellY = toCellIndex(position.y, maxCellY);
+            int cellZ = toCellIndex(position.z, maxCellZ);
+
             player.setPosition(position);
-            addPlayerToCell(player);
-            return;
-        }
 
-        int cellX = (int) (position.x / cellSize);
-        int cellY = (int) (position.y / cellSize);
-        int cellZ = (int) (position.z / cellSize);
-
-        player.setPosition(position);
-
+            if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
+                oldCell.removePlayer(player);
+                addPlayerToCell(player, cellX, cellY, cellZ);
+            }
         if (oldCell.cellX != cellX
             || oldCell.cellY != cellY
             || oldCell.cellZ != cellZ

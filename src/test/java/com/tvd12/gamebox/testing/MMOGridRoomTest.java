@@ -401,4 +401,119 @@ public class MMOGridRoomTest {
         Asserts.assertTrue(player.getNearbyPlayerNames().isEmpty());
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player.getName()));
     }
+
+    @Test
+    public void setPlayerPositionAtMaxBoundTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(52)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+
+        // when
+        room.setPlayerPosition(player1, new Vec3(52, 50, 50));
+        room.setPlayerPosition(player2, new Vec3(51, 49, 49));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(player1.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2"))
+        );
+    }
+
+    @Test
+    public void setPlayerPositionAddsPlayerToRoomTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+
+        // when
+        room.setPlayerPosition(player, new Vec3(10, 10, 10));
+
+        // then
+        Asserts.assertTrue(room.getPlayerManager().containsPlayer(player));
+    }
+
+    @Test
+    public void addPlayerOutsideAreaTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+        player.setPosition(new Vec3(60, 0, 0));
+
+        // when
+        Throwable e = Asserts.assertThrows(() -> room.addPlayer(player));
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+    }
+
+    @Test
+    public void addPlayerTwiceTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.addPlayer(player1);
+        player1.setPosition(new Vec3(40, 40, 40));
+
+        // when
+        room.addPlayer(player1);
+        room.removePlayer(player1);
+        room.addPlayer(player2);
+
+        // then
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Collections.singletonList("player2")
+        );
+    }
+
+    @Test
+    public void removeNotAddedPlayerTest() {
+        // given
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(3)
+            .distanceOfInterest(1)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+
+        // when
+        room.removePlayer(player);
+
+        // then
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+    }
 }
