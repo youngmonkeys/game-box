@@ -1,0 +1,164 @@
+package com.tvd12.gamebox.testing;
+
+import com.tvd12.gamebox.entity.MMOPlayer;
+import com.tvd12.gamebox.entity.MMOUniformGridRoom;
+import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.util.RandomUtil;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class MMOUniformGridRoomTest {
+
+    @Test
+    public void createRoomTest() {
+        // given
+        // when
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(20)
+            .maxPlayer(10)
+            .build();
+        MMOUniformGridRoom roomWithCellSize = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .cellSize(5)
+            .distanceOfInterest(20)
+            .maxPlayer(10)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getCellSize(), 20F);
+        Asserts.assertEquals(roomWithCellSize.getCellSize(), 5F);
+    }
+
+    @Test
+    public void nearbyPlayersUseRealDistanceTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        MMOPlayer player3 = new MMOPlayer("player3");
+
+        // when
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+        room.setPlayerPosition(player2, new Vec3(6, 0, 6));
+        room.setPlayerPosition(player3, new Vec3(9, 0, 9));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(player1.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2"))
+        );
+        Asserts.assertEquals(
+            new HashSet<>(player2.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2", "player3"))
+        );
+        Asserts.assertEquals(
+            new HashSet<>(player3.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player2", "player3"))
+        );
+        Asserts.assertTrue(room.getPlayerManager().containsPlayer(player1));
+    }
+
+    @Test
+    public void movePlayerAwayTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+        room.setPlayerPosition(player2, new Vec3(1, 0, 1));
+
+        // when
+        room.setPlayerPosition(player2, new Vec3(-100, 0, -100));
+
+        // then
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Collections.singletonList("player1")
+        );
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Collections.singletonList("player2")
+        );
+        Asserts.assertEquals(
+            room.searchPlayers(new Vec3(-100, 0, -100), 1),
+            Collections.singletonList(player2)
+        );
+    }
+
+    @Test
+    public void removePlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.addPlayer(player1);
+        room.addPlayer(player2);
+
+        // when
+        room.removePlayer(player2);
+        room.removePlayer(new MMOPlayer("unknown"));
+
+        // then
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Collections.singletonList("player1")
+        );
+        Asserts.assertEquals(player2.getNearbyPlayerNames(), Collections.emptyList());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player2));
+    }
+
+    @Test
+    public void randomMovesMatchBruteForceTest() {
+        // given
+        float distanceOfInterest = 15;
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(distanceOfInterest)
+            .cellSize(6)
+            .maxPlayer(50)
+            .build();
+        List<MMOPlayer> players = new ArrayList<>();
+        for (int i = 0; i < 30; ++i) {
+            players.add(new MMOPlayer("player" + i));
+        }
+
+        for (int round = 0; round < 100; ++round) {
+            // when
+            for (MMOPlayer player : players) {
+                room.setPlayerPosition(
+                    player,
+                    new Vec3(
+                        RandomUtil.randomFloat(-50, 50),
+                        0,
+                        RandomUtil.randomFloat(-50, 50)
+                    )
+                );
+            }
+
+            // then
+            for (MMOPlayer player : players) {
+                Set<String> expected = players.stream()
+                    .filter(it -> player.getPosition().distanceSquare(it.getPosition())
+                        <= distanceOfInterest * distanceOfInterest)
+                    .map(MMOPlayer::getName)
+                    .collect(Collectors.toSet());
+                Asserts.assertEquals(new HashSet<>(player.getNearbyPlayerNames()), expected);
+            }
+        }
+    }
+}
