@@ -61,10 +61,6 @@ public class MMOOcTreeRoom extends MMORoom {
     
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
         for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
-            if (otherPlayer != null) {
-                otherPlayer.removeNearByPlayer(player);
-            }
             MMOPlayer otherPlayer = (MMOPlayer) playerManager
                 .getPlayer(otherPlayerName);
             if (otherPlayer != null) {

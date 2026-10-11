@@ -37,9 +37,9 @@ public class MMOGridRoom extends MMORoom {
         this.cellSize = builder.cellSize;
         this.cellByPlayer = new HashMap<>();
         this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
-        maxCellX = Math.max(1, (int) Math.ceil(maxX / cellSize));
-        maxCellY = Math.max(1, (int) Math.ceil(maxY / cellSize));
-        maxCellZ = Math.max(1, (int) Math.ceil(maxZ / cellSize));
+        this.maxCellX = Math.max(1, (int) Math.ceil(maxX / cellSize));
+        this.maxCellY = Math.max(1, (int) Math.ceil(maxY / cellSize));
+        this.maxCellZ = Math.max(1, (int) Math.ceil(maxZ / cellSize));
         this.cells = new Cell[
             Math.multiplyExact(Math.multiplyExact(maxCellX, maxCellY), maxCellZ)
         ];

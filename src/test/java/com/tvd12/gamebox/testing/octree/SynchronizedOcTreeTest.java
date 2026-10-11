@@ -141,7 +141,8 @@ public class SynchronizedOcTreeTest {
         Asserts.assertFalse(ocTree.contains(player1));
         Asserts.assertEquals(
             ocTree.search(player2, 0.1f),
-            Collections.singletonList(player2)
+            Collections.singletonList(player2),
+            false
         );
     }
 
@@ -171,7 +172,8 @@ public class SynchronizedOcTreeTest {
         Asserts.assertTrue(isPlayer1Removed);
         Asserts.assertEquals(
             ocTree.search(player1, 2),
-            Collections.emptyList()
+            Collections.emptyList(),
+            false
         );
     }
     
