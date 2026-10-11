@@ -376,4 +376,29 @@ public class MMOGridRoomTest {
         Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
         Assert.assertEquals(buffer3, expectedNearbyPlayerNames3);
     }
+
+    @Test
+    public void removePlayerWithNearbyPlayerNotInRoomTest() {
+        final MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(50)
+            .maxY(50)
+            .maxZ(50)
+            .cellSize(5)
+            .maxPlayer(2)
+            .distanceOfInterest(1)
+            .build();
+
+        MMOPlayer player = new MMOPlayer("player");
+        player.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(player);
+
+        MMOPlayer outsidePlayer = new MMOPlayer("outsidePlayer");
+        Map<String, MMOPlayer> nearbyPlayers = FieldUtil.getFieldValue(player, "nearbyPlayers");
+        nearbyPlayers.put(outsidePlayer.getName(), outsidePlayer);
+
+        room.removePlayer(player);
+
+        Asserts.assertTrue(player.getNearbyPlayerNames().isEmpty());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player.getName()));
+    }
 }

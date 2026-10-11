@@ -323,4 +323,27 @@ public class MMOOcTreeRoomTest {
         Assert.assertEquals(buffer1, expectedNearbyPlayerNames1);
         Assert.assertEquals(buffer2, expectedNearbyPlayerNames2);
     }
+
+    @Test
+    public void removePlayerWithNearbyPlayerNotInRoomTest() {
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(0, 0, 0));
+
+        MMOPlayer outsidePlayer = new MMOPlayer("outsidePlayer");
+        Map<String, MMOPlayer> nearbyPlayers = FieldUtil.getFieldValue(player, "nearbyPlayers");
+        nearbyPlayers.put(outsidePlayer.getName(), outsidePlayer);
+
+        room.removePlayer(player);
+
+        Asserts.assertTrue(player.getNearbyPlayerNames().isEmpty());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player.getName()));
+    }
 }

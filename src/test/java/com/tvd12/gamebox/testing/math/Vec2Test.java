@@ -85,5 +85,7 @@ public class Vec2Test {
         Asserts.assertFalse(sut.equals(null));
         Asserts.assertFalse(sut.equals("(1.0, 2.0)"));
         Asserts.assertTrue(sut.equals(new Vec2(1, 2)));
+        //noinspection EqualsWithItself
+        Asserts.assertTrue(sut.equals(sut));
     }
 }
