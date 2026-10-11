@@ -2,8 +2,10 @@ package com.tvd12.gamebox.testing;
 
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMOUniformGridRoom;
+import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -129,6 +132,102 @@ public class MMOUniformGridRoomTest {
             false
         );
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player2));
+    }
+
+    @Test
+    public void addPlayerTwiceTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(100, 0, 100));
+        room.addPlayer(player1);
+        room.addPlayer(player2);
+
+        // when
+        room.addPlayer(player1);
+
+        // then
+        Asserts.assertEquals(room.getPlayerManager().getPlayerCount(), 2);
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Collections.singletonList("player1"),
+            false
+        );
+        Asserts.assertEquals(
+            room.searchPlayers(new Vec3(0, 0, 0), 1),
+            Collections.singletonList(player1),
+            false
+        );
+    }
+
+    @Test
+    public void removeNotMMOPlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        Player player = new Player("player");
+
+        // when
+        Throwable e = Asserts.assertThrows(() -> room.removePlayer(player));
+
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+    }
+
+    @Test
+    public void removePlayerWithNearbyPlayerNotInRoomTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+        room.addPlayer(player);
+
+        MMOPlayer outsidePlayer = new MMOPlayer("outsidePlayer");
+        Map<String, MMOPlayer> nearbyPlayers = FieldUtil.getFieldValue(player, "nearbyPlayers");
+        nearbyPlayers.put(outsidePlayer.getName(), outsidePlayer);
+
+        // when
+        room.removePlayer(player);
+
+        // then
+        Asserts.assertTrue(player.getNearbyPlayerNames().isEmpty());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+    }
+
+    @Test
+    public void updateTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+        room.setPlayerPosition(player2, new Vec3(100, 0, 100));
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            player1.getNearbyPlayerNames(),
+            Collections.singletonList("player1"),
+            false
+        );
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Collections.singletonList("player2"),
+            false
+        );
     }
 
     @Test

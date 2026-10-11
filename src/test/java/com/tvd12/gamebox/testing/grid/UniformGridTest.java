@@ -5,14 +5,17 @@ import com.tvd12.gamebox.grid.SynchronizedUniformGrid;
 import com.tvd12.gamebox.grid.UniformGrid;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
+import com.tvd12.test.reflect.FieldUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,6 +67,43 @@ public class UniformGridTest {
         // then
         Asserts.assertTrue(removed);
         Asserts.assertEquals(grid.getCellCount(), 0);
+    }
+
+    @Test
+    public void removeWhenCellItemsMissingTest() {
+        // given
+        UniformGrid<MMOPlayer> grid = new UniformGrid<>(10);
+        MMOPlayer player = newPlayer("player", 5, 0, 5);
+        grid.insert(player);
+        Map<?, ?> itemsByCell = FieldUtil.getFieldValue(grid, "itemsByCell");
+        itemsByCell.clear();
+
+        // when
+        boolean removed = grid.remove(player);
+
+        // then
+        Asserts.assertTrue(removed);
+        Asserts.assertFalse(grid.contains(player));
+        Asserts.assertEquals(grid.size(), 0);
+        Asserts.assertEquals(grid.getCellCount(), 0);
+    }
+
+    @Test
+    public void cellKeyEqualsTest() throws Exception {
+        // given
+        Object key = newCellKey(1, 2, 3);
+        Object sameKey = newCellKey(1, 2, 3);
+
+        // when
+        // then
+        Asserts.assertTrue(key.equals(key));
+        Asserts.assertTrue(key.equals(sameKey));
+        Asserts.assertEquals(key.hashCode(), sameKey.hashCode());
+        Asserts.assertFalse(key.equals(null));
+        Asserts.assertFalse(key.equals("key"));
+        Asserts.assertFalse(key.equals(newCellKey(0, 2, 3)));
+        Asserts.assertFalse(key.equals(newCellKey(1, 0, 3)));
+        Asserts.assertFalse(key.equals(newCellKey(1, 2, 0)));
     }
 
     @Test
@@ -128,6 +168,58 @@ public class UniformGridTest {
         Asserts.assertTrue(grid.isItemRemainingAtSameCell(player, new Vec3(9, 0, 1)));
         Asserts.assertFalse(grid.isItemRemainingAtSameCell(player, new Vec3(11, 0, 1)));
         Asserts.assertFalse(grid.isItemRemainingAtSameCell(player, new Vec3(-1, 0, 1)));
+        Asserts.assertFalse(
+            grid.isItemRemainingAtSameCell(newPlayer("unknown", 5, 0, 5), new Vec3(5, 0, 5))
+        );
+    }
+
+    @Test
+    public void searchWithNegativeRangeTest() {
+        // given
+        UniformGrid<MMOPlayer> grid = new UniformGrid<>(10);
+        MMOPlayer player = newPlayer("player", 5, 0, 5);
+        grid.insert(player);
+
+        // when
+        List<MMOPlayer> matches = grid.search(player, -1);
+
+        // then
+        Asserts.assertTrue(matches.isEmpty());
+    }
+
+    @Test
+    public void searchInDenseGridMatchesBruteForceTest() {
+        // given
+        UniformGrid<MMOPlayer> grid = new UniformGrid<>(1);
+        List<MMOPlayer> players = new ArrayList<>();
+        for (int x = 0; x < 5; ++x) {
+            for (int y = 0; y < 5; ++y) {
+                for (int z = 0; z < 5; ++z) {
+                    MMOPlayer player = newPlayer(
+                        "player" + x + y + z,
+                        x + 0.5F,
+                        y + 0.5F,
+                        z + 0.5F
+                    );
+                    players.add(player);
+                    grid.insert(player);
+                }
+            }
+        }
+        float range = 1.2F;
+
+        for (MMOPlayer player : players) {
+            // when
+            List<MMOPlayer> matches = grid.search(player, range);
+
+            // then
+            Set<String> expected = players.stream()
+                .filter(it -> player.getPosition().distanceSquare(it.getPosition())
+                    <= range * range)
+                .map(MMOPlayer::getName)
+                .collect(Collectors.toSet());
+            Asserts.assertEquals(names(matches), expected);
+        }
     }
 
     @Test
@@ -178,6 +270,14 @@ public class UniformGridTest {
                 .collect(Collectors.toSet());
             Asserts.assertEquals(names(matches), expected);
         }
+    }
+
+    private static Object newCellKey(int x, int y, int z) throws Exception {
+        Constructor<?> constructor = Class
+            .forName(UniformGrid.class.getName() + "$CellKey")
+            .getDeclaredConstructor(int.class, int.class, int.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(x, y, z);
     }
 
     private static MMOPlayer newPlayer(String name, float x, float y, float z) {
