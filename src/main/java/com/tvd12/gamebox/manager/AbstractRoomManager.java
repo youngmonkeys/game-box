@@ -46,7 +46,11 @@ public abstract class AbstractRoomManager<R extends Room>
         } else {
             int roomCount = roomByName.size();
             if (roomCount >= maxRoom) {
-                throw new MaxRoomException(room.toString(), roomCount, maxRoom);
+                throw new MaxRoomException(
+                    room.toString(),
+                    roomCount,
+                    maxRoom
+                );
             }
         }
         roomById.put(room.getId(), room);

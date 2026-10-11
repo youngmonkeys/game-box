@@ -148,4 +148,19 @@ public class SynchronizedRoomManagerTest {
         Asserts.assertTrue(sut.getRoom(newRoom.getId()) == newRoom);
         Asserts.assertEquals(sut.getRoomCount(), 1);
     }
+
+    @Test
+    public void replaceRoomsWithSameNameTest() {
+        SynchronizedRoomManager<Room> sut = new SynchronizedRoomManager<>(1);
+        Room oldRoom = Room.builder().name("room").build();
+        Room newRoom = Room.builder().name("room").build();
+        sut.addRoom(oldRoom);
+
+        sut.addRooms(Collections.singletonList(newRoom), false);
+
+        Asserts.assertFalse(sut.containsRoom(oldRoom.getId()));
+        Asserts.assertTrue(sut.getRoom(newRoom.getId()) == newRoom);
+        Asserts.assertTrue(sut.getRoom("room") == newRoom);
+        Asserts.assertEquals(sut.getRoomCount(), 1);
+    }
 }
