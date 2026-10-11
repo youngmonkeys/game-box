@@ -103,10 +103,15 @@ public class UniformGridTest {
         // then
         Asserts.assertTrue(updated);
         Asserts.assertEquals(grid.getCellCount(), 1);
-        Asserts.assertEquals(grid.search(new Vec3(5, 0, 5), 20), Collections.emptyList());
+        Asserts.assertEquals(
+            grid.search(new Vec3(5, 0, 5), 20),
+            Collections.emptyList(),
+            false
+        );
         Asserts.assertEquals(
             names(grid.search(new Vec3(100, 0, 100), 20)),
-            Collections.singleton("player")
+            Collections.singleton("player"),
+            false
         );
         Asserts.assertFalse(grid.update(newPlayer("unknown", 0, 0, 0)));
     }

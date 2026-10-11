@@ -86,15 +86,18 @@ public class MMOUniformGridRoomTest {
         // then
         Asserts.assertEquals(
             player1.getNearbyPlayerNames(),
-            Collections.singletonList("player1")
+            Collections.singletonList("player1"),
+            false
         );
         Asserts.assertEquals(
             player2.getNearbyPlayerNames(),
-            Collections.singletonList("player2")
+            Collections.singletonList("player2"),
+            false
         );
         Asserts.assertEquals(
             room.searchPlayers(new Vec3(-100, 0, -100), 1),
-            Collections.singletonList(player2)
+            Collections.singletonList(player2),
+            false
         );
     }
 
@@ -117,9 +120,14 @@ public class MMOUniformGridRoomTest {
         // then
         Asserts.assertEquals(
             player1.getNearbyPlayerNames(),
-            Collections.singletonList("player1")
+            Collections.singletonList("player1"),
+            false
         );
-        Asserts.assertEquals(player2.getNearbyPlayerNames(), Collections.emptyList());
+        Asserts.assertEquals(
+            player2.getNearbyPlayerNames(),
+            Collections.emptyList(),
+            false
+        );
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player2));
     }
 
