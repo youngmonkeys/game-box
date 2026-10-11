@@ -12,6 +12,7 @@
             <package name="com.tvd12.gamebox.testing.math"></package>
             <package name="com.tvd12.gamebox.testing.entity"></package>
             <package name="com.tvd12.gamebox.testing.octree"></package>
+            <package name="com.tvd12.gamebox.testing.grid"></package>
         </packages>
     </test>
 </suite>
