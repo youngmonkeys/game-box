@@ -38,9 +38,9 @@ public class MMOGridRoom extends MMORoom {
         this.cellSize = builder.cellSize;
         this.cellByPlayer = new ConcurrentHashMap<>();
         this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
-        maxCellX = Math.max(1, (int) (maxX / cellSize));
-        maxCellY = Math.max(1, (int) (maxY / cellSize));
-        maxCellZ = Math.max(1, (int) (maxZ / cellSize));
+        maxCellX = Math.max(1, (int) Math.ceil(maxX / cellSize));
+        maxCellY = Math.max(1, (int) Math.ceil(maxY / cellSize));
+        maxCellZ = Math.max(1, (int) Math.ceil(maxZ / cellSize));
         this.cells = new Cell[maxCellX][maxCellY][maxCellZ];
         initializeCells();
     }
@@ -193,16 +193,13 @@ public class MMOGridRoom extends MMORoom {
 
             player.setPosition(position);
 
-            if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
+            if (oldCell.cellX != cellX
+                || oldCell.cellY != cellY
+                || oldCell.cellZ != cellZ
+            ) {
                 oldCell.removePlayer(player);
                 addPlayerToCell(player, cellX, cellY, cellZ);
             }
-        if (oldCell.cellX != cellX
-            || oldCell.cellY != cellY
-            || oldCell.cellZ != cellZ
-        ) {
-            oldCell.removePlayer(player);
-            addPlayerToCell(player, cellX, cellY, cellZ);
         }
     }
 
