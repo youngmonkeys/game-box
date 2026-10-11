@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,10 @@ public class MMOPlayer extends Player implements PositionAware {
 
     void removeNearByPlayer(MMOPlayer otherPlayer) {
         this.nearbyPlayers.remove(otherPlayer.getName());
+    }
+
+    Collection<MMOPlayer> getNearbyPlayers() {
+        return this.nearbyPlayers.values();
     }
 
     void clearNearByPlayers() {

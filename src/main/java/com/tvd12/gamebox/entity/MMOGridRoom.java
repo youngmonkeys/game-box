@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MMOGridRoom extends MMORoom {
 
@@ -36,7 +35,7 @@ public class MMOGridRoom extends MMORoom {
         this.maxY = builder.maxY;
         this.maxZ = builder.maxZ;
         this.cellSize = builder.cellSize;
-        this.cellByPlayer = new ConcurrentHashMap<>();
+        this.cellByPlayer = new HashMap<>();
         this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
         maxCellX = Math.max(1, (int) Math.ceil(maxX / cellSize));
         maxCellY = Math.max(1, (int) Math.ceil(maxY / cellSize));
@@ -87,12 +86,8 @@ public class MMOGridRoom extends MMORoom {
     }
 
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
-        for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager
-                .getPlayer(otherPlayerName);
-            if (otherPlayer != null) {
-                otherPlayer.removeNearByPlayer(player);
-            }
+        for (MMOPlayer otherPlayer : player.getNearbyPlayers()) {
+            otherPlayer.removeNearByPlayer(player);
         }
         player.clearNearByPlayers();
     }
@@ -140,12 +135,12 @@ public class MMOGridRoom extends MMORoom {
         int cellY,
         int cellZ
     ) {
-        final int cellOfInterestEndX = Math.min(maxCellX - 1, cellX + cellRangeOfInterest);
-        final int cellOfInterestEndY = Math.min(maxCellY - 1, cellY + cellRangeOfInterest);
-        final int cellOfInterestEndZ = Math.min(maxCellZ - 1, cellZ + cellRangeOfInterest);
-        final int cellOfInterestStartX = Math.max(0, cellX - cellRangeOfInterest);
-        final int cellOfInterestStartY = Math.max(0, cellY - cellRangeOfInterest);
-        final int cellOfInterestStartZ = Math.max(0, cellZ - cellRangeOfInterest);
+        final int cellOfInterestEndX = toCellOfInterestEnd(cellX, maxCellX);
+        final int cellOfInterestEndY = toCellOfInterestEnd(cellY, maxCellY);
+        final int cellOfInterestEndZ = toCellOfInterestEnd(cellZ, maxCellZ);
+        final int cellOfInterestStartX = toCellOfInterestStart(cellX);
+        final int cellOfInterestStartY = toCellOfInterestStart(cellY);
+        final int cellOfInterestStartZ = toCellOfInterestStart(cellZ);
 
         for (int ix = cellOfInterestStartX; ix <= cellOfInterestEndX; ++ix) {
             for (int iy = cellOfInterestStartY; iy <= cellOfInterestEndY; ++iy) {
@@ -156,6 +151,69 @@ public class MMOGridRoom extends MMORoom {
         }
     }
 
+    private void moveNearbyPlayers(
+        MMOPlayer player,
+        Cell oldCell,
+        int cellX,
+        int cellY,
+        int cellZ
+    ) {
+        final int oldEndX = toCellOfInterestEnd(oldCell.cellX, maxCellX);
+        final int oldEndY = toCellOfInterestEnd(oldCell.cellY, maxCellY);
+        final int oldEndZ = toCellOfInterestEnd(oldCell.cellZ, maxCellZ);
+        for (int ix = toCellOfInterestStart(oldCell.cellX); ix <= oldEndX; ++ix) {
+            for (int iy = toCellOfInterestStart(oldCell.cellY); iy <= oldEndY; ++iy) {
+                for (int iz = toCellOfInterestStart(oldCell.cellZ); iz <= oldEndZ; ++iz) {
+                    if (!isCellOfInterest(ix, iy, iz, cellX, cellY, cellZ)) {
+                        removeNearbyPlayersInCell(player, cells[ix][iy][iz]);
+                    }
+                }
+            }
+        }
+
+        final int newEndX = toCellOfInterestEnd(cellX, maxCellX);
+        final int newEndY = toCellOfInterestEnd(cellY, maxCellY);
+        final int newEndZ = toCellOfInterestEnd(cellZ, maxCellZ);
+        for (int ix = toCellOfInterestStart(cellX); ix <= newEndX; ++ix) {
+            for (int iy = toCellOfInterestStart(cellY); iy <= newEndY; ++iy) {
+                for (int iz = toCellOfInterestStart(cellZ); iz <= newEndZ; ++iz) {
+                    if (!isCellOfInterest(
+                        ix,
+                        iy,
+                        iz,
+                        oldCell.cellX,
+                        oldCell.cellY,
+                        oldCell.cellZ
+                    )) {
+                        addNearbyPlayersInCell(player, cells[ix][iy][iz]);
+                    }
+                }
+            }
+        }
+    }
+
+    private int toCellOfInterestStart(int cell) {
+        return Math.max(0, cell - cellRangeOfInterest);
+    }
+
+    private int toCellOfInterestEnd(int cell, int maxCell) {
+        return Math.min(maxCell - 1, cell + cellRangeOfInterest);
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean isCellOfInterest(
+        int cellX,
+        int cellY,
+        int cellZ,
+        int centerCellX,
+        int centerCellY,
+        int centerCellZ
+    ) {
+        return Math.abs(cellX - centerCellX) <= cellRangeOfInterest
+            && Math.abs(cellY - centerCellY) <= cellRangeOfInterest
+            && Math.abs(cellZ - centerCellZ) <= cellRangeOfInterest;
+    }
+
     private void addNearbyPlayersInCell(
         MMOPlayer currentPlayer,
         Cell cell
@@ -163,7 +221,17 @@ public class MMOGridRoom extends MMORoom {
         for (MMOPlayer nearByPlayer : cell.players) {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
-        } 
+        }
+    }
+
+    private void removeNearbyPlayersInCell(
+        MMOPlayer currentPlayer,
+        Cell cell
+    ) {
+        for (MMOPlayer nearByPlayer : cell.players) {
+            currentPlayer.removeNearByPlayer(nearByPlayer);
+            nearByPlayer.removeNearByPlayer(currentPlayer);
+        }
     }
 
     public void setPlayerPosition(
@@ -196,7 +264,10 @@ public class MMOGridRoom extends MMORoom {
                 || oldCell.cellZ != cellZ
             ) {
                 oldCell.removePlayer(player);
-                addPlayerToCell(player, cellX, cellY, cellZ);
+                moveNearbyPlayers(player, oldCell, cellX, cellY, cellZ);
+                Cell newCell = cells[cellX][cellY][cellZ];
+                newCell.addPlayer(player);
+                cellByPlayer.put(player, newCell);
             }
         }
     }
@@ -267,8 +338,7 @@ public class MMOGridRoom extends MMORoom {
         @Setter
         private int cellZ;
         
-        private final Set<MMOPlayer> players =
-            ConcurrentHashMap.newKeySet();
+        private final Set<MMOPlayer> players = new HashSet<>();
         
         public void addPlayer(MMOPlayer player) {
             players.add(player);
