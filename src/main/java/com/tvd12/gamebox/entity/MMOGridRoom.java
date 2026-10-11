@@ -62,14 +62,13 @@ public class MMOGridRoom extends MMORoom {
     @Override
     public void addPlayer(Player player) {
         synchronized (this) {
-            if (player instanceof MMOPlayer
-                && !isPositionInsideRoom(((MMOPlayer) player).getPosition())
-            ) {
+            MMOPlayer mmoPlayer = (MMOPlayer) player;
+            if (!isPositionInsideRoom(mmoPlayer.getPosition())) {
                 throw new IllegalArgumentException("Position is outside of the room's area");
             }
             super.addPlayer(player);
             if (!cellByPlayer.containsKey(player)) {
-                addPlayerToCell((MMOPlayer) player);
+                addPlayerToCell(mmoPlayer);
             }
         }
     }
@@ -77,13 +76,12 @@ public class MMOGridRoom extends MMORoom {
     @Override
     public void removePlayer(Player player) {
         synchronized (this) {
+            MMOPlayer mmoPlayer = (MMOPlayer) player;
             Cell cell = cellByPlayer.remove(player);
             if (cell != null) {
-                cell.removePlayer((MMOPlayer) player);
+                cell.removePlayer(mmoPlayer);
             }
-            if (player instanceof MMOPlayer) {
-                clearCurrentNearbyPlayers((MMOPlayer) player);
-            }
+            clearCurrentNearbyPlayers(mmoPlayer);
             super.removePlayer(player);
         }
     }
@@ -108,10 +106,6 @@ public class MMOGridRoom extends MMORoom {
             toCellIndex(position.z, maxCellZ)
         );
     }
-
-    private int toCellIndex(float value, int maxCell) {
-        return Math.min(maxCell - 1, (int) (value / cellSize));
-    }
     
     private void addPlayerToCell(
         MMOPlayer player,
@@ -124,6 +118,10 @@ public class MMOGridRoom extends MMORoom {
         cellByPlayer.put(player, cell);
 
         updateNearbyPlayers(player, cellX, cellY, cellZ);
+    }
+
+    private int toCellIndex(float value, int maxCell) {
+        return Math.min(maxCell - 1, (int) (value / cellSize));
     }
 
     private void updateNearbyPlayers(
@@ -203,6 +201,7 @@ public class MMOGridRoom extends MMORoom {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isPositionInsideRoom(Vec3 position) {
         return position.x >= 0 && position.x <= maxX
             && position.y >= 0 && position.y <= maxY

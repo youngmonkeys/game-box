@@ -493,7 +493,8 @@ public class MMOGridRoomTest {
         // then
         Asserts.assertEquals(
             player2.getNearbyPlayerNames(),
-            Collections.singletonList("player2")
+            Collections.singletonList("player2"),
+            false
         );
     }
 
