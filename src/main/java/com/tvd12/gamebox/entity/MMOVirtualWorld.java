@@ -35,13 +35,20 @@ public class MMOVirtualWorld extends EzyLoggable {
     }
 
     private MMORoomGroup getRoomGroupByRoomId(long roomId) {
-        int roomGroupIndex = (int) Math.floorMod(roomId, (long) roomGroupCount);
+        int roomGroupIndex = (int) Math.floorMod(
+            roomId,
+            roomGroupCount
+        );
         return roomGroups[roomGroupIndex];
     }
 
     public void addRoom(MMORoom room) {
         if (getRoomCount() >= maxRoomCount) {
-            throw new MaxRoomException(room.toString(), getRoomCount(), maxRoomCount);
+            throw new MaxRoomException(
+                room.toString(),
+                getRoomCount(),
+                maxRoomCount
+            );
         }
 
         MMORoomGroup group = getRoomGroupByRoomId(room.getId());
@@ -72,7 +79,9 @@ public class MMOVirtualWorld extends EzyLoggable {
 
     public static class Builder implements EzyBuilder<MMOVirtualWorld> {
         private int timeTickMillis = 100;
-        private int roomGroupCount = 2 * Runtime.getRuntime().availableProcessors();
+        private int roomGroupCount = 2 * Runtime
+            .getRuntime()
+            .availableProcessors();
         private int maxRoomCount = 10000;
 
         public Builder maxRoomCount(int maxRoomCount) {
