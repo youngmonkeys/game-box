@@ -51,8 +51,11 @@ public class MMOOcTreeRoom extends MMORoom {
     
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
         for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
-            otherPlayer.removeNearByPlayer(player);
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager
+                .getPlayer(otherPlayerName);
+            if (otherPlayer != null) {
+                otherPlayer.removeNearByPlayer(player);
+            }
         }
         player.clearNearByPlayers();
     }
@@ -132,14 +135,10 @@ public class MMOOcTreeRoom extends MMORoom {
         protected void preBuild() {
             super.preBuild();
             if (maxPointsPerNode <= 0) {
-                throw new IllegalArgumentException("maxPointsPerNode must be set!");
+                throw new IllegalArgumentException(
+                    "maxPointsPerNode must be set!"
+                );
             }
-        }
-
-        @Override
-        public MMORoom.Builder distanceOfInterest(double distance) {
-            this.distanceOfInterest = distance;
-            return this;
         }
 
         @Override

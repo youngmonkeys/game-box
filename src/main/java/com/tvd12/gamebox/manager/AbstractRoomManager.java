@@ -36,14 +36,22 @@ public abstract class AbstractRoomManager<R extends Room>
 
     @Override
     public void addRoom(R room, boolean failIfAdded) {
-        int roomCount = roomByName.size();
-        if (roomCount >= maxRoom) {
-            throw new MaxRoomException(room.toString(), roomCount, maxRoom);
-        }
         String roomName = room.getName();
-        boolean exists = roomByName.containsKey(roomName);
-        if (exists && failIfAdded) {
-            throw new RoomExistsException(roomName);
+        R existingRoom = roomByName.get(roomName);
+        if (existingRoom != null) {
+            if (failIfAdded) {
+                throw new RoomExistsException(roomName);
+            }
+            roomById.remove(existingRoom.getId());
+        } else {
+            int roomCount = roomByName.size();
+            if (roomCount >= maxRoom) {
+                throw new MaxRoomException(
+                    room.toString(),
+                    roomCount,
+                    maxRoom
+                );
+            }
         }
         roomById.put(room.getId(), room);
         roomByName.put(roomName, room);
@@ -57,11 +65,12 @@ public abstract class AbstractRoomManager<R extends Room>
     @Override
     public void addRooms(Iterable<R> rooms, boolean failIfAdded) {
         int count = 0;
-        if (failIfAdded) {
-            for (R room : rooms) {
-                if (roomByName.containsKey(room.getName())) {
+        for (R room : rooms) {
+            if (roomByName.containsKey(room.getName())) {
+                if (failIfAdded) {
                     throw new RoomExistsException(room.getName());
                 }
+            } else {
                 ++count;
             }
         }
@@ -71,6 +80,10 @@ public abstract class AbstractRoomManager<R extends Room>
             throw new MaxRoomException(count, roomCount, maxRoom);
         }
         for (R room : rooms) {
+            R existingRoom = roomByName.get(room.getName());
+            if (existingRoom != null) {
+                roomById.remove(existingRoom.getId());
+            }
             roomById.put(room.getId(), room);
             roomByName.put(room.getName(), room);
         }

@@ -41,4 +41,14 @@ public class PlayerTest {
         Assert.assertEquals(sut.hashCode(), me.hashCode());
         Asserts.assertNotEquals(sut.hashCode(), other.hashCode());
     }
+
+    @Test
+    public void equalsOtherTypeTest() {
+        // given
+        Player sut = new Player("player");
+
+        // when
+        // then
+        Asserts.assertFalse(sut.equals("player"));
+    }
 }

@@ -76,7 +76,8 @@ public class MMOGridRoom extends MMORoom {
 
     private void clearCurrentNearbyPlayers(MMOPlayer player) {
         for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
+            MMOPlayer otherPlayer = (MMOPlayer) playerManager
+                .getPlayer(otherPlayerName);
             if (otherPlayer != null) {
                 otherPlayer.removeNearByPlayer(player);
             }
@@ -91,7 +92,12 @@ public class MMOGridRoom extends MMORoom {
         addPlayerToCell(player, cellX, cellY, cellZ);
     }
     
-    private void addPlayerToCell(MMOPlayer player, int cellX, int cellY, int cellZ) {
+    private void addPlayerToCell(
+        MMOPlayer player,
+        int cellX,
+        int cellY,
+        int cellZ
+    ) {
         Cell cell = this.cells[cellX][cellY][cellZ];
         cell.addPlayer(player);
         cellByPlayer.put(player, cell);
@@ -99,7 +105,12 @@ public class MMOGridRoom extends MMORoom {
         updateNearbyPlayers(player, cellX, cellY, cellZ);
     }
 
-    private void updateNearbyPlayers(MMOPlayer player, int cellX, int cellY, int cellZ) {
+    private void updateNearbyPlayers(
+        MMOPlayer player,
+        int cellX,
+        int cellY,
+        int cellZ
+    ) {
         clearCurrentNearbyPlayers(player);
         handleNeighboringCells(player, cellX, cellY, cellZ);
     }
@@ -126,16 +137,24 @@ public class MMOGridRoom extends MMORoom {
         }
     }
 
-    private void addNearbyPlayersInCell(MMOPlayer currentPlayer, Cell cell) {
+    private void addNearbyPlayersInCell(
+        MMOPlayer currentPlayer,
+        Cell cell
+    ) {
         for (MMOPlayer nearByPlayer : cell.players) {
             currentPlayer.addNearbyPlayer(nearByPlayer);
             nearByPlayer.addNearbyPlayer(currentPlayer);
         } 
     }
 
-    public void setPlayerPosition(MMOPlayer player, Vec3 position) {
+    public void setPlayerPosition(
+        MMOPlayer player,
+        Vec3 position
+    ) {
         if (!isPositionInsideRoom(position)) {
-            throw new IllegalArgumentException("Position is outside of the room's area");
+            throw new IllegalArgumentException(
+                "Position is outside of the room's area"
+            );
         }
 
         final Cell oldCell = cellByPlayer.get(player);
@@ -152,7 +171,10 @@ public class MMOGridRoom extends MMORoom {
 
         player.setPosition(position);
 
-        if (oldCell.cellX != cellX || oldCell.cellY != cellY || oldCell.cellZ != cellZ) {
+        if (oldCell.cellX != cellX
+            || oldCell.cellY != cellY
+            || oldCell.cellZ != cellZ
+        ) {
             oldCell.removePlayer(player);
             addPlayerToCell(player, cellX, cellY, cellZ);
         }
@@ -223,7 +245,8 @@ public class MMOGridRoom extends MMORoom {
         @Setter
         private int cellZ;
         
-        private final Set<MMOPlayer> players = ConcurrentHashMap.newKeySet();
+        private final Set<MMOPlayer> players =
+            ConcurrentHashMap.newKeySet();
         
         public void addPlayer(MMOPlayer player) {
             players.add(player);

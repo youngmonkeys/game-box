@@ -39,6 +39,9 @@ public class Player {
         if (this == obj) {
             return true;
         }
+        if (!(obj instanceof Player)) {
+            return false;
+        }
         return name.equals(((Player) obj).name);
     }
 

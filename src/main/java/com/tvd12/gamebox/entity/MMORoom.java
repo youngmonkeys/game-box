@@ -37,11 +37,10 @@ public class MMORoom extends NormalRoom {
             throw new IllegalArgumentException("Player " + player.getName() + " must be MMOPlayer");
         }
 
-        if (playerManager.containsPlayer(player)) {
-            return;
-        }
-
         synchronized (this) {
+            if (playerManager.containsPlayer(player)) {
+                return;
+            }
             if (playerManager.isEmpty()) {
                 master = (MMOPlayer) player;
             }

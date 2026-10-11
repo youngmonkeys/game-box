@@ -77,28 +77,36 @@ public abstract class AbstractPlayerManager<P extends Player>
 
     @Override
     public void addPlayer(P player, boolean failIfAdded) {
+        String playerName = player.getName();
+        if (playerByName.containsKey(playerName)) {
+            if (failIfAdded) {
+                throw new PlayerExistsException(playerName);
+            }
+            playerByName.put(playerName, player);
+            return;
+        }
         int count = playerByName.size();
         if (count >= maxPlayer) {
-            throw new MaxPlayerException(player.getName(), count, maxPlayer);
-        }
-        String playerName = player.getName();
-        if (playerByName.containsKey(playerName) && failIfAdded) {
-            throw new PlayerExistsException(playerName);
+            throw new MaxPlayerException(playerName, count, maxPlayer);
         }
         playerByName.put(playerName, player);
     }
 
     @Override
     public void addPlayers(Collection<P> players, boolean failIfAdded) {
-        int count = playerByName.size();
-        int nextCount = count + players.size();
-        if (nextCount > maxPlayer) {
-            throw new MaxPlayerException(players.size(), count, maxPlayer);
-        }
+        int newPlayerCount = 0;
         for (P player : players) {
-            if (playerByName.containsKey(player.getName()) && failIfAdded) {
-                throw new PlayerExistsException(player.getName());
+            if (playerByName.containsKey(player.getName())) {
+                if (failIfAdded) {
+                    throw new PlayerExistsException(player.getName());
+                }
+            } else {
+                ++newPlayerCount;
             }
+        }
+        int count = playerByName.size();
+        if (count + newPlayerCount > maxPlayer) {
+            throw new MaxPlayerException(players.size(), count, maxPlayer);
         }
         for (P player : players) {
             playerByName.put(player.getName(), player);

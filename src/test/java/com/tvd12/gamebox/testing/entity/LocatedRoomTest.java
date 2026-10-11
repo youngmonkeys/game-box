@@ -3,6 +3,7 @@ package com.tvd12.gamebox.testing.entity;
 import com.tvd12.gamebox.entity.LocatedPlayer;
 import com.tvd12.gamebox.entity.LocatedRoom;
 import com.tvd12.gamebox.exception.NoSlotException;
+import com.tvd12.gamebox.exception.PlayerExistsException;
 import com.tvd12.gamebox.manager.DefaultLocatedPlayerManager;
 import com.tvd12.test.assertion.Asserts;
 import org.testng.annotations.Test;
@@ -43,5 +44,22 @@ public class LocatedRoomTest {
         sut.addPlayer(player2);
         Throwable e = Asserts.assertThrows(() -> sut.addPlayer(playerx));
         Asserts.assertEqualsType(e, NoSlotException.class);
+    }
+
+    @Test
+    public void slotIsReturnedWhenAddPlayerFailsTest() {
+        // given
+        LocatedRoom sut = LocatedRoom.builder()
+            .maxSlot(2)
+            .build();
+        sut.addPlayer(new LocatedPlayer("player"));
+
+        // when
+        Throwable e = Asserts.assertThrows(() -> sut.addPlayer(new LocatedPlayer("player")));
+        int location = sut.addPlayer(new LocatedPlayer("player2"));
+
+        // then
+        Asserts.assertEqualsType(e, PlayerExistsException.class);
+        Asserts.assertEquals(location, 1);
     }
 }

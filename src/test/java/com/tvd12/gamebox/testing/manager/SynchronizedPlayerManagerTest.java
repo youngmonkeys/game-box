@@ -139,4 +139,21 @@ public class SynchronizedPlayerManagerTest {
             "playerByName.size = 2"
         );
     }
+
+    @Test
+    public void replaceExistingPlayerWhenFullTest() {
+        // given
+        SynchronizedPlayerManager<Player> sut = new SynchronizedPlayerManager<>(1);
+        Player player = new Player("player");
+        Player samePlayer = new Player("player");
+        sut.addPlayer(player);
+
+        // when
+        sut.addPlayer(samePlayer, false);
+        sut.addPlayers(Collections.singletonList(samePlayer), false);
+
+        // then
+        Asserts.assertEquals(sut.getPlayerCount(), 1);
+        Asserts.assertTrue(sut.getPlayer("player") == samePlayer);
+    }
 }
