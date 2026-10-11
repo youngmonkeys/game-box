@@ -31,16 +31,12 @@ public class LocatedRoom extends Room {
     }
 
     public int addPlayer(LocatedPlayer player) {
-        if (slots.isEmpty()) {
+        Integer location = slots.peek();
+        if (location == null) {
             throw new NoSlotException("has no available slot");
         }
-        int location = slots.poll();
-        try {
-            playerManager.addPlayer(player, location);
-        } catch (RuntimeException e) {
-            slots.add(location);
-            throw e;
-        }
+        playerManager.addPlayer(player, location);
+        slots.poll();
         return location;
     }
 
