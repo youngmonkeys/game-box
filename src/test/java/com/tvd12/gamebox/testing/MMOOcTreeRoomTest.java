@@ -484,6 +484,45 @@ public class MMOOcTreeRoomTest {
         verify(ocTree, times(1)).search(any(MMOPlayer.class), anyFloat());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void setPositionForExistingPlayerButInsertFailedWithUpdateNearbyOnTickTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .updateNearbyOnTick(true)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(1, 1, 1));
+
+        OcTree<MMOPlayer> ocTree = mock(OcTree.class);
+        when(ocTree.contains(any())).thenReturn(true);
+        when(ocTree.isItemRemainingAtSameNode(any(), any())).thenReturn(false);
+        when(ocTree.insert(any())).thenReturn(false);
+        FieldUtil.setFieldValue(room, "ocTree", ocTree);
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player, new Vec3(9, 9, 9))
+        );
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        Asserts.assertEquals(
+            e.getMessage(),
+            "Can't set player to position=" + new Vec3(9, 9, 9)
+        );
+        verify(ocTree, times(1)).contains(player);
+        verify(ocTree, times(1)).isItemRemainingAtSameNode(player, new Vec3(9, 9, 9));
+        verify(ocTree, times(1)).remove(player);
+        verify(ocTree, times(1)).insert(player);
+        verify(ocTree, never()).search(any(MMOPlayer.class), anyFloat());
+    }
+
     @Test
     public void removeNotMMOPlayerTest() {
         // given
@@ -759,6 +798,116 @@ public class MMOOcTreeRoomTest {
             Asserts.assertEquals(observer.getNearbyPlayerCount(), 7);
         }
         Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void setPositionUnlinkCurrentNearbyPlayerNotInRangeTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(1, 1, 1));
+
+        MMOPlayer stalePlayer = new MMOPlayer("stalePlayer");
+        stalePlayer.setPosition(new Vec3(90, 90, 90));
+        Map<String, MMOPlayer> playerNearbyPlayers =
+            FieldUtil.getFieldValue(player, "nearbyPlayers");
+        playerNearbyPlayers.put(stalePlayer.getName(), stalePlayer);
+        Map<String, MMOPlayer> staleNearbyPlayers =
+            FieldUtil.getFieldValue(stalePlayer, "nearbyPlayers");
+        staleNearbyPlayers.put(player.getName(), player);
+
+        // when
+        room.setPlayerPosition(player, new Vec3(2, 1, 1));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(player.getNearbyPlayerNames()),
+            Collections.singleton("player"),
+            false
+        );
+        Asserts.assertEquals(stalePlayer.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void updateNearbyOnTickSkipPlayerNotInTurnTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(2)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer playerA = new MMOPlayer("a");
+        MMOPlayer playerB = new MMOPlayer("b");
+        room.setPlayerPosition(playerA, new Vec3(1, 1, 1));
+        room.setPlayerPosition(playerB, new Vec3(2, 1, 1));
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(playerA.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("a", "b"))
+        );
+        Asserts.assertEquals(playerB.getNearbyPlayerCount(), 0);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(playerB.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("a", "b"))
+        );
+    }
+
+    @Test
+    public void updateNearbyOnTickSkipPlayerNotInOcTreeTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        room.setPlayerPosition(observer, new Vec3(1, 1, 1));
+
+        MMOPlayer outsider = new MMOPlayer("outsider");
+        outsider.setPosition(new Vec3(2, 1, 1));
+        room.addPlayer(outsider);
+        MMOPlayer stalePlayer = new MMOPlayer("stalePlayer");
+        Map<String, MMOPlayer> outsiderNearbyPlayers =
+            FieldUtil.getFieldValue(outsider, "nearbyPlayers");
+        outsiderNearbyPlayers.put(stalePlayer.getName(), stalePlayer);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertTrue(room.getPlayerManager().containsPlayer(outsider));
+        Asserts.assertEquals(
+            outsider.getNearbyPlayerNames(),
+            Collections.singletonList("stalePlayer"),
+            false
+        );
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
     }
 
     @Test

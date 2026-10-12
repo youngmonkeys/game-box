@@ -3,6 +3,7 @@ package com.tvd12.gamebox.testing;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMOUniformGridRoom;
 import com.tvd12.gamebox.entity.Player;
+import com.tvd12.gamebox.grid.UniformGrid;
 import com.tvd12.gamebox.math.Vec3;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.FieldUtil;
@@ -506,5 +507,100 @@ public class MMOUniformGridRoomTest {
 
         // then
         Asserts.assertEquals(room.getNearbyUpdateIntervalTicks(), 1);
+    }
+
+    @Test
+    public void updateNearbyOnTickSkipPlayerNotInTurnTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(2)
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer playerA = new MMOPlayer("a");
+        MMOPlayer playerB = new MMOPlayer("b");
+        room.setPlayerPosition(playerA, new Vec3(0, 0, 0));
+        room.setPlayerPosition(playerB, new Vec3(1, 0, 0));
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(playerA.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("a", "b"))
+        );
+        Asserts.assertEquals(playerB.getNearbyPlayerCount(), 0);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(playerB.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("a", "b"))
+        );
+    }
+
+    @Test
+    public void updateNearbyOnTickSkipPlayerNotInGridTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer outsider = new MMOPlayer("outsider");
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+        room.setPlayerPosition(outsider, new Vec3(1, 0, 0));
+        UniformGrid<MMOPlayer> grid = FieldUtil.getFieldValue(room, "grid");
+        grid.remove(outsider);
+
+        MMOPlayer stalePlayer = new MMOPlayer("stalePlayer");
+        Map<String, MMOPlayer> outsiderNearbyPlayers =
+            FieldUtil.getFieldValue(outsider, "nearbyPlayers");
+        outsiderNearbyPlayers.put(stalePlayer.getName(), stalePlayer);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertTrue(room.getPlayerManager().containsPlayer(outsider));
+        Asserts.assertEquals(
+            outsider.getNearbyPlayerNames(),
+            Collections.singletonList("stalePlayer"),
+            false
+        );
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+    }
+
+    @Test
+    public void updateNearbyOnTickSkipNonInterestPlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+        room.setPlayerPosition(item, new Vec3(1, 0, 0));
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
     }
 }

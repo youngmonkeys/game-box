@@ -582,6 +582,33 @@ public class MMOGridRoomTest {
     }
 
     @Test
+    public void removeNonInterestPlayerNearOtherNonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        MMOPlayer otherItem = new MMOPlayer("otherItem", false);
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+        room.setPlayerPosition(otherItem, new Vec3(25, 5, 5));
+        Map<String, MMOPlayer> otherItemNearbyPlayers =
+            FieldUtil.getFieldValue(otherItem, "nearbyPlayers");
+        otherItemNearbyPlayers.put(item.getName(), item);
+
+        // when
+        room.removePlayer(item);
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"), false);
+        Asserts.assertEquals(
+            otherItem.getNearbyPlayerNames(),
+            Collections.singletonList("item"),
+            false
+        );
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(item));
+    }
+
+    @Test
     public void removeObserverNearNonInterestPlayerTest() {
         // given
         final MMOGridRoom room = newRoom();
@@ -614,6 +641,28 @@ public class MMOGridRoomTest {
 
         // then
         Asserts.assertEquals(sortedNames(result), Arrays.asList("player1", "player2"), false);
+    }
+
+    @Test
+    public void searchPlayersExcludeOutOfRangePlayerInScannedCellTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer insidePlayer = new MMOPlayer("insidePlayer");
+        MMOPlayer boundaryPlayer = new MMOPlayer("boundaryPlayer");
+        MMOPlayer cornerPlayer = new MMOPlayer("cornerPlayer");
+        room.setPlayerPosition(insidePlayer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(boundaryPlayer, new Vec3(13, 5, 5));
+        room.setPlayerPosition(cornerPlayer, new Vec3(12, 12, 12));
+
+        // when
+        List<MMOPlayer> result = room.searchPlayers(new Vec3(5, 5, 5), 8);
+
+        // then
+        Asserts.assertEquals(
+            sortedNames(result),
+            Arrays.asList("boundaryPlayer", "insidePlayer"),
+            false
+        );
     }
 
     @Test
