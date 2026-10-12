@@ -461,4 +461,50 @@ public class MMOUniformGridRoomTest {
         );
         Asserts.assertEquals(other.getNearbyPlayerCount(), 0);
     }
+
+    @Test
+    public void nearbyUpdateIntervalTicksTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(2)
+            .distanceOfInterest(10)
+            .maxPlayer(20)
+            .build();
+        List<MMOPlayer> observers = new ArrayList<>();
+        for (int i = 0; i < 6; ++i) {
+            MMOPlayer observer = new MMOPlayer("observer" + i);
+            room.setPlayerPosition(observer, new Vec3(i, 0, 0));
+            observers.add(observer);
+        }
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(item, new Vec3(5, 0, 0));
+
+        // when
+        room.update();
+        room.update();
+
+        // then
+        Asserts.assertEquals(room.getNearbyUpdateIntervalTicks(), 2);
+        for (MMOPlayer observer : observers) {
+            Asserts.assertTrue(observer.getNearbyPlayerNames().contains("item"));
+            Asserts.assertEquals(observer.getNearbyPlayerCount(), 7);
+        }
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void nearbyUpdateIntervalTicksInvalidValueTest() {
+        // given
+        // when
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(0)
+            .distanceOfInterest(10)
+            .maxPlayer(20)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getNearbyUpdateIntervalTicks(), 1);
+    }
 }

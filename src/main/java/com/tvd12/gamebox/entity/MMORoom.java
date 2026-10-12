@@ -99,6 +99,18 @@ public class MMORoom extends NormalRoom {
         }
     }
 
+    protected static boolean isNearbyUpdateTurn(
+        MMOPlayer player,
+        long updateCount,
+        int nearbyUpdateIntervalTicks
+    ) {
+        if (nearbyUpdateIntervalTicks <= 1) {
+            return true;
+        }
+        long slot = player.getName().hashCode() + updateCount;
+        return Math.floorMod(slot, (long) nearbyUpdateIntervalTicks) == 0;
+    }
+
     protected void notifyUpdatedHandlers() {
         for (MMORoomUpdatedHandler handler : this.roomUpdatedHandlers) {
             handler.onRoomUpdated(this, playerBuffer);

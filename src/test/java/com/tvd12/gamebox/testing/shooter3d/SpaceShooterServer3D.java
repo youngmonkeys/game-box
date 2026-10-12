@@ -40,6 +40,8 @@ import com.tvd12.gamebox.math.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -134,11 +136,17 @@ public class SpaceShooterServer3D {
             .roomGroupCount(1)
             .timeTickMillis(TIME_TICK_MILLIS)
             .build();
-        this.room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+        this.room = (MMOOcTreeRoom) new MMOOcTreeRoom.Builder() {
+            @Override
+            protected MMORoom newProduct() {
+                return new MeasuredRoom(this);
+            }
+        }
             .leftBottomBack(new Vec3(0, 0, 0))
             .rightTopFront(new Vec3(WORLD_WIDTH, WORLD_HEIGHT, WORLD_DEPTH))
             .maxPointsPerNode(OCTREE_MAX_POINTS_PER_NODE)
             .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(STATE_INTERVAL_TICKS)
             .distanceOfInterest(INTEREST_RADIUS)
             .maxPlayer(100000)
             .addRoomUpdatedHandler(this::onRoomUpdated)
@@ -381,8 +389,10 @@ public class SpaceShooterServer3D {
         stats.removeNanos += removeEnd - bulletsEnd;
         stats.spawnNanos += spawnEnd - removeEnd;
         stats.broadcastNanos += broadcastEnd - spawnEnd;
-        stats.tickNanos += broadcastEnd - now;
-        stats.tickNanosMax = Math.max(stats.tickNanosMax, broadcastEnd - now);
+        long tickNanos = broadcastEnd - now + stats.lastNearbyNanos;
+        stats.tickNanos += tickNanos;
+        stats.tickNanosMax = Math.max(stats.tickNanosMax, tickNanos);
+        stats.lastNearbyNanos = 0;
         if (broadcastEnd - stats.startedAt >= PERFORMANCE_LOG_INTERVAL_NANOS) {
             logPerformance(broadcastEnd);
         }
@@ -410,17 +420,20 @@ public class SpaceShooterServer3D {
         Runtime runtime = Runtime.getRuntime();
         logger.info(
             "perf3d {}s: ticks={} ({}/s), tick avg={}ms max={}ms, interval max={}ms | " +
-                "phase avg(ms) commands={} update={} collision={} bullets={} remove={} spawn={} broadcast={} | " +
+                "phase avg(ms) nearby={} (max {}) commands={} update={} collision={} bullets={} remove={} spawn={} broadcast={} | " +
                 "grid ops/s move={} add={} remove={}, avg(us) move={} add={} remove={} | " +
                 "collision checks/s={} | " +
                 "entities={} (ships={}, users={}, asteroids={}, bullets={}, powerups={}) | " +
-                "messages built={}/s sent={}/s, entities per message avg={} max={}, snapshots/s={} | heap={}MB",
+                "messages built={}/s sent={}/s, entities per message avg={} max={}, snapshots/s={} | " +
+                "heap={}MB, gc count={} time={}ms",
             format(seconds),
             stats.ticks,
             format(stats.ticks / seconds),
             toMillis(stats.tickNanos / ticks),
             toMillis(stats.tickNanosMax),
             toMillis(stats.intervalNanosMax),
+            toMillis(stats.nearbyNanos / ticks),
+            toMillis(stats.nearbyNanosMax),
             toMillis(stats.commandsNanos / ticks),
             toMillis(stats.updateNanos / ticks),
             toMillis(stats.collisionNanos / ticks),
@@ -446,9 +459,29 @@ public class SpaceShooterServer3D {
             format(stats.messages == 0 ? 0 : (double) stats.sentEntities / stats.messages),
             stats.sentEntitiesMax,
             format(stats.snapshots / seconds),
-            (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
+            (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024),
+            gcCount() - stats.gcCountStart,
+            gcTimeMillis() - stats.gcTimeMillisStart
         );
         stats.reset(now);
+        stats.gcCountStart = gcCount();
+        stats.gcTimeMillisStart = gcTimeMillis();
+    }
+
+    private static long gcCount() {
+        long count = 0;
+        for (GarbageCollectorMXBean bean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            count += Math.max(0, bean.getCollectionCount());
+        }
+        return count;
+    }
+
+    private static long gcTimeMillis() {
+        long time = 0;
+        for (GarbageCollectorMXBean bean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            time += Math.max(0, bean.getCollectionTime());
+        }
+        return time;
     }
 
     private static String format(double value) {
@@ -1157,8 +1190,30 @@ public class SpaceShooterServer3D {
         }
     }
 
+    private class MeasuredRoom extends MMOOcTreeRoom {
+
+        MeasuredRoom(MMOOcTreeRoom.Builder builder) {
+            super(builder);
+        }
+
+        @Override
+        protected void updatePlayers() {
+            long start = System.nanoTime();
+            super.updatePlayers();
+            long elapsed = System.nanoTime() - start;
+            stats.lastNearbyNanos = elapsed;
+            stats.nearbyNanos += elapsed;
+            stats.nearbyNanosMax = Math.max(stats.nearbyNanosMax, elapsed);
+        }
+    }
+
     private static class PerformanceStats {
         long startedAt = System.nanoTime();
+        long gcCountStart = gcCount();
+        long gcTimeMillisStart = gcTimeMillis();
+        long lastNearbyNanos;
+        long nearbyNanos;
+        long nearbyNanosMax;
         long ticks;
         long tickNanos;
         long tickNanosMax;
@@ -1185,6 +1240,8 @@ public class SpaceShooterServer3D {
 
         void reset(long now) {
             startedAt = now;
+            nearbyNanos = 0;
+            nearbyNanosMax = 0;
             ticks = 0;
             tickNanos = 0;
             tickNanosMax = 0;

@@ -21,6 +21,10 @@ public class MMOOcTreeRoom extends MMORoom {
     
     @Getter
     private final boolean updateNearbyOnTick;
+    @Getter
+    private final int nearbyUpdateIntervalTicks;
+    private long nearbyUpdateCount;
+    private final List<MMOPlayer> nearbyPlayerBuffer = new ArrayList<>();
     private final Bounds bounds;
     private final OcTree<MMOPlayer> ocTree;
     private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
@@ -37,6 +41,7 @@ public class MMOOcTreeRoom extends MMORoom {
         this.rightTopFront = builder.rightTopFront;
         this.bounds = new Bounds(builder.leftBottomBack, builder.rightTopFront);
         this.updateNearbyOnTick = builder.updateNearbyOnTick;
+        this.nearbyUpdateIntervalTicks = Math.max(1, builder.nearbyUpdateIntervalTicks);
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -169,12 +174,20 @@ public class MMOOcTreeRoom extends MMORoom {
             return;
         }
         synchronized (this) {
+            long updateCount = ++nearbyUpdateCount;
+            float range = (float) this.distanceOfInterest;
             for (MMOPlayer player : playerBuffer) {
-                if (!player.isInterestEnabled() || !this.ocTree.contains(player)) {
+                if (!player.isInterestEnabled()
+                    || !isNearbyUpdateTurn(player, updateCount, nearbyUpdateIntervalTicks)
+                    || !this.ocTree.contains(player)
+                ) {
                     continue;
                 }
-                player.replaceNearbyPlayers(searchNearbyPlayers(player), nearbyPlayerSet);
+                nearbyPlayerBuffer.clear();
+                this.ocTree.search(player.getPosition(), range, nearbyPlayerBuffer);
+                player.replaceNearbyPlayers(nearbyPlayerBuffer, nearbyPlayerSet);
             }
+            nearbyPlayerBuffer.clear();
         }
     }
     
@@ -189,9 +202,15 @@ public class MMOOcTreeRoom extends MMORoom {
         private int maxPointsPerNode;
         private float minNodeSize = 0.000001f;
         private boolean updateNearbyOnTick;
+        private int nearbyUpdateIntervalTicks = 1;
 
         public Builder updateNearbyOnTick(boolean updateNearbyOnTick) {
             this.updateNearbyOnTick = updateNearbyOnTick;
+            return this;
+        }
+
+        public Builder nearbyUpdateIntervalTicks(int nearbyUpdateIntervalTicks) {
+            this.nearbyUpdateIntervalTicks = nearbyUpdateIntervalTicks;
             return this;
         }
 

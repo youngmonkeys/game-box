@@ -15,6 +15,9 @@ public class MMOUniformGridRoom extends MMORoom {
     private final float cellSize;
     @Getter
     private final boolean updateNearbyOnTick;
+    @Getter
+    private final int nearbyUpdateIntervalTicks;
+    private long nearbyUpdateCount;
     private final UniformGrid<MMOPlayer> grid;
     private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
     private final List<MMOPlayer> nearbyPlayerBuffer = new ArrayList<>();
@@ -24,6 +27,7 @@ public class MMOUniformGridRoom extends MMORoom {
         super(builder);
         this.cellSize = builder.cellSize;
         this.updateNearbyOnTick = builder.updateNearbyOnTick;
+        this.nearbyUpdateIntervalTicks = Math.max(1, builder.nearbyUpdateIntervalTicks);
         this.grid = new UniformGrid<>(builder.cellSize);
     }
 
@@ -139,8 +143,12 @@ public class MMOUniformGridRoom extends MMORoom {
             return;
         }
         synchronized (this) {
+            long updateCount = ++nearbyUpdateCount;
             for (MMOPlayer player : playerBuffer) {
-                if (!player.isInterestEnabled() || !this.grid.contains(player)) {
+                if (!player.isInterestEnabled()
+                    || !isNearbyUpdateTurn(player, updateCount, nearbyUpdateIntervalTicks)
+                    || !this.grid.contains(player)
+                ) {
                     continue;
                 }
                 nearbyPlayerBuffer.clear();
@@ -159,9 +167,15 @@ public class MMOUniformGridRoom extends MMORoom {
 
         private float cellSize;
         private boolean updateNearbyOnTick;
+        private int nearbyUpdateIntervalTicks = 1;
 
         public Builder updateNearbyOnTick(boolean updateNearbyOnTick) {
             this.updateNearbyOnTick = updateNearbyOnTick;
+            return this;
+        }
+
+        public Builder nearbyUpdateIntervalTicks(int nearbyUpdateIntervalTicks) {
+            this.nearbyUpdateIntervalTicks = nearbyUpdateIntervalTicks;
             return this;
         }
 

@@ -66,7 +66,15 @@ public class OcTree<T extends PositionAware> {
         if (range < 0) {
             return;
         }
-        this.root.search(Bounds.fromCenterAndRange(center, range), matches);
+        this.root.search(
+            center.x - range,
+            center.y - range,
+            center.z - range,
+            center.x + range,
+            center.y + range,
+            center.z + range,
+            matches
+        );
     }
     
     public boolean contains(T item) {

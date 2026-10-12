@@ -726,4 +726,56 @@ public class MMOOcTreeRoomTest {
         );
         Asserts.assertEquals(other.getNearbyPlayerCount(), 0);
     }
+
+    @Test
+    public void nearbyUpdateIntervalTicksTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(2)
+            .maxPlayer(20)
+            .distanceOfInterest(10)
+            .build();
+        List<MMOPlayer> observers = new ArrayList<>();
+        for (int i = 0; i < 6; ++i) {
+            MMOPlayer observer = new MMOPlayer("observer" + i);
+            room.setPlayerPosition(observer, new Vec3(1 + i, 1, 1));
+            observers.add(observer);
+        }
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(item, new Vec3(5, 1, 1));
+
+        // when
+        room.update();
+        room.update();
+
+        // then
+        Asserts.assertEquals(room.getNearbyUpdateIntervalTicks(), 2);
+        for (MMOPlayer observer : observers) {
+            Asserts.assertTrue(observer.getNearbyPlayerNames().contains("item"));
+            Asserts.assertEquals(observer.getNearbyPlayerCount(), 7);
+        }
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void nearbyUpdateIntervalTicksInvalidValueTest() {
+        // given
+        // when
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .nearbyUpdateIntervalTicks(0)
+            .maxPlayer(20)
+            .distanceOfInterest(10)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getNearbyUpdateIntervalTicks(), 1);
+    }
 }
