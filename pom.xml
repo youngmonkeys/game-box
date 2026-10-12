@@ -30,6 +30,12 @@
             <version>${ezy.server.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.tvd12</groupId>
+            <artifactId>ezyfox-server-embedded</artifactId>
+            <version>${ezy.server.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
