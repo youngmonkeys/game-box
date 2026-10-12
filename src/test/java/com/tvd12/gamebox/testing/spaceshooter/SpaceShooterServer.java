@@ -1,7 +1,5 @@
 package com.tvd12.gamebox.testing.spaceshooter;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.entity.EzyObject;
 import com.tvd12.ezyfox.factory.EzyEntityFactory;
@@ -28,19 +26,20 @@ import com.tvd12.ezyfoxserver.setting.EzySocketSettingBuilder;
 import com.tvd12.ezyfoxserver.setting.EzyUserManagementSettingBuilder;
 import com.tvd12.ezyfoxserver.setting.EzyWebSocketSettingBuilder;
 import com.tvd12.ezyfoxserver.setting.EzyZoneSettingBuilder;
+import com.tvd12.ezyhttp.server.core.ApplicationContextBuilder;
+import com.tvd12.ezyhttp.server.core.EzyHttpApplication;
+import com.tvd12.ezyhttp.server.core.annotation.Controller;
+import com.tvd12.ezyhttp.server.core.annotation.DoGet;
+import com.tvd12.ezyhttp.server.core.view.Redirect;
 import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.entity.MMOVirtualWorld;
 import com.tvd12.gamebox.math.Vec3;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.file.Files;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,9 +82,9 @@ public class SpaceShooterServer {
     private static final int POWERUP_HEAL = 40;
     private static final float POWERUP_DROP_RATE = 0.08f;
     private static final float EVENT_DISTANCE = 1600;
+    private static final long PERFORMANCE_LOG_INTERVAL_NANOS = 5_000_000_000L;
 
     private static final String WEB_ROOT = "space-shooter";
-    private static final File WEB_ROOT_DIR = new File("src/test/resources/" + WEB_ROOT);
 
     private final int httpPort;
     private final int webSocketPort;
@@ -105,6 +104,8 @@ public class SpaceShooterServer {
     private int asteroidCount;
     private long tick;
     private long lastTickNanos;
+    private final PerformanceStats stats = new PerformanceStats();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public SpaceShooterServer(int httpPort, int webSocketPort, int botCount) {
         this.httpPort = httpPort;
@@ -148,16 +149,22 @@ public class SpaceShooterServer {
             .settings(createSettings())
             .build();
         ezyServer.start();
-        HttpServer httpServer = HttpServer.create(new InetSocketAddress(httpPort), 0);
-        httpServer.createContext("/", this::serveFile);
-        httpServer.start();
+        EzyHttpApplication httpApplication = new EzyHttpApplication(
+            new ApplicationContextBuilder()
+                .scan(SpaceShooterServer.class.getPackage().getName())
+                .addProperty("server.port", String.valueOf(httpPort))
+                .addProperty("resources.enable", "true")
+                .addProperty("resources.locations", WEB_ROOT)
+                .build()
+        );
+        httpApplication.start();
         world.addRoom(room);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             world.destroy();
-            httpServer.stop(0);
+            httpApplication.stop();
             ezyServer.stop();
         }));
-        System.out.println("space shooter started at: http://localhost:" + httpPort);
+        logger.info("space shooter started at: http://localhost:{}", httpPort);
     }
 
     private EzySimpleSettings createSettings() {
@@ -280,7 +287,7 @@ public class SpaceShooterServer {
         ship.removed = true;
         ships.remove(ship);
         entities.remove(ship.getName());
-        room.removePlayer(ship);
+        removeFromRoom(ship);
     }
 
     private void send(EzyUser user, String command, EzyObject params) {
@@ -300,6 +307,9 @@ public class SpaceShooterServer {
         float dt = lastTickNanos == 0
             ? TIME_TICK_MILLIS / 1000f
             : Math.min(0.2f, (now - lastTickNanos) / 1_000_000_000f);
+        if (lastTickNanos != 0) {
+            stats.intervalNanosMax = Math.max(stats.intervalNanosMax, now - lastTickNanos);
+        }
         lastTickNanos = now;
         ++tick;
 
@@ -307,12 +317,14 @@ public class SpaceShooterServer {
         while ((command = commands.poll()) != null) {
             command.run();
         }
+        long commandsEnd = System.nanoTime();
         for (MMOPlayer player : players) {
             GameEntity entity = (GameEntity) player;
-            if (isActive(entity)) {
+            if (!entity.removed) {
                 updateEntity(entity, dt);
             }
         }
+        long updateEnd = System.nanoTime();
         for (MMOPlayer player : players) {
             GameEntity entity = (GameEntity) player;
             if (!isActive(entity)) {
@@ -324,14 +336,104 @@ public class SpaceShooterServer {
                 handleShipCollisions((Ship) entity);
             }
         }
+        long collisionEnd = System.nanoTime();
         for (GameEntity entity : removedEntities) {
-            room.removePlayer(entity);
+            removeFromRoom(entity);
             entities.remove(entity.getName());
         }
         removedEntities.clear();
+        long removeEnd = System.nanoTime();
         maintainAsteroids();
+        long spawnEnd = System.nanoTime();
         broadcastState();
         events.clear();
+        long broadcastEnd = System.nanoTime();
+
+        stats.ticks += 1;
+        stats.commandsNanos += commandsEnd - now;
+        stats.updateNanos += updateEnd - commandsEnd;
+        stats.collisionNanos += collisionEnd - updateEnd;
+        stats.removeNanos += removeEnd - collisionEnd;
+        stats.spawnNanos += spawnEnd - removeEnd;
+        stats.broadcastNanos += broadcastEnd - spawnEnd;
+        stats.tickNanos += broadcastEnd - now;
+        stats.tickNanosMax = Math.max(stats.tickNanosMax, broadcastEnd - now);
+        if (broadcastEnd - stats.startedAt >= PERFORMANCE_LOG_INTERVAL_NANOS) {
+            logPerformance(broadcastEnd);
+        }
+    }
+
+    private void logPerformance(long now) {
+        int shipCount = 0;
+        int asteroids = 0;
+        int bullets = 0;
+        int powerups = 0;
+        int users = 0;
+        for (GameEntity entity : entities.values()) {
+            if (entity.kind == KIND_SHIP) {
+                shipCount += 1;
+                if (((Ship) entity).user != null) {
+                    users += 1;
+                }
+            } else if (entity.kind == KIND_ASTEROID) {
+                asteroids += 1;
+            } else if (entity.kind == KIND_BULLET) {
+                bullets += 1;
+            } else {
+                powerups += 1;
+            }
+        }
+        double seconds = (now - stats.startedAt) / 1_000_000_000.0;
+        long ticks = Math.max(1, stats.ticks);
+        Runtime runtime = Runtime.getRuntime();
+        logger.info(
+            "perf {}s: ticks={} ({}/s), tick avg={}ms max={}ms, interval max={}ms | " +
+                "phase avg(ms) commands={} update={} collision={} remove={} spawn={} broadcast={} | " +
+                "grid ops/s move={} add={} remove={}, avg(us) move={} add={} remove={} | " +
+                "entities={} (ships={}, users={}, asteroids={}, bullets={}, powerups={}) | " +
+                "messages={}/s, entities per message avg={} max={} | heap={}MB",
+            format(seconds),
+            stats.ticks,
+            format(stats.ticks / seconds),
+            toMillis(stats.tickNanos / ticks),
+            toMillis(stats.tickNanosMax),
+            toMillis(stats.intervalNanosMax),
+            toMillis(stats.commandsNanos / ticks),
+            toMillis(stats.updateNanos / ticks),
+            toMillis(stats.collisionNanos / ticks),
+            toMillis(stats.removeNanos / ticks),
+            toMillis(stats.spawnNanos / ticks),
+            toMillis(stats.broadcastNanos / ticks),
+            format(stats.gridMoves / seconds),
+            format(stats.gridAdds / seconds),
+            format(stats.gridRemoves / seconds),
+            toMicros(stats.gridMoveNanos, stats.gridMoves),
+            toMicros(stats.gridAddNanos, stats.gridAdds),
+            toMicros(stats.gridRemoveNanos, stats.gridRemoves),
+            entities.size(),
+            shipCount,
+            users,
+            asteroids,
+            bullets,
+            powerups,
+            format(stats.messages / seconds),
+            format(stats.messages == 0 ? 0 : (double) stats.sentEntities / stats.messages),
+            stats.sentEntitiesMax,
+            (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
+        );
+        stats.reset(now);
+    }
+
+    private static String format(double value) {
+        return String.format("%.2f", value);
+    }
+
+    private static String toMillis(long nanos) {
+        return String.format("%.3f", nanos / 1_000_000.0);
+    }
+
+    private static String toMicros(long nanos, long count) {
+        return String.format("%.2f", count == 0 ? 0 : nanos / 1000.0 / count);
     }
 
     private void updateEntity(GameEntity entity, float dt) {
@@ -686,7 +788,10 @@ public class SpaceShooterServer {
     private void addEntity(GameEntity entity) {
         entity.setPosition(entity.x, entity.y, 0);
         entities.put(entity.getName(), entity);
+        long start = System.nanoTime();
         room.addPlayer(entity);
+        stats.gridAddNanos += System.nanoTime() - start;
+        stats.gridAdds += 1;
     }
 
     private void removeEntity(GameEntity entity) {
@@ -702,7 +807,17 @@ public class SpaceShooterServer {
 
     private void moveEntity(GameEntity entity) {
         positionBuffer.set(entity.x, entity.y, 0);
+        long start = System.nanoTime();
         room.setPlayerPosition(entity, positionBuffer);
+        stats.gridMoveNanos += System.nanoTime() - start;
+        stats.gridMoves += 1;
+    }
+
+    private void removeFromRoom(GameEntity entity) {
+        long start = System.nanoTime();
+        room.removePlayer(entity);
+        stats.gridRemoveNanos += System.nanoTime() - start;
+        stats.gridRemoves += 1;
     }
 
     private void addEvent(String type, float x, float y, float size) {
@@ -768,6 +883,9 @@ public class SpaceShooterServer {
             }
             entityArray.add(item);
         }
+        stats.messages += 1;
+        stats.sentEntities += entityArray.size();
+        stats.sentEntitiesMax = Math.max(stats.sentEntitiesMax, entityArray.size());
         EzyArray eventArray = EzyEntityFactory.newArray();
         for (GameEvent event : events) {
             float dx = event.x - ship.x;
@@ -811,65 +929,6 @@ public class SpaceShooterServer {
         return Math.min(maxCell - 1, (int) (value / CELL_SIZE));
     }
 
-    private void serveFile(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        if ("/".equals(path)) {
-            path = "/index.html";
-        }
-        byte[] body = path.contains("..") ? null : readWebResource(path.substring(1));
-        try (OutputStream outputStream = exchange.getResponseBody()) {
-            if (body == null) {
-                exchange.sendResponseHeaders(404, -1);
-                return;
-            }
-            exchange.getResponseHeaders().set("Content-Type", contentTypeOf(path));
-            exchange.getResponseHeaders().set("Cache-Control", "no-cache");
-            exchange.sendResponseHeaders(200, body.length);
-            outputStream.write(body);
-        }
-    }
-
-    private static byte[] readWebResource(String path) throws IOException {
-        File file = new File(WEB_ROOT_DIR, path);
-        if (file.isFile()) {
-            return Files.readAllBytes(file.toPath());
-        }
-        try (InputStream inputStream = SpaceShooterServer.class
-            .getClassLoader()
-            .getResourceAsStream(WEB_ROOT + "/" + path)
-        ) {
-            if (inputStream == null) {
-                return null;
-            }
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, read);
-            }
-            return outputStream.toByteArray();
-        }
-    }
-
-    private static String contentTypeOf(String path) {
-        if (path.endsWith(".html")) {
-            return "text/html; charset=utf-8";
-        }
-        if (path.endsWith(".js")) {
-            return "application/javascript; charset=utf-8";
-        }
-        if (path.endsWith(".css")) {
-            return "text/css; charset=utf-8";
-        }
-        if (path.endsWith(".png")) {
-            return "image/png";
-        }
-        if (path.endsWith(".wav")) {
-            return "audio/wav";
-        }
-        return "application/octet-stream";
-    }
-
     private float randomRange(float min, float max) {
         return min + random.nextFloat() * (max - min);
     }
@@ -887,6 +946,15 @@ public class SpaceShooterServer {
     private static boolean isColliding(GameEntity a, GameEntity b) {
         float radius = a.radius + b.radius;
         return distanceSquare(a, b) <= radius * radius;
+    }
+
+    @Controller
+    public static class HomeController {
+
+        @DoGet("/")
+        public Redirect home() {
+            return Redirect.to("/index.html");
+        }
     }
 
     public static class SpaceShooterAppEntryLoader extends EzyAbstractAppEntryLoader {
@@ -959,6 +1027,52 @@ public class SpaceShooterServer {
             super(name, KIND_SHIP);
             this.user = user;
             this.displayName = displayName;
+        }
+    }
+
+    private static class PerformanceStats {
+        long startedAt = System.nanoTime();
+        long ticks;
+        long tickNanos;
+        long tickNanosMax;
+        long intervalNanosMax;
+        long commandsNanos;
+        long updateNanos;
+        long collisionNanos;
+        long removeNanos;
+        long spawnNanos;
+        long broadcastNanos;
+        long gridMoves;
+        long gridMoveNanos;
+        long gridAdds;
+        long gridAddNanos;
+        long gridRemoves;
+        long gridRemoveNanos;
+        long messages;
+        long sentEntities;
+        int sentEntitiesMax;
+
+        void reset(long now) {
+            startedAt = now;
+            ticks = 0;
+            tickNanos = 0;
+            tickNanosMax = 0;
+            intervalNanosMax = 0;
+            commandsNanos = 0;
+            updateNanos = 0;
+            collisionNanos = 0;
+            removeNanos = 0;
+            spawnNanos = 0;
+            broadcastNanos = 0;
+            gridMoves = 0;
+            gridMoveNanos = 0;
+            gridAdds = 0;
+            gridAddNanos = 0;
+            gridRemoves = 0;
+            gridRemoveNanos = 0;
+            messages = 0;
+            sentEntities = 0;
+            sentEntitiesMax = 0;
         }
     }
 

@@ -221,10 +221,16 @@
         me.hp = m.hp;
         me.score = m.score;
         me.inv = m.inv === 1;
+        var respawned = me.respawn > 0 && m.respawn <= 0;
         me.respawn = m.respawn;
-        if (m.respawn > 0) {
+        if (m.respawn > 0 || respawned) {
             me.x = m.x;
             me.y = m.y;
+            me.a = me.ta;
+        }
+        if (respawned) {
+            camera.x = m.x;
+            camera.y = m.y;
         }
         stats.tick = data.tick;
         stats.total = data.total;
