@@ -6,6 +6,7 @@ import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +77,30 @@ public class MMOOcTreeRoom extends MMORoom {
                 MMOPlayer.link(player, newNearbyPlayer);
             }
             nearbyPlayerSet.clear();
+        }
+    }
+
+    public List<MMOPlayer> searchPlayers(Vec3 center, float range) {
+        List<MMOPlayer> buffer = new ArrayList<>();
+        searchPlayers(center, range, buffer);
+        return buffer;
+    }
+
+    public void searchPlayers(Vec3 center, float range, List<MMOPlayer> buffer) {
+        synchronized (this) {
+            int startIndex = buffer.size();
+            this.ocTree.search(center, range, buffer);
+            float rangeSquare = range * range;
+            int writeIndex = startIndex;
+            for (int i = startIndex; i < buffer.size(); ++i) {
+                MMOPlayer player = buffer.get(i);
+                if (center.distanceSquare(player.getPosition()) <= rangeSquare) {
+                    buffer.set(writeIndex++, player);
+                }
+            }
+            for (int i = buffer.size() - 1; i >= writeIndex; --i) {
+                buffer.remove(i);
+            }
         }
     }
 

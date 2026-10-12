@@ -449,7 +449,7 @@ public class MMOOcTreeRoomTest {
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
         verify(ocTree, times(1)).contains(player);
         verify(ocTree, times(1)).insert(player);
-        verify(ocTree, never()).search(any(), anyFloat());
+        verify(ocTree, never()).search(any(MMOPlayer.class), anyFloat());
     }
 
     @SuppressWarnings("unchecked")
@@ -481,7 +481,7 @@ public class MMOOcTreeRoomTest {
         Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
         verify(ocTree, times(1)).remove(player);
         verify(ocTree, times(1)).insert(player);
-        verify(ocTree, times(1)).search(any(), anyFloat());
+        verify(ocTree, times(1)).search(any(MMOPlayer.class), anyFloat());
     }
 
     @Test
@@ -578,5 +578,71 @@ public class MMOOcTreeRoomTest {
             new HashSet<>(player2.getNearbyPlayerNames()),
             new HashSet<>(Arrays.asList("player1", "player2"))
         );
+    }
+
+    @Test
+    public void searchPlayersUseSphereRangeTest() {
+        // given
+        final MMOOcTreeRoom room = newSearchRoom();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2", false);
+        MMOPlayer player3 = new MMOPlayer("player3");
+        room.setPlayerPosition(player1, new Vec3(10, 10, 10));
+        room.setPlayerPosition(player2, new Vec3(17, 17, 17));
+        room.setPlayerPosition(player3, new Vec3(50, 50, 50));
+
+        // when
+        List<MMOPlayer> insideBoxOutsideSphere = room.searchPlayers(new Vec3(10, 10, 10), 10);
+        List<MMOPlayer> insideSphere = room.searchPlayers(new Vec3(10, 10, 10), 13);
+
+        // then
+        Asserts.assertEquals(insideBoxOutsideSphere, Collections.singletonList(player1), false);
+        Asserts.assertEquals(
+            new HashSet<>(insideSphere),
+            new HashSet<>(Arrays.asList(player1, player2))
+        );
+    }
+
+    @Test
+    public void searchPlayersWithBufferKeepsExistingItemsTest() {
+        // given
+        final MMOOcTreeRoom room = newSearchRoom();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        MMOPlayer existing = new MMOPlayer("existing");
+        room.setPlayerPosition(player1, new Vec3(10, 10, 10));
+        room.setPlayerPosition(player2, new Vec3(17, 17, 17));
+        List<MMOPlayer> buffer = new ArrayList<>();
+        buffer.add(existing);
+
+        // when
+        room.searchPlayers(new Vec3(10, 10, 10), 10, buffer);
+
+        // then
+        Asserts.assertEquals(buffer, Arrays.asList(existing, player1), false);
+    }
+
+    @Test
+    public void searchPlayersNegativeRangeTest() {
+        // given
+        final MMOOcTreeRoom room = newSearchRoom();
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(10, 10, 10));
+
+        // when
+        List<MMOPlayer> result = room.searchPlayers(new Vec3(10, 10, 10), -1);
+
+        // then
+        Asserts.assertTrue(result.isEmpty());
+    }
+
+    private static MMOOcTreeRoom newSearchRoom() {
+        return (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .maxPlayer(10)
+            .distanceOfInterest(5)
+            .build();
     }
 }

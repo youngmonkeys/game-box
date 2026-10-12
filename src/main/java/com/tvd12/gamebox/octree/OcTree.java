@@ -55,6 +55,19 @@ public class OcTree<T extends PositionAware> {
         List<T> matches = new ArrayList<>();
         return this.root.search(searchBounds, matches);
     }
+
+    public List<T> search(Vec3 center, float range) {
+        List<T> matches = new ArrayList<>();
+        search(center, range, matches);
+        return matches;
+    }
+
+    public void search(Vec3 center, float range, List<T> matches) {
+        if (range < 0) {
+            return;
+        }
+        this.root.search(Bounds.fromCenterAndRange(center, range), matches);
+    }
     
     public boolean contains(T item) {
         return items.contains(item);
