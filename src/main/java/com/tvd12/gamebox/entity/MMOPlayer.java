@@ -19,6 +19,7 @@ public class MMOPlayer extends Player implements PositionAware {
     protected Vec3 rotation = new Vec3();
     @Setter
     protected int clientTimeTick;
+    protected final boolean interestEnabled;
 
     @Getter(AccessLevel.NONE)
     protected final AtomicBoolean stateChanged
@@ -29,11 +30,17 @@ public class MMOPlayer extends Player implements PositionAware {
         = new ConcurrentHashMap<>();
 
     public MMOPlayer(String name) {
+        this(name, true);
+    }
+
+    public MMOPlayer(String name, boolean interestEnabled) {
         super(name);
+        this.interestEnabled = interestEnabled;
     }
 
     protected MMOPlayer(Builder builder) {
         super(builder);
+        this.interestEnabled = builder.interestEnabled;
     }
 
     public static Builder builder() {
@@ -106,6 +113,13 @@ public class MMOPlayer extends Player implements PositionAware {
     }
 
     public static class Builder extends Player.Builder<Builder> {
+
+        protected boolean interestEnabled = true;
+
+        public Builder interestEnabled(boolean interestEnabled) {
+            this.interestEnabled = interestEnabled;
+            return this;
+        }
 
         @Override
         protected Player newProduct() {

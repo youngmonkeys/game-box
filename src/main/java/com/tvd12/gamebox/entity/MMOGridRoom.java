@@ -86,6 +86,9 @@ public class MMOGridRoom extends MMORoom {
             Cell cell = cellByPlayer.remove(player);
             if (cell != null) {
                 cell.removePlayer(mmoPlayer);
+                if (!mmoPlayer.isInterestEnabled()) {
+                    removeFromNeighboringObservers(mmoPlayer, cell);
+                }
             }
             clearCurrentNearbyPlayers(mmoPlayer);
             super.removePlayer(player);
@@ -97,6 +100,26 @@ public class MMOGridRoom extends MMORoom {
             otherPlayer.removeNearByPlayer(player);
         }
         player.clearNearByPlayers();
+    }
+
+    private void removeFromNeighboringObservers(MMOPlayer player, Cell cell) {
+        final int endX = toCellOfInterestEnd(cell.cellX, maxCellX);
+        final int endY = toCellOfInterestEnd(cell.cellY, maxCellY);
+        final int endZ = toCellOfInterestEnd(cell.cellZ, maxCellZ);
+        final int startY = toCellOfInterestStart(cell.cellY);
+        final int startZ = toCellOfInterestStart(cell.cellZ);
+        for (int ix = toCellOfInterestStart(cell.cellX); ix <= endX; ++ix) {
+            for (int iy = startY; iy <= endY; ++iy) {
+                final int rowIndex = toCellRowIndex(ix, iy);
+                for (int iz = startZ; iz <= endZ; ++iz) {
+                    for (MMOPlayer observer : cells[rowIndex + iz].players) {
+                        if (observer.isInterestEnabled()) {
+                            observer.removeNearByPlayer(player);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void addPlayerToCell(MMOPlayer player) {
@@ -219,9 +242,14 @@ public class MMOGridRoom extends MMORoom {
         MMOPlayer currentPlayer,
         Cell cell
     ) {
+        final boolean currentInterestEnabled = currentPlayer.isInterestEnabled();
         for (MMOPlayer nearByPlayer : cell.players) {
-            currentPlayer.addNearbyPlayer(nearByPlayer);
-            nearByPlayer.addNearbyPlayer(currentPlayer);
+            if (currentInterestEnabled) {
+                currentPlayer.addNearbyPlayer(nearByPlayer);
+            }
+            if (nearByPlayer.isInterestEnabled()) {
+                nearByPlayer.addNearbyPlayer(currentPlayer);
+            }
         }
     }
 
@@ -229,9 +257,14 @@ public class MMOGridRoom extends MMORoom {
         MMOPlayer currentPlayer,
         Cell cell
     ) {
+        final boolean currentInterestEnabled = currentPlayer.isInterestEnabled();
         for (MMOPlayer nearByPlayer : cell.players) {
-            currentPlayer.removeNearByPlayer(nearByPlayer);
-            nearByPlayer.removeNearByPlayer(currentPlayer);
+            if (currentInterestEnabled) {
+                currentPlayer.removeNearByPlayer(nearByPlayer);
+            }
+            if (nearByPlayer.isInterestEnabled()) {
+                nearByPlayer.removeNearByPlayer(currentPlayer);
+            }
         }
     }
 
@@ -271,6 +304,47 @@ public class MMOGridRoom extends MMORoom {
                 cellByPlayer.put(player, newCell);
             }
         }
+    }
+
+    public List<MMOPlayer> searchPlayers(Vec3 center, float range) {
+        List<MMOPlayer> buffer = new ArrayList<>();
+        searchPlayers(center, range, buffer);
+        return buffer;
+    }
+
+    public void searchPlayers(Vec3 center, float range, List<MMOPlayer> buffer) {
+        if (range < 0) {
+            return;
+        }
+        final int startX = toSearchCellStart(center.x - range);
+        final int startY = toSearchCellStart(center.y - range);
+        final int startZ = toSearchCellStart(center.z - range);
+        final int endX = toSearchCellEnd(center.x + range, maxCellX);
+        final int endY = toSearchCellEnd(center.y + range, maxCellY);
+        final int endZ = toSearchCellEnd(center.z + range, maxCellZ);
+        final float rangeSquare = range * range;
+        synchronized (this) {
+            for (int ix = startX; ix <= endX; ++ix) {
+                for (int iy = startY; iy <= endY; ++iy) {
+                    final int rowIndex = toCellRowIndex(ix, iy);
+                    for (int iz = startZ; iz <= endZ; ++iz) {
+                        for (MMOPlayer player : cells[rowIndex + iz].players) {
+                            if (center.distanceSquare(player.getPosition()) <= rangeSquare) {
+                                buffer.add(player);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int toSearchCellStart(float value) {
+        return Math.max(0, (int) Math.floor(value / cellSize));
+    }
+
+    private int toSearchCellEnd(float value, int maxCell) {
+        return Math.min(maxCell - 1, (int) Math.floor(value / cellSize));
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

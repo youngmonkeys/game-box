@@ -517,4 +517,163 @@ public class MMOGridRoomTest {
         // then
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
     }
+
+    @Test
+    public void nonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        MMOPlayer lateObserver = new MMOPlayer("lateObserver");
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+        room.setPlayerPosition(lateObserver, new Vec3(25, 5, 5));
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"));
+        Asserts.assertEquals(sortedNearbyNames(lateObserver), Arrays.asList("item", "lateObserver"));
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void moveNonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+
+        // when
+        room.setPlayerPosition(item, new Vec3(85, 5, 5));
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"));
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+
+        // when
+        room.setPlayerPosition(item, new Vec3(12, 5, 5));
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"));
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void removeNonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = MMOPlayer.builder()
+            .name("item")
+            .interestEnabled(false)
+            .build();
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+
+        // when
+        room.removePlayer(item);
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"));
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(item));
+    }
+
+    @Test
+    public void removeObserverNearNonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+
+        // when
+        room.removePlayer(observer);
+
+        // then
+        Asserts.assertEquals(observer.getNearbyPlayerCount(), 0);
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void searchPlayersTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2", false);
+        MMOPlayer player3 = new MMOPlayer("player3");
+        room.setPlayerPosition(player1, new Vec3(5, 5, 5));
+        room.setPlayerPosition(player2, new Vec3(12, 5, 5));
+        room.setPlayerPosition(player3, new Vec3(50, 50, 50));
+
+        // when
+        List<MMOPlayer> result = room.searchPlayers(new Vec3(5, 5, 5), 8);
+
+        // then
+        Asserts.assertEquals(sortedNames(result), Arrays.asList("player1", "player2"));
+    }
+
+    @Test
+    public void searchPlayersWithBufferTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(5, 5, 5));
+        room.setPlayerPosition(player2, new Vec3(95, 95, 95));
+        List<MMOPlayer> buffer = new ArrayList<>();
+
+        // when
+        room.searchPlayers(new Vec3(100, 100, 100), 10, buffer);
+
+        // then
+        Asserts.assertEquals(sortedNames(buffer), Collections.singletonList("player2"));
+    }
+
+    @Test
+    public void searchPlayersInvalidRangeOrOutsideTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(5, 5, 5));
+
+        // when
+        List<MMOPlayer> negativeRangeResult = room.searchPlayers(new Vec3(5, 5, 5), -1);
+        List<MMOPlayer> outsideResult = room.searchPlayers(new Vec3(-50, -50, -50), 10);
+        List<MMOPlayer> beyondMaxResult = room.searchPlayers(new Vec3(500, 500, 500), 10);
+
+        // then
+        Asserts.assertTrue(negativeRangeResult.isEmpty());
+        Asserts.assertTrue(outsideResult.isEmpty());
+        Asserts.assertTrue(beyondMaxResult.isEmpty());
+    }
+
+    private static MMOGridRoom newRoom() {
+        return (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(100)
+            .maxY(100)
+            .maxZ(100)
+            .cellSize(10)
+            .maxPlayer(100)
+            .distanceOfInterest(1)
+            .build();
+    }
+
+    private static List<String> sortedNearbyNames(MMOPlayer player) {
+        List<String> names = player.getNearbyPlayerNames();
+        Collections.sort(names);
+        return names;
+    }
+
+    private static List<String> sortedNames(List<MMOPlayer> players) {
+        List<String> names = new ArrayList<>();
+        for (MMOPlayer player : players) {
+            names.add(player.getName());
+        }
+        Collections.sort(names);
+        return names;
+    }
 }

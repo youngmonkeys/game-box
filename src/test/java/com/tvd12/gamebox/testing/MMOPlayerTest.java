@@ -86,6 +86,27 @@ public class MMOPlayerTest {
     }
 
     @Test
+    public void interestEnabledTest() {
+        // given
+        MMOPlayer defaultPlayer = new MMOPlayer("a");
+        MMOPlayer disabledPlayer = new MMOPlayer("b", false);
+        MMOPlayer builtPlayer = MMOPlayer.builder()
+            .name("c")
+            .interestEnabled(false)
+            .build();
+        MMOPlayer builtDefaultPlayer = MMOPlayer.builder()
+            .name("d")
+            .build();
+
+        // when
+        // then
+        Asserts.assertTrue(defaultPlayer.isInterestEnabled());
+        Asserts.assertFalse(disabledPlayer.isInterestEnabled());
+        Asserts.assertFalse(builtPlayer.isInterestEnabled());
+        Asserts.assertTrue(builtDefaultPlayer.isInterestEnabled());
+    }
+
+    @Test
     public void getNearbyPlayersEmptyTest() {
         // given
         MMOPlayer sut = new MMOPlayer("a");

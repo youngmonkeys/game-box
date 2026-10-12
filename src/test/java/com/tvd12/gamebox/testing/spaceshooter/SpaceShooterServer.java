@@ -35,7 +35,6 @@ import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.entity.MMOVirtualWorld;
-import com.tvd12.gamebox.grid.UniformGrid;
 import com.tvd12.gamebox.math.Vec3;
 
 import org.slf4j.Logger;
@@ -59,8 +58,8 @@ public class SpaceShooterServer {
     private static final float WORLD_HEIGHT = 4000;
     private static final float CELL_SIZE = 650;
     private static final int CELL_RANGE_OF_INTEREST = 1;
-    private static final float COLLISION_CELL_SIZE = 128;
     private static final int TIME_TICK_MILLIS = 50;
+    private static final int STATE_INTERVAL_TICKS = 2;
     private static final int ASTEROID_COUNT = 160;
     private static final int MAX_ASTEROID_SPAWN_PER_TICK = 3;
 
@@ -102,7 +101,7 @@ public class SpaceShooterServer {
     private final List<GameEntity> removedEntities = new ArrayList<>();
     private final List<GameEvent> events = new ArrayList<>();
     private final List<Bullet> bullets = new ArrayList<>();
-    private final UniformGrid<GameEntity> collisionGrid = new UniformGrid<>(COLLISION_CELL_SIZE);
+    private final List<MMOPlayer> searchBuffer = new ArrayList<>();
     private final Vec3 searchCenter = new Vec3();
     private final List<MMOPlayer> nearbyBuffer = new ArrayList<>();
     private final Queue<Runnable> commands = new ConcurrentLinkedQueue<>();
@@ -359,7 +358,7 @@ public class SpaceShooterServer {
         maintainAsteroids();
         long spawnEnd = System.nanoTime();
         broadcastState();
-        events.clear();
+        events.removeIf(event -> event.tick <= tick - (STATE_INTERVAL_TICKS - 1));
         long broadcastEnd = System.nanoTime();
 
         stats.ticks += 1;
@@ -600,12 +599,11 @@ public class SpaceShooterServer {
 
     private boolean handleBulletCollision(Bullet bullet) {
         searchCenter.set(bullet.x, bullet.y, 0);
-        List<GameEntity> candidates = collisionGrid.search(
-            searchCenter,
-            BULLET_RADIUS + MAX_TARGET_RADIUS
-        );
-        stats.collisionChecks += candidates.size();
-        for (GameEntity other : candidates) {
+        searchBuffer.clear();
+        room.searchPlayers(searchCenter, BULLET_RADIUS + MAX_TARGET_RADIUS, searchBuffer);
+        stats.collisionChecks += searchBuffer.size();
+        for (MMOPlayer player : searchBuffer) {
+            GameEntity other = (GameEntity) player;
             if (other == bullet.owner
                 || !isActive(other)
                 || (other.kind != KIND_ASTEROID && other.kind != KIND_SHIP)
@@ -618,7 +616,7 @@ public class SpaceShooterServer {
             if (dx * dx + dy * dy > radius * radius) {
                 continue;
             }
-            events.add(GameEvent.bulletHit(bullet));
+            addEvent(GameEvent.bulletHit(bullet, tick));
             if (other.kind == KIND_ASTEROID) {
                 damageAsteroid(other, bullet.owner);
             } else {
@@ -633,12 +631,11 @@ public class SpaceShooterServer {
     }
 
     private void handleShipCollisions(Ship ship) {
-        List<GameEntity> candidates = collisionGrid.search(
-            ship.getPosition(),
-            SHIP_RADIUS + MAX_TARGET_RADIUS
-        );
-        stats.collisionChecks += candidates.size();
-        for (GameEntity other : candidates) {
+        searchBuffer.clear();
+        room.searchPlayers(ship.getPosition(), SHIP_RADIUS + MAX_TARGET_RADIUS, searchBuffer);
+        stats.collisionChecks += searchBuffer.size();
+        for (MMOPlayer player : searchBuffer) {
+            GameEntity other = (GameEntity) player;
             if (other == ship || !isActive(other) || !isColliding(ship, other)) {
                 continue;
             }
@@ -759,7 +756,10 @@ public class SpaceShooterServer {
     }
 
     private Ship createShip(EzyUser user, String displayName) {
-        Ship ship = new Ship("s" + idGenerator.incrementAndGet(), user, displayName);
+        long id = idGenerator.incrementAndGet();
+        Ship ship = new Ship("s" + id, user, displayName);
+        ship.stateSlot = (int) (id % STATE_INTERVAL_TICKS);
+        ship.lastStateTick = tick;
         float[] position = randomSafePosition();
         ship.x = position[0];
         ship.y = position[1];
@@ -798,7 +798,7 @@ public class SpaceShooterServer {
         bullet.vx = cos * BULLET_SPEED + ship.vx * 0.3f;
         bullet.vy = sin * BULLET_SPEED + ship.vy * 0.3f;
         bullets.add(bullet);
-        events.add(GameEvent.bulletSpawned(bullet));
+        addEvent(GameEvent.bulletSpawned(bullet, tick));
     }
 
     private void spawnPowerup(float x, float y) {
@@ -818,7 +818,6 @@ public class SpaceShooterServer {
         room.addPlayer(entity);
         stats.gridAddNanos += System.nanoTime() - start;
         stats.gridAdds += 1;
-        collisionGrid.insert(entity);
     }
 
     private void removeEntity(GameEntity entity) {
@@ -838,7 +837,6 @@ public class SpaceShooterServer {
         room.setPlayerPosition(entity, positionBuffer);
         stats.gridMoveNanos += System.nanoTime() - start;
         stats.gridMoves += 1;
-        collisionGrid.update(entity);
     }
 
     private void removeFromRoom(GameEntity entity) {
@@ -846,11 +844,15 @@ public class SpaceShooterServer {
         room.removePlayer(entity);
         stats.gridRemoveNanos += System.nanoTime() - start;
         stats.gridRemoves += 1;
-        collisionGrid.remove(entity);
     }
 
     private void addEvent(String type, float x, float y, float size) {
-        events.add(new GameEvent(type, x, y, size));
+        addEvent(new GameEvent(type, x, y, size, null, tick));
+    }
+
+    private void addEvent(GameEvent event) {
+        event.snapshot = toEventArray(event);
+        events.add(event);
     }
 
     private boolean isActive(GameEntity entity) {
@@ -863,6 +865,9 @@ public class SpaceShooterServer {
     private void broadcastState() {
         EzyArray leaderboard = buildLeaderboard();
         for (Ship ship : ships) {
+            if ((tick + ship.stateSlot) % STATE_INTERVAL_TICKS != 0) {
+                continue;
+            }
             if (ship.user != null) {
                 send(ship.user, "state", buildState(ship, leaderboard));
                 stats.sentMessages += 1;
@@ -906,12 +911,16 @@ public class SpaceShooterServer {
         stats.sentEntitiesMax = Math.max(stats.sentEntitiesMax, entityArray.size());
         EzyArray eventArray = EzyEntityFactory.newArray();
         for (GameEvent event : events) {
+            if (event.tick <= ship.lastStateTick) {
+                continue;
+            }
             float dx = event.x - ship.x;
             float dy = event.y - ship.y;
             if (dx * dx + dy * dy <= EVENT_DISTANCE * EVENT_DISTANCE) {
-                eventArray.add(snapshotOf(event));
+                eventArray.add(event.snapshot);
             }
         }
+        ship.lastStateTick = tick;
         EzyObject me = EzyEntityFactory.newObjectBuilder()
             .append("x", Math.round(ship.x))
             .append("y", Math.round(ship.y))
@@ -959,13 +968,6 @@ public class SpaceShooterServer {
         return snapshot;
     }
 
-    private static EzyArray snapshotOf(GameEvent event) {
-        if (event.snapshot == null) {
-            event.snapshot = toEventArray(event);
-        }
-        return event.snapshot;
-    }
-
     private static EzyArray toEventArray(GameEvent event) {
         EzyArray item = EzyEntityFactory.newArray();
         item.add(event.type, Math.round(event.x), Math.round(event.y));
@@ -978,7 +980,8 @@ public class SpaceShooterServer {
                 Math.round(bullet.vx),
                 Math.round(bullet.vy),
                 Math.round(bullet.ttl * 1000),
-                bullet.owner.getName()
+                bullet.owner.getName(),
+                event.tick
             );
         } else {
             item.add(event.bullet.id);
@@ -1064,7 +1067,7 @@ public class SpaceShooterServer {
         long snapshotTick = -1;
 
         GameEntity(String name, int kind) {
-            super(name);
+            super(name, kind == KIND_SHIP);
             this.kind = kind;
         }
     }
@@ -1082,6 +1085,8 @@ public class SpaceShooterServer {
         float invulnerableIn;
         float respawnIn;
         float thinkIn;
+        int stateSlot;
+        long lastStateTick;
         int score;
         int kills;
         int deaths;
@@ -1169,26 +1174,24 @@ public class SpaceShooterServer {
         final float y;
         final float size;
         final Bullet bullet;
+        final long tick;
         EzyArray snapshot;
 
-        GameEvent(String type, float x, float y, float size) {
-            this(type, x, y, size, null);
-        }
-
-        GameEvent(String type, float x, float y, float size, Bullet bullet) {
+        GameEvent(String type, float x, float y, float size, Bullet bullet, long tick) {
             this.type = type;
             this.x = x;
             this.y = y;
             this.size = size;
             this.bullet = bullet;
+            this.tick = tick;
         }
 
-        static GameEvent bulletSpawned(Bullet bullet) {
-            return new GameEvent(EVENT_BULLET_SPAWNED, bullet.x, bullet.y, 0, bullet);
+        static GameEvent bulletSpawned(Bullet bullet, long tick) {
+            return new GameEvent(EVENT_BULLET_SPAWNED, bullet.x, bullet.y, 0, bullet, tick);
         }
 
-        static GameEvent bulletHit(Bullet bullet) {
-            return new GameEvent(EVENT_BULLET_HIT, bullet.x, bullet.y, 0, bullet);
+        static GameEvent bulletHit(Bullet bullet, long tick) {
+            return new GameEvent(EVENT_BULLET_HIT, bullet.x, bullet.y, 0, bullet, tick);
         }
     }
 }

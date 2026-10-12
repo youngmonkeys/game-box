@@ -286,7 +286,7 @@
             } else if (event[0] === 'p') {
                 spawnPickup(event[1], event[2]);
             } else if (event[0] === 'b') {
-                spawnBullet(event);
+                spawnBullet(event, data.tick);
                 if (laserPlayed < 3) {
                     laserPlayed += 1;
                     playSound('laser_ship.wav', event[1], event[2]);
@@ -317,16 +317,21 @@
         particles.push({x: x, y: y, vx: 0, vy: 0, life: 0.25, maxLife: 0.25, size: size * 1.4, color: '255,240,200', flash: true});
     }
 
-    function spawnBullet(event) {
+    function spawnBullet(event, stateTick) {
         var vx = event[4];
         var vy = event[5];
+        var age = Math.max(0, stateTick - event[8] + 1) * config.tickMillis / 1000;
+        var ttl = event[6] / 1000 - age;
+        if (ttl <= 0) {
+            return;
+        }
         bullets[event[3]] = {
-            x: event[1],
-            y: event[2],
+            x: event[1] + vx * age,
+            y: event[2] + vy * age,
             vx: vx,
             vy: vy,
             a: Math.atan2(vy, vx),
-            ttl: event[6] / 1000,
+            ttl: ttl,
             mine: event[7] === myId
         };
     }
