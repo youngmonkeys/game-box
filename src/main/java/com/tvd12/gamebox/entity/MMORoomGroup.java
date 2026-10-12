@@ -5,15 +5,19 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.gamebox.manager.SynchronizedRoomManager;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class MMORoomGroup extends EzyLoggable {
 
     private volatile boolean active;
+    private volatile Thread thread;
     private final long timeTickMillis;
     private final RoomManager<MMORoom> roomManager;
+    private final List<MMORoom> rooms
+        = new CopyOnWriteArrayList<>();
 
     private static final AtomicInteger COUNTER
         = new AtomicInteger();
@@ -21,7 +25,6 @@ class MMORoomGroup extends EzyLoggable {
     protected MMORoomGroup(Builder builder) {
         this.timeTickMillis = builder.timeTickMillis;
         this.roomManager = new SynchronizedRoomManager<>();
-        this.start();
     }
 
     public static Builder builder() {
@@ -31,46 +34,70 @@ class MMORoomGroup extends EzyLoggable {
     private void start() {
         this.active = true;
         Thread newThread = new Thread(this::loop);
-        newThread.setName("game-box-mmo-room-group-" + COUNTER.incrementAndGet());
+        newThread.setName(
+            "game-box-mmo-room-group-" +
+                COUNTER.incrementAndGet()
+        );
+        newThread.setDaemon(true);
+        this.thread = newThread;
         newThread.start();
     }
 
     private void loop() {
-        List<MMORoom> roomBuffer = new ArrayList<>();
+        long timeTickNanos = TimeUnit
+            .MILLISECONDS
+            .toNanos(timeTickMillis);
         while (active) {
-            try {
-                long start = System.currentTimeMillis();
-                this.updateRooms(roomBuffer);
-                long end = System.currentTimeMillis();
-                long timeElapsed = end - start;
-                if (timeElapsed < timeTickMillis) {
-                    //noinspection BusyWait
-                    Thread.sleep(timeTickMillis - timeElapsed);
+            long start = System.nanoTime();
+            this.updateRooms();
+            long timeElapsed = System.nanoTime() - start;
+            long remainingNanos = timeTickNanos - timeElapsed;
+            if (remainingNanos > 0) {
+                try {
+                    TimeUnit.NANOSECONDS.sleep(remainingNanos);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                 }
-            } catch (Exception e) {
-                logger.error("Room group loop error: ", e);
+            } else {
+                logger.warn(
+                    "Room group update took: {}ms, " +
+                        "exceeded time tick: {}ms",
+                    TimeUnit.NANOSECONDS.toMillis(timeElapsed),
+                    timeTickMillis
+                );
             }
         }
     }
 
-    private void updateRooms(List<MMORoom> roomBuffer) {
-        roomBuffer.clear();
-        roomManager.getRoomList(roomBuffer);
-        roomBuffer.forEach(room -> {
+    private void updateRooms() {
+        for (MMORoom room : rooms) {
             try {
                 room.update();
             } catch (Exception e) {
                 logger.warn("Update room: {} error", room, e);
             }
-        });
+        }
     }
 
     public void addRoom(MMORoom room) {
-        this.roomManager.addRoom(room);
+        synchronized (this) {
+            this.roomManager.addRoom(room);
+            this.rooms.add(room);
+        }
     }
 
-    public void removeRoom(MMORoom room) {
-        this.roomManager.removeRoom(room);
+    public boolean removeRoom(MMORoom room) {
+        synchronized (this) {
+            MMORoom existingRoom = this.roomManager
+                .getRoom(room.getName());
+            if (existingRoom == null) {
+                return false;
+            }
+            this.roomManager.removeRoom(existingRoom);
+            this.rooms.removeIf(it -> it == existingRoom);
+            return true;
+        }
     }
 
     public MMORoom getRoom(long roomId) {
@@ -87,9 +114,13 @@ class MMORoomGroup extends EzyLoggable {
 
     public void destroy() {
         this.active = false;
+        Thread currentThread = this.thread;
+        if (currentThread != null) {
+            currentThread.interrupt();
+        }
     }
 
-    public static class Builder implements EzyBuilder<MMORoomGroup> {
+    static class Builder implements EzyBuilder<MMORoomGroup> {
         private long timeTickMillis;
 
         public Builder timeTickMillis(int timeTickMillis) {
@@ -99,7 +130,14 @@ class MMORoomGroup extends EzyLoggable {
 
         @Override
         public MMORoomGroup build() {
-            return new MMORoomGroup(this);
+            if (timeTickMillis <= 0) {
+                throw new IllegalArgumentException(
+                    "timeTickMillis must be greater than 0"
+                );
+            }
+            MMORoomGroup group = new MMORoomGroup(this);
+            group.start();
+            return group;
         }
     }
 }

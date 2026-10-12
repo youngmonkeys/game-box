@@ -1,9 +1,11 @@
 package com.tvd12.gamebox.entity;
 
 import com.tvd12.ezyfox.util.EzyWrap;
+import com.tvd12.gamebox.exception.RoomExistsException;
 import com.tvd12.gamebox.manager.RoomManager;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.reflect.FieldUtil;
+import com.tvd12.test.reflect.ReflectMethodUtil;
 import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
@@ -181,5 +183,165 @@ public class MMORoomGroupTest {
 
         // then
         sut.destroy();
+    }
+
+    @Test
+    public void getRoomCountTest() {
+        // given
+        MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
+        MMORoom room1 = mockRoom(1L, "room1");
+        MMORoom room2 = mockRoom(2L, "room2");
+
+        // when
+        int initialRoomCount = sut.getRoomCount();
+        sut.addRoom(room1);
+        sut.addRoom(room2);
+        int roomCountAfterAdd = sut.getRoomCount();
+        sut.removeRoom(room1);
+        int roomCountAfterRemove = sut.getRoomCount();
+
+        // then
+        Asserts.assertEquals(initialRoomCount, 0);
+        Asserts.assertEquals(roomCountAfterAdd, 2);
+        Asserts.assertEquals(roomCountAfterRemove, 1);
+        sut.destroy();
+    }
+
+    @Test
+    public void getRoomCountRemoveNotExistedRoomTest() {
+        // given
+        MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
+        MMORoom room = mockRoom(1L, "room1");
+        sut.addRoom(room);
+
+        // when
+        boolean removedNotExistedRoom = sut.removeRoom(mockRoom(2L, "room2"));
+        boolean removedRoom = sut.removeRoom(room);
+        boolean removedRoomAgain = sut.removeRoom(room);
+
+        // then
+        Asserts.assertFalse(removedNotExistedRoom);
+        Asserts.assertTrue(removedRoom);
+        Asserts.assertFalse(removedRoomAgain);
+        Asserts.assertEquals(sut.getRoomCount(), 0);
+        sut.destroy();
+    }
+
+    @Test
+    public void getRoomCountAddDuplicatedRoomTest() {
+        // given
+        MMORoomGroup sut = MMORoomGroup.builder().timeTickMillis(100).build();
+        sut.addRoom(mockRoom(1L, "room1"));
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            sut.addRoom(mockRoom(1L, "room1"))
+        );
+
+        // then
+        Asserts.assertEqualsType(e, RoomExistsException.class);
+        Asserts.assertEquals(sut.getRoomCount(), 1);
+        sut.destroy();
+    }
+
+    @Test
+    public void buildTimeTickMillisZeroTest() {
+        // given
+        MMORoomGroup.Builder builder = MMORoomGroup.builder()
+            .timeTickMillis(0);
+
+        // when
+        Throwable e = Asserts.assertThrows(builder::build);
+
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+        Asserts.assertEquals(e.getMessage(), "timeTickMillis must be greater than 0");
+    }
+
+    @Test
+    public void buildTimeTickMillisNegativeTest() {
+        // given
+        MMORoomGroup.Builder builder = MMORoomGroup.builder()
+            .timeTickMillis(-1);
+
+        // when
+        Throwable e = Asserts.assertThrows(builder::build);
+
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+        Asserts.assertEquals(e.getMessage(), "timeTickMillis must be greater than 0");
+    }
+
+    @Test
+    public void buildWithoutTimeTickMillisTest() {
+        // given
+        MMORoomGroup.Builder builder = MMORoomGroup.builder();
+
+        // when
+        Throwable e = Asserts.assertThrows(builder::build);
+
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+        Asserts.assertEquals(e.getMessage(), "timeTickMillis must be greater than 0");
+    }
+
+    @Test
+    public void destroyNotStartedGroupTest() {
+        // given
+        MMORoomGroup sut = new MMORoomGroup(
+            MMORoomGroup.builder().timeTickMillis(100)
+        );
+
+        // when
+        sut.destroy();
+
+        // then
+        Asserts.assertNull(FieldUtil.getFieldValue(sut, "thread"));
+        Asserts.assertEquals(FieldUtil.getFieldValue(sut, "active"), false);
+    }
+
+    @Test
+    public void loopWhenNotActiveTest() {
+        // given
+        MMORoomGroup sut = new MMORoomGroup(
+            MMORoomGroup.builder().timeTickMillis(100)
+        );
+        MMORoom room = mockRoom(1L, "room1");
+        sut.addRoom(room);
+
+        // when
+        ReflectMethodUtil.invokeMethod("loop", sut);
+
+        // then
+        verify(room, never()).update();
+    }
+
+    @Test
+    public void loopStopWhenInactiveTest() {
+        // given
+        MMORoomGroup sut = new MMORoomGroup(
+            MMORoomGroup.builder().timeTickMillis(100)
+        );
+        MMORoom room = mockRoom(1L, "room1");
+        doAnswer(it -> {
+            FieldUtil.setFieldValue(sut, "active", false);
+            return null;
+        }).when(room).update();
+        sut.addRoom(room);
+        FieldUtil.setFieldValue(sut, "active", true);
+
+        // when
+        ReflectMethodUtil.invokeMethod("loop", sut);
+
+        // then
+        verify(room, times(1)).update();
+        Asserts.assertFalse(Thread.currentThread().isInterrupted());
+    }
+
+    private static MMORoom mockRoom(long id, String name) {
+        MMORoom room = mock(MMORoom.class);
+        when(room.getId()).thenReturn(id);
+        when(room.getName()).thenReturn(name);
+        return room;
     }
 }
