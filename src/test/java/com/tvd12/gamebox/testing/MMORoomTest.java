@@ -12,6 +12,7 @@ import com.tvd12.test.util.RandomUtil;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -148,5 +149,29 @@ public class MMORoomTest {
     public static class A implements MMORoomUpdatedHandler {
         @Override
         public void onRoomUpdated(MMORoom room, List<MMOPlayer> players) {}
+    }
+
+    @Test
+    public void updateWithNonInterestPlayerTest() {
+        // given
+        MMORoom room = MMORoom.builder()
+            .distanceOfInterest(5)
+            .name("room")
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        observer.setPosition(new Vec3(0, 0, 0));
+        room.addPlayer(observer);
+        MMOPlayer item = new MMOPlayer("item", false);
+        item.setPosition(new Vec3(1, 1, 1));
+        room.addPlayer(item);
+
+        // when
+        room.update();
+
+        // then
+        List<String> observerNearbyNames = observer.getNearbyPlayerNames();
+        observerNearbyNames.sort(String::compareTo);
+        Asserts.assertEquals(observerNearbyNames, Arrays.asList("item", "observer"), false);
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
     }
 }

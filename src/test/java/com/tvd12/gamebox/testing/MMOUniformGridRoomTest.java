@@ -268,4 +268,122 @@ public class MMOUniformGridRoomTest {
             }
         }
     }
+
+    @Test
+    public void nonInterestPlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+        room.setPlayerPosition(item, new Vec3(5, 0, 0));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+
+        // when
+        room.setPlayerPosition(item, new Vec3(50, 0, 0));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+
+        // when
+        room.setPlayerPosition(item, new Vec3(3, 0, 0));
+        room.removePlayer(item);
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void moveObserverAwayFromNonInterestPlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        room.setPlayerPosition(item, new Vec3(5, 0, 0));
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(40, 0, 0));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void unlinkStaleNearbyPlayerAfterExternalPositionChangeTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+        room.setPlayerPosition(player2, new Vec3(5, 0, 0));
+        Vec3 farPosition = new Vec3(100, 0, 0);
+        player1.setPosition(farPosition);
+
+        // when
+        room.setPlayerPosition(player1, farPosition);
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(player1.getNearbyPlayerNames()),
+            Collections.singleton("player1"),
+            false
+        );
+        Asserts.assertEquals(
+            new HashSet<>(player2.getNearbyPlayerNames()),
+            Collections.singleton("player2"),
+            false
+        );
+    }
+
+    @Test
+    public void searchPlayersWithBufferTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(0, 0, 0));
+        room.setPlayerPosition(player2, new Vec3(30, 0, 0));
+        List<MMOPlayer> buffer = new ArrayList<>();
+
+        // when
+        room.searchPlayers(new Vec3(1, 0, 0), 5, buffer);
+
+        // then
+        Asserts.assertEquals(buffer, Collections.singletonList(player1), false);
+    }
 }

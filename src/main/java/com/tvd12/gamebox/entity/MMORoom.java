@@ -93,8 +93,7 @@ public class MMORoom extends NormalRoom {
                 MMOPlayer other = playerBuffer.get(k);
                 double distance = player.getPosition().distance(other.getPosition());
                 if (distance <= this.distanceOfInterest) {
-                    player.addNearbyPlayer(other);
-                    other.addNearbyPlayer(player);
+                    MMOPlayer.link(player, other);
                 }
             }
         }

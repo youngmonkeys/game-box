@@ -36,7 +36,9 @@ public class MMOGridRoom extends MMORoom {
         this.maxZ = builder.maxZ;
         this.cellSize = builder.cellSize;
         this.cellByPlayer = new HashMap<>();
-        this.cellRangeOfInterest = (int) (builder.distanceOfInterest);
+        this.cellRangeOfInterest = builder.cellRangeOfInterest > 0
+            ? builder.cellRangeOfInterest
+            : (int) Math.ceil(builder.distanceOfInterest / builder.cellSize);
         this.maxCellX = Math.max(1, (int) Math.ceil(maxX / cellSize));
         this.maxCellY = Math.max(1, (int) Math.ceil(maxY / cellSize));
         this.maxCellZ = Math.max(1, (int) Math.ceil(maxZ / cellSize));
@@ -242,14 +244,8 @@ public class MMOGridRoom extends MMORoom {
         MMOPlayer currentPlayer,
         Cell cell
     ) {
-        final boolean currentInterestEnabled = currentPlayer.isInterestEnabled();
         for (MMOPlayer nearByPlayer : cell.players) {
-            if (currentInterestEnabled) {
-                currentPlayer.addNearbyPlayer(nearByPlayer);
-            }
-            if (nearByPlayer.isInterestEnabled()) {
-                nearByPlayer.addNearbyPlayer(currentPlayer);
-            }
+            MMOPlayer.link(currentPlayer, nearByPlayer);
         }
     }
 
@@ -257,14 +253,8 @@ public class MMOGridRoom extends MMORoom {
         MMOPlayer currentPlayer,
         Cell cell
     ) {
-        final boolean currentInterestEnabled = currentPlayer.isInterestEnabled();
         for (MMOPlayer nearByPlayer : cell.players) {
-            if (currentInterestEnabled) {
-                currentPlayer.removeNearByPlayer(nearByPlayer);
-            }
-            if (nearByPlayer.isInterestEnabled()) {
-                nearByPlayer.removeNearByPlayer(currentPlayer);
-            }
+            MMOPlayer.unlink(currentPlayer, nearByPlayer);
         }
     }
 
@@ -369,6 +359,7 @@ public class MMOGridRoom extends MMORoom {
         private float maxY;
         private float maxZ;
         private float cellSize;
+        private int cellRangeOfInterest;
 
         public Builder maxX(float maxX) {
             this.maxX = maxX;
@@ -390,10 +381,32 @@ public class MMOGridRoom extends MMORoom {
             return this;
         }
 
+        public Builder cellRangeOfInterest(int cellRangeOfInterest) {
+            this.cellRangeOfInterest = cellRangeOfInterest;
+            return this;
+        }
+
         @Override
         public Builder distanceOfInterest(double distance) {
             this.distanceOfInterest = distance;
             return this;
+        }
+
+        @Override
+        public Builder maxPlayer(int maxPlayer) {
+            this.maxPlayer = maxPlayer;
+            return this;
+        }
+
+        @Override
+        protected void preBuild() {
+            if (cellSize <= 0) {
+                throw new IllegalArgumentException("cellSize must be greater than 0");
+            }
+            if (cellRangeOfInterest > 0 && distanceOfInterest <= 0) {
+                distanceOfInterest = cellRangeOfInterest * cellSize;
+            }
+            super.preBuild();
         }
 
         @Override

@@ -481,7 +481,7 @@ public class MMOOcTreeRoomTest {
         Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
         verify(ocTree, times(1)).remove(player);
         verify(ocTree, times(1)).insert(player);
-        verify(ocTree, never()).search(any(), anyFloat());
+        verify(ocTree, times(1)).search(any(), anyFloat());
     }
 
     @Test
@@ -501,5 +501,82 @@ public class MMOOcTreeRoomTest {
 
         // then
         Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+    }
+
+    @Test
+    public void nonInterestPlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(3)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(1, 1, 1));
+        room.setPlayerPosition(item, new Vec3(5, 1, 1));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+
+        // when
+        room.setPlayerPosition(item, new Vec3(80, 80, 80));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+
+        // when
+        room.setPlayerPosition(item, new Vec3(3, 1, 1));
+        room.removePlayer(item);
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+    }
+
+    @Test
+    public void movePlayersKeepsNearbyPlayersSymmetricTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(3)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer player1 = new MMOPlayer("player1");
+        MMOPlayer player2 = new MMOPlayer("player2");
+        room.setPlayerPosition(player1, new Vec3(1, 1, 1));
+        room.setPlayerPosition(player2, new Vec3(5, 1, 1));
+
+        // when
+        room.setPlayerPosition(player2, new Vec3(60, 60, 60));
+        room.setPlayerPosition(player1, new Vec3(58, 60, 60));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(player1.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2"))
+        );
+        Asserts.assertEquals(
+            new HashSet<>(player2.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("player1", "player2"))
+        );
     }
 }

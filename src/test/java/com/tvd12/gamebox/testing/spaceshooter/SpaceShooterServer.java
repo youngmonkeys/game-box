@@ -133,7 +133,7 @@ public class SpaceShooterServer {
             .maxY(WORLD_HEIGHT)
             .maxZ(0)
             .cellSize(CELL_SIZE)
-            .distanceOfInterest(CELL_RANGE_OF_INTEREST)
+            .cellRangeOfInterest(CELL_RANGE_OF_INTEREST)
             .maxPlayer(100000)
             .addRoomUpdatedHandler(this::onRoomUpdated)
             .name("space-shooter")

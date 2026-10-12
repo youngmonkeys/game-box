@@ -63,8 +63,13 @@ public class UniformGrid<T extends PositionAware> {
 
     public List<T> search(Vec3 center, float range) {
         List<T> matches = new ArrayList<>();
+        search(center, range, matches);
+        return matches;
+    }
+
+    public void search(Vec3 center, float range, List<T> matches) {
         if (range < 0) {
-            return matches;
+            return;
         }
         int minX = toCellIndex(center.x - range);
         int maxX = toCellIndex(center.x + range);
@@ -84,7 +89,7 @@ public class UniformGrid<T extends PositionAware> {
                     addMatches(entry.getValue(), center, rangeSquare, matches);
                 }
             }
-            return matches;
+            return;
         }
         for (int x = minX; x <= maxX; ++x) {
             for (int y = minY; y <= maxY; ++y) {
@@ -96,7 +101,6 @@ public class UniformGrid<T extends PositionAware> {
                 }
             }
         }
-        return matches;
     }
 
     public boolean contains(T item) {

@@ -6,7 +6,9 @@ import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import lombok.Getter;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MMOOcTreeRoom extends MMORoom {
     
@@ -18,6 +20,7 @@ public class MMOOcTreeRoom extends MMORoom {
     
     private final Bounds bounds;
     private final OcTree<MMOPlayer> ocTree;
+    private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
 
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
@@ -39,48 +42,47 @@ public class MMOOcTreeRoom extends MMORoom {
             );
         }
         synchronized (this) {
-            boolean isSuccessful;
             if (!this.ocTree.contains(player)) {
-                isSuccessful = addNewPlayer(player, position);
-            } else {
-                isSuccessful = updateExistingPlayer(player, position);
+                if (!addNewPlayer(player, position)) {
+                    throw new IllegalArgumentException(
+                        "Can't set " + player.getName() + " to position=" + position
+                    );
+                }
+                for (MMOPlayer nearbyPlayer : searchNearbyPlayers(player)) {
+                    MMOPlayer.link(player, nearbyPlayer);
+                }
+                return;
             }
-            if (!isSuccessful) {
+            List<MMOPlayer> oldNearbyPlayers = searchNearbyPlayers(player);
+            if (!updateExistingPlayer(player, position)) {
                 throw new IllegalArgumentException(
                     "Can't set " + player.getName() + " to position=" + position
                 );
             }
-            updateNearbyPlayers(player);
-        }
-    }
-    
-    private void updateNearbyPlayers(MMOPlayer player) {
-        clearCurrentNearbyPlayers(player);
-        addNewNearbyPlayers(player);
-    }
-    
-    private void clearCurrentNearbyPlayers(MMOPlayer player) {
-        for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager
-                .getPlayer(otherPlayerName);
-            if (otherPlayer != null) {
-                otherPlayer.removeNearByPlayer(player);
+            List<MMOPlayer> newNearbyPlayers = searchNearbyPlayers(player);
+            nearbyPlayerSet.clear();
+            nearbyPlayerSet.addAll(newNearbyPlayers);
+            for (MMOPlayer oldNearbyPlayer : oldNearbyPlayers) {
+                if (!nearbyPlayerSet.contains(oldNearbyPlayer)) {
+                    MMOPlayer.unlink(player, oldNearbyPlayer);
+                }
             }
+            for (MMOPlayer currentNearbyPlayer : player.getNearbyPlayers()) {
+                if (!nearbyPlayerSet.contains(currentNearbyPlayer)) {
+                    MMOPlayer.unlink(player, currentNearbyPlayer);
+                }
+            }
+            for (MMOPlayer newNearbyPlayer : newNearbyPlayers) {
+                MMOPlayer.link(player, newNearbyPlayer);
+            }
+            nearbyPlayerSet.clear();
         }
-        player.clearNearByPlayers();
     }
-    
-    private void addNewNearbyPlayers(MMOPlayer player) {
-        List<MMOPlayer> nearByPlayers = this.ocTree.search(
-            player,
-            (float) this.distanceOfInterest
-        );
-        nearByPlayers.forEach(nearbyPlayer -> {
-            player.addNearbyPlayer(nearbyPlayer);
-            nearbyPlayer.addNearbyPlayer(player);
-        });
+
+    private List<MMOPlayer> searchNearbyPlayers(MMOPlayer player) {
+        return this.ocTree.search(player, (float) this.distanceOfInterest);
     }
-    
+
     private boolean addNewPlayer(MMOPlayer player, Vec3 newPosition) {
         super.addPlayer(player);
         player.setPosition(newPosition);
@@ -106,8 +108,17 @@ public class MMOOcTreeRoom extends MMORoom {
     public void removePlayer(Player player) {
         synchronized (this) {
             if (player instanceof MMOPlayer) {
-                this.ocTree.remove((MMOPlayer) player);
-                clearCurrentNearbyPlayers((MMOPlayer) player);
+                MMOPlayer mmoPlayer = (MMOPlayer) player;
+                if (this.ocTree.contains(mmoPlayer)) {
+                    for (MMOPlayer nearbyPlayer : searchNearbyPlayers(mmoPlayer)) {
+                        MMOPlayer.unlink(mmoPlayer, nearbyPlayer);
+                    }
+                    this.ocTree.remove(mmoPlayer);
+                }
+                for (MMOPlayer nearbyPlayer : mmoPlayer.getNearbyPlayers()) {
+                    MMOPlayer.unlink(mmoPlayer, nearbyPlayer);
+                }
+                mmoPlayer.clearNearByPlayers();
             }
             super.removePlayer(player);
         }

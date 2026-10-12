@@ -47,6 +47,13 @@ public class SynchronizedUniformGrid<T extends PositionAware> extends UniformGri
     }
 
     @Override
+    public void search(Vec3 center, float range, List<T> matches) {
+        synchronized (this) {
+            super.search(center, range, matches);
+        }
+    }
+
+    @Override
     public boolean contains(T item) {
         synchronized (this) {
             return super.contains(item);

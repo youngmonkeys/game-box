@@ -47,6 +47,24 @@ public class MMOPlayer extends Player implements PositionAware {
         return new Builder();
     }
 
+    static void link(MMOPlayer player, MMOPlayer otherPlayer) {
+        if (player.interestEnabled) {
+            player.addNearbyPlayer(otherPlayer);
+        }
+        if (otherPlayer.interestEnabled) {
+            otherPlayer.addNearbyPlayer(player);
+        }
+    }
+
+    static void unlink(MMOPlayer player, MMOPlayer otherPlayer) {
+        if (player.interestEnabled) {
+            player.removeNearByPlayer(otherPlayer);
+        }
+        if (otherPlayer.interestEnabled) {
+            otherPlayer.removeNearByPlayer(player);
+        }
+    }
+
     void addNearbyPlayer(MMOPlayer otherPlayer) {
         this.nearbyPlayers.put(otherPlayer.getName(), otherPlayer);
     }

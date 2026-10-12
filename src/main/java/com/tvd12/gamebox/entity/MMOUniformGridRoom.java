@@ -4,6 +4,7 @@ import com.tvd12.gamebox.grid.UniformGrid;
 import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MMOUniformGridRoom extends MMORoom {
@@ -11,6 +12,8 @@ public class MMOUniformGridRoom extends MMORoom {
     @Getter
     private final float cellSize;
     private final UniformGrid<MMOPlayer> grid;
+    private final List<MMOPlayer> nearbyPlayerBuffer = new ArrayList<>();
+    private final List<MMOPlayer> oldNearbyPlayerBuffer = new ArrayList<>();
 
     public MMOUniformGridRoom(Builder builder) {
         super(builder);
@@ -26,8 +29,9 @@ public class MMOUniformGridRoom extends MMORoom {
     public void addPlayer(Player player) {
         synchronized (this) {
             super.addPlayer(player);
-            if (this.grid.insert((MMOPlayer) player)) {
-                updateNearbyPlayers((MMOPlayer) player);
+            MMOPlayer mmoPlayer = (MMOPlayer) player;
+            if (this.grid.insert(mmoPlayer)) {
+                linkNearbyPlayers(mmoPlayer);
             }
         }
     }
@@ -36,8 +40,12 @@ public class MMOUniformGridRoom extends MMORoom {
     public void removePlayer(Player player) {
         synchronized (this) {
             if (player instanceof MMOPlayer) {
-                this.grid.remove((MMOPlayer) player);
-                clearCurrentNearbyPlayers((MMOPlayer) player);
+                MMOPlayer mmoPlayer = (MMOPlayer) player;
+                if (this.grid.contains(mmoPlayer)) {
+                    unlinkNearbyPlayers(mmoPlayer);
+                    this.grid.remove(mmoPlayer);
+                }
+                mmoPlayer.clearNearByPlayers();
             }
             super.removePlayer(player);
         }
@@ -45,13 +53,26 @@ public class MMOUniformGridRoom extends MMORoom {
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
         synchronized (this) {
-            player.setPosition(position);
             if (!this.grid.contains(player)) {
+                player.setPosition(position);
                 addPlayer(player);
                 return;
             }
+            oldNearbyPlayerBuffer.clear();
+            this.grid.search(
+                player.getPosition(),
+                (float) this.distanceOfInterest,
+                oldNearbyPlayerBuffer
+            );
+            player.setPosition(position);
             this.grid.update(player);
-            updateNearbyPlayers(player);
+            for (MMOPlayer oldNearbyPlayer : oldNearbyPlayerBuffer) {
+                unlinkIfOutOfRange(player, oldNearbyPlayer);
+            }
+            for (MMOPlayer currentNearbyPlayer : player.getNearbyPlayers()) {
+                unlinkIfOutOfRange(player, currentNearbyPlayer);
+            }
+            linkNearbyPlayers(player);
         }
     }
 
@@ -61,26 +82,44 @@ public class MMOUniformGridRoom extends MMORoom {
         }
     }
 
-    private void updateNearbyPlayers(MMOPlayer player) {
-        clearCurrentNearbyPlayers(player);
-        List<MMOPlayer> nearbyPlayers = this.grid.search(
-            player,
-            (float) this.distanceOfInterest
-        );
-        for (MMOPlayer nearbyPlayer : nearbyPlayers) {
-            player.addNearbyPlayer(nearbyPlayer);
-            nearbyPlayer.addNearbyPlayer(player);
+    public void searchPlayers(Vec3 center, float range, List<MMOPlayer> buffer) {
+        synchronized (this) {
+            this.grid.search(center, range, buffer);
         }
     }
 
-    private void clearCurrentNearbyPlayers(MMOPlayer player) {
-        for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager.getPlayer(otherPlayerName);
-            if (otherPlayer != null) {
-                otherPlayer.removeNearByPlayer(player);
-            }
+    private void linkNearbyPlayers(MMOPlayer player) {
+        nearbyPlayerBuffer.clear();
+        this.grid.search(
+            player.getPosition(),
+            (float) this.distanceOfInterest,
+            nearbyPlayerBuffer
+        );
+        for (MMOPlayer nearbyPlayer : nearbyPlayerBuffer) {
+            MMOPlayer.link(player, nearbyPlayer);
         }
-        player.clearNearByPlayers();
+    }
+
+    private void unlinkNearbyPlayers(MMOPlayer player) {
+        nearbyPlayerBuffer.clear();
+        this.grid.search(
+            player.getPosition(),
+            (float) this.distanceOfInterest,
+            nearbyPlayerBuffer
+        );
+        for (MMOPlayer nearbyPlayer : nearbyPlayerBuffer) {
+            MMOPlayer.unlink(player, nearbyPlayer);
+        }
+        for (MMOPlayer nearbyPlayer : player.getNearbyPlayers()) {
+            MMOPlayer.unlink(player, nearbyPlayer);
+        }
+    }
+
+    private void unlinkIfOutOfRange(MMOPlayer player, MMOPlayer otherPlayer) {
+        float range = (float) this.distanceOfInterest;
+        if (player.getPosition().distanceSquare(otherPlayer.getPosition()) > range * range) {
+            MMOPlayer.unlink(player, otherPlayer);
+        }
     }
 
     @Override
