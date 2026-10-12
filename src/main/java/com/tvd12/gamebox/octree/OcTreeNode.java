@@ -169,6 +169,35 @@ public class OcTreeNode<T extends PositionAware> {
         return searchFromChildren(searchBounds, matches);
     }
 
+    public void search(
+        float minX,
+        float minY,
+        float minZ,
+        float maxX,
+        float maxY,
+        float maxZ,
+        List<T> matches
+    ) {
+        if (!this.bounds.doesOverlap(minX, minY, minZ, maxX, maxY, maxZ)) {
+            return;
+        }
+        if (isLeaf()) {
+            for (T item : this.items) {
+                Vec3 position = item.getPosition();
+                if (position.x >= minX && position.x <= maxX
+                    && position.y >= minY && position.y <= maxY
+                    && position.z >= minZ && position.z <= maxZ
+                ) {
+                    matches.add(item);
+                }
+            }
+            return;
+        }
+        for (OcTreeNode<T> child : this.children) {
+            child.search(minX, minY, minZ, maxX, maxY, maxZ, matches);
+        }
+    }
+
     private List<T> searchFromThisLeaf(Bounds searchBounds, List<T> matches) {
         for (T item : this.items) {
             if (searchBounds.containsPosition(item.getPosition())) {

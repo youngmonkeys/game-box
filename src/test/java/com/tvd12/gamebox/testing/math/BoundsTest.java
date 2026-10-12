@@ -54,4 +54,23 @@ public class BoundsTest {
         Asserts.assertEquals(IllegalArgumentException.class.toString(), e2.getClass().toString());
         Asserts.assertEquals(IllegalArgumentException.class.toString(), e3.getClass().toString());
     }
+
+    @Test
+    public void doesOverlapWithMinMaxTest() {
+        // given
+        Bounds bounds = new Bounds(new Vec3(0, 0, 0), new Vec3(2, 2, 2));
+
+        // when
+        // then
+        Asserts.assertTrue(bounds.doesOverlap(1, 1, 1, 3, 3, 3));
+        Asserts.assertTrue(bounds.doesOverlap(-1, -1, -1, 3, 3, 3));
+        Asserts.assertTrue(bounds.doesOverlap(2, 2, 2, 4, 4, 4));
+        Asserts.assertTrue(bounds.doesOverlap(-2, -2, -2, 0, 0, 0));
+        Asserts.assertFalse(bounds.doesOverlap(-3, 0, 0, -1, 2, 2));
+        Asserts.assertFalse(bounds.doesOverlap(3, 0, 0, 4, 2, 2));
+        Asserts.assertFalse(bounds.doesOverlap(0, -3, 0, 2, -1, 2));
+        Asserts.assertFalse(bounds.doesOverlap(0, 3, 0, 2, 4, 2));
+        Asserts.assertFalse(bounds.doesOverlap(0, 0, -3, 2, 2, -1));
+        Asserts.assertFalse(bounds.doesOverlap(0, 0, 3, 2, 2, 4));
+    }
 }

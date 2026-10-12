@@ -10,6 +10,11 @@ import com.tvd12.test.reflect.MethodUtil;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OcTreeNodeTest {
     
@@ -204,5 +209,44 @@ public class OcTreeNodeTest {
         );
         method.setAccessible(true);
         return method;
+    }
+
+    @Test
+    public void searchByMinMaxInLeafTest() {
+        // given
+        Bounds bounds = new Bounds(new Vec3(0, 0, 0), new Vec3(10, 10, 10));
+        OcTreeNode<MMOPlayer> node = new OcTreeNode<>(bounds, 10, 0.01f);
+        List<MMOPlayer> players = Arrays.asList(
+            newPlayer("center", 5, 5, 5),
+            newPlayer("minCorner", 4, 4, 4),
+            newPlayer("maxCorner", 6, 6, 6),
+            newPlayer("lessX", 3, 5, 5),
+            newPlayer("greaterX", 7, 5, 5),
+            newPlayer("lessY", 5, 3, 5),
+            newPlayer("greaterY", 5, 7, 5),
+            newPlayer("lessZ", 5, 5, 3),
+            newPlayer("greaterZ", 5, 5, 7)
+        );
+        for (MMOPlayer player : players) {
+            node.insert(player);
+        }
+        List<MMOPlayer> matches = new ArrayList<>();
+
+        // when
+        node.search(4, 4, 4, 6, 6, 6, matches);
+
+        // then
+        Asserts.assertTrue(node.isLeaf());
+        Asserts.assertEquals(
+            matches.stream().map(MMOPlayer::getName).collect(Collectors.toSet()),
+            new HashSet<>(Arrays.asList("center", "minCorner", "maxCorner")),
+            false
+        );
+    }
+
+    private static MMOPlayer newPlayer(String name, float x, float y, float z) {
+        MMOPlayer player = new MMOPlayer(name);
+        player.setPosition(new Vec3(x, y, z));
+        return player;
     }
 }

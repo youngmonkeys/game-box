@@ -8,9 +8,12 @@ import com.tvd12.test.assertion.Asserts;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SynchronizedOcTreeTest {
 
@@ -211,5 +214,61 @@ public class SynchronizedOcTreeTest {
         Asserts.assertTrue(isPlayer1Added);
         Asserts.assertTrue(isPlayer2Added);
         Assert.assertEquals(nearbyPlayers, Arrays.asList(player1, player2));
+    }
+
+    @Test
+    public void searchByCenterTest() {
+        // given
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            new Vec3(0, 0, 0),
+            new Vec3(10, 10, 10),
+            1,
+            0.5f
+        );
+        MMOPlayer player1 = new MMOPlayer("player1");
+        player1.setPosition(new Vec3(1, 1, 1));
+        MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(3, 3, 3));
+        MMOPlayer player3 = new MMOPlayer("player3");
+        player3.setPosition(new Vec3(9, 9, 9));
+        ocTree.insert(player1);
+        ocTree.insert(player2);
+        ocTree.insert(player3);
+
+        // when
+        List<MMOPlayer> matches = ocTree.search(new Vec3(2, 2, 2), 1);
+
+        // then
+        Asserts.assertEquals(
+            matches.stream().map(MMOPlayer::getName).collect(Collectors.toSet()),
+            new HashSet<>(Arrays.asList("player1", "player2")),
+            false
+        );
+    }
+
+    @Test
+    public void searchByCenterWithBufferTest() {
+        // given
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            new Vec3(0, 0, 0),
+            new Vec3(10, 10, 10),
+            1,
+            0.5f
+        );
+        MMOPlayer player1 = new MMOPlayer("player1");
+        player1.setPosition(new Vec3(1, 1, 1));
+        MMOPlayer player2 = new MMOPlayer("player2");
+        player2.setPosition(new Vec3(9, 9, 9));
+        ocTree.insert(player1);
+        ocTree.insert(player2);
+        MMOPlayer existingPlayer = new MMOPlayer("existingPlayer");
+        List<MMOPlayer> buffer = new ArrayList<>();
+        buffer.add(existingPlayer);
+
+        // when
+        ocTree.search(new Vec3(1, 1, 1), 1, buffer);
+
+        // then
+        Asserts.assertEquals(buffer, Arrays.asList(existingPlayer, player1), false);
     }
 }

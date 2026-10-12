@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,6 +48,40 @@ public class MMOPlayer extends Player implements PositionAware {
         return new Builder();
     }
 
+    static void link(MMOPlayer player, MMOPlayer otherPlayer) {
+        if (player.interestEnabled) {
+            player.addNearbyPlayer(otherPlayer);
+        }
+        if (otherPlayer.interestEnabled) {
+            otherPlayer.addNearbyPlayer(player);
+        }
+    }
+
+    static void unlink(MMOPlayer player, MMOPlayer otherPlayer) {
+        if (player.interestEnabled) {
+            player.removeNearByPlayer(otherPlayer);
+        }
+        if (otherPlayer.interestEnabled) {
+            otherPlayer.removeNearByPlayer(player);
+        }
+    }
+
+    void replaceNearbyPlayers(List<MMOPlayer> players, Set<MMOPlayer> buffer) {
+        buffer.clear();
+        buffer.addAll(players);
+        for (MMOPlayer currentPlayer : nearbyPlayers.values()) {
+            if (!buffer.contains(currentPlayer)) {
+                nearbyPlayers.remove(currentPlayer.getName());
+            }
+        }
+        for (MMOPlayer player : players) {
+            if (nearbyPlayers.get(player.getName()) != player) {
+                nearbyPlayers.put(player.getName(), player);
+            }
+        }
+        buffer.clear();
+    }
+
     void addNearbyPlayer(MMOPlayer otherPlayer) {
         this.nearbyPlayers.put(otherPlayer.getName(), otherPlayer);
     }
@@ -57,6 +92,12 @@ public class MMOPlayer extends Player implements PositionAware {
 
     Collection<MMOPlayer> getNearbyPlayers() {
         return this.nearbyPlayers.values();
+    }
+
+    public void getNearbyPlayers(List<MMOPlayer> buffer) {
+        for (MMOPlayer nearbyPlayer : nearbyPlayers.values()) {
+            buffer.add(nearbyPlayer);
+        }
     }
 
     void clearNearByPlayers() {
@@ -100,12 +141,6 @@ public class MMOPlayer extends Player implements PositionAware {
 
     public List<String> getNearbyPlayerNames() {
         return new ArrayList<>(nearbyPlayers.keySet());
-    }
-
-    public void getNearbyPlayers(List<MMOPlayer> buffer) {
-        for (MMOPlayer nearbyPlayer : nearbyPlayers.values()) {
-            buffer.add(nearbyPlayer);
-        }
     }
 
     public int getNearbyPlayerCount() {

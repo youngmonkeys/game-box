@@ -93,11 +93,22 @@ public class MMORoom extends NormalRoom {
                 MMOPlayer other = playerBuffer.get(k);
                 double distance = player.getPosition().distance(other.getPosition());
                 if (distance <= this.distanceOfInterest) {
-                    player.addNearbyPlayer(other);
-                    other.addNearbyPlayer(player);
+                    MMOPlayer.link(player, other);
                 }
             }
         }
+    }
+
+    protected static boolean isNearbyUpdateTurn(
+        MMOPlayer player,
+        long updateCount,
+        int nearbyUpdateIntervalTicks
+    ) {
+        if (nearbyUpdateIntervalTicks <= 1) {
+            return true;
+        }
+        long slot = player.getName().hashCode() + updateCount;
+        return Math.floorMod(slot, (long) nearbyUpdateIntervalTicks) == 0;
     }
 
     protected void notifyUpdatedHandlers() {

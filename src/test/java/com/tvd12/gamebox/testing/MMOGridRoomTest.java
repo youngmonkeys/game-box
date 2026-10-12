@@ -23,7 +23,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(800)
-            .distanceOfInterest(4)
+            .cellRangeOfInterest(4)
             .build();
         
         ArrayList<MMOPlayer> players = new ArrayList<>();
@@ -78,7 +78,7 @@ public class MMOGridRoomTest {
             .maxZ(maxZ)
             .cellSize(cellSize)
             .maxPlayer(maxPlayer)
-            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .cellRangeOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
         
         // then
@@ -97,7 +97,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(2)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
 
         MMOPlayer player1 = new MMOPlayer("player1");
@@ -134,7 +134,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .cellRangeOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
 
         Vec3 expectedPosition = new Vec3(40, 40, 40);
@@ -157,7 +157,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(5)
-            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .cellRangeOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
         
         for (int i = 0; i < room.getMaxPlayer(); ++i) {
@@ -254,7 +254,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .cellRangeOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
         
         List<Vec3> invalidPositions = Lists.newArrayList(
@@ -290,7 +290,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1 + RandomUtil.randomSmallInt())
+            .cellRangeOfInterest(1 + RandomUtil.randomSmallInt())
             .build();
 
         MMOPlayer player1 = new MMOPlayer("player1");
@@ -338,7 +338,7 @@ public class MMOGridRoomTest {
             .maxZ(500)
             .cellSize(50)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
 
         MMOPlayer player1 = new MMOPlayer("player1");
@@ -385,7 +385,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(2)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
 
         MMOPlayer player = new MMOPlayer("player");
@@ -411,7 +411,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
         MMOPlayer player1 = new MMOPlayer("player1");
         MMOPlayer player2 = new MMOPlayer("player2");
@@ -436,7 +436,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
         MMOPlayer player = new MMOPlayer("player");
 
@@ -456,7 +456,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
         MMOPlayer player = new MMOPlayer("player");
         player.setPosition(new Vec3(60, 0, 0));
@@ -478,7 +478,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
         MMOPlayer player1 = new MMOPlayer("player1");
         MMOPlayer player2 = new MMOPlayer("player2");
@@ -507,7 +507,7 @@ public class MMOGridRoomTest {
             .maxZ(50)
             .cellSize(5)
             .maxPlayer(3)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
         MMOPlayer player = new MMOPlayer("player");
 
@@ -532,8 +532,8 @@ public class MMOGridRoomTest {
         room.setPlayerPosition(lateObserver, new Vec3(25, 5, 5));
 
         // then
-        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"));
-        Asserts.assertEquals(sortedNearbyNames(lateObserver), Arrays.asList("item", "lateObserver"));
+        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"), false);
+        Asserts.assertEquals(sortedNearbyNames(lateObserver), Arrays.asList("item", "lateObserver"), false);
         Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
     }
 
@@ -550,14 +550,14 @@ public class MMOGridRoomTest {
         room.setPlayerPosition(item, new Vec3(85, 5, 5));
 
         // then
-        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"));
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"), false);
         Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
 
         // when
         room.setPlayerPosition(item, new Vec3(12, 5, 5));
 
         // then
-        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"));
+        Asserts.assertEquals(sortedNearbyNames(observer), Arrays.asList("item", "observer"), false);
         Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
     }
 
@@ -577,7 +577,34 @@ public class MMOGridRoomTest {
         room.removePlayer(item);
 
         // then
-        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"));
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"), false);
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(item));
+    }
+
+    @Test
+    public void removeNonInterestPlayerNearOtherNonInterestPlayerTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+        MMOPlayer otherItem = new MMOPlayer("otherItem", false);
+        room.setPlayerPosition(observer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(item, new Vec3(15, 5, 5));
+        room.setPlayerPosition(otherItem, new Vec3(25, 5, 5));
+        Map<String, MMOPlayer> otherItemNearbyPlayers =
+            FieldUtil.getFieldValue(otherItem, "nearbyPlayers");
+        otherItemNearbyPlayers.put(item.getName(), item);
+
+        // when
+        room.removePlayer(item);
+
+        // then
+        Asserts.assertEquals(sortedNearbyNames(observer), Collections.singletonList("observer"), false);
+        Asserts.assertEquals(
+            otherItem.getNearbyPlayerNames(),
+            Collections.singletonList("item"),
+            false
+        );
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(item));
     }
 
@@ -613,7 +640,29 @@ public class MMOGridRoomTest {
         List<MMOPlayer> result = room.searchPlayers(new Vec3(5, 5, 5), 8);
 
         // then
-        Asserts.assertEquals(sortedNames(result), Arrays.asList("player1", "player2"));
+        Asserts.assertEquals(sortedNames(result), Arrays.asList("player1", "player2"), false);
+    }
+
+    @Test
+    public void searchPlayersExcludeOutOfRangePlayerInScannedCellTest() {
+        // given
+        final MMOGridRoom room = newRoom();
+        MMOPlayer insidePlayer = new MMOPlayer("insidePlayer");
+        MMOPlayer boundaryPlayer = new MMOPlayer("boundaryPlayer");
+        MMOPlayer cornerPlayer = new MMOPlayer("cornerPlayer");
+        room.setPlayerPosition(insidePlayer, new Vec3(5, 5, 5));
+        room.setPlayerPosition(boundaryPlayer, new Vec3(13, 5, 5));
+        room.setPlayerPosition(cornerPlayer, new Vec3(12, 12, 12));
+
+        // when
+        List<MMOPlayer> result = room.searchPlayers(new Vec3(5, 5, 5), 8);
+
+        // then
+        Asserts.assertEquals(
+            sortedNames(result),
+            Arrays.asList("boundaryPlayer", "insidePlayer"),
+            false
+        );
     }
 
     @Test
@@ -630,7 +679,7 @@ public class MMOGridRoomTest {
         room.searchPlayers(new Vec3(100, 100, 100), 10, buffer);
 
         // then
-        Asserts.assertEquals(sortedNames(buffer), Collections.singletonList("player2"));
+        Asserts.assertEquals(sortedNames(buffer), Collections.singletonList("player2"), false);
     }
 
     @Test
@@ -658,7 +707,7 @@ public class MMOGridRoomTest {
             .maxZ(100)
             .cellSize(10)
             .maxPlayer(100)
-            .distanceOfInterest(1)
+            .cellRangeOfInterest(1)
             .build();
     }
 
@@ -675,5 +724,74 @@ public class MMOGridRoomTest {
         }
         Collections.sort(names);
         return names;
+    }
+
+    @Test
+    public void distanceOfInterestInWorldUnitTest() {
+        // given
+        // when
+        MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(100)
+            .maxY(100)
+            .maxZ(100)
+            .cellSize(10)
+            .distanceOfInterest(25)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getCellRangeOfInterest(), 3);
+        Asserts.assertEquals(room.getDistanceOfInterest(), 25.0D);
+    }
+
+    @Test
+    public void cellRangeOfInterestOnlyTest() {
+        // given
+        // when
+        MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(100)
+            .maxY(100)
+            .maxZ(100)
+            .cellSize(10)
+            .cellRangeOfInterest(2)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getCellRangeOfInterest(), 2);
+        Asserts.assertEquals(room.getDistanceOfInterest(), 20.0D);
+    }
+
+    @Test
+    public void cellRangeOfInterestOverridesDistanceTest() {
+        // given
+        // when
+        MMOGridRoom room = (MMOGridRoom) MMOGridRoom.builder()
+            .maxX(100)
+            .maxY(100)
+            .maxZ(100)
+            .cellSize(10)
+            .distanceOfInterest(55)
+            .cellRangeOfInterest(1)
+            .build();
+
+        // then
+        Asserts.assertEquals(room.getCellRangeOfInterest(), 1);
+        Asserts.assertEquals(room.getDistanceOfInterest(), 55.0D);
+    }
+
+    @Test
+    public void buildWithoutCellSizeTest() {
+        // given
+        MMOGridRoom.Builder builder = MMOGridRoom.builder()
+            .maxX(100)
+            .maxY(100)
+            .maxZ(100)
+            .cellRangeOfInterest(1);
+
+        // when
+        Throwable e = Asserts.assertThrows(builder::build);
+
+        // then
+        Asserts.assertEqualsType(e, IllegalArgumentException.class);
+        Asserts.assertEquals(e.getMessage(), "cellSize must be greater than 0");
     }
 }

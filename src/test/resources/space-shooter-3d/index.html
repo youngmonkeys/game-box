@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Space Shooter 3D - MMOOcTreeRoom test</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: Menlo, Consolas, monospace;
+            color: #e6f0ff;
+        }
+
+        #game {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        #login {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 10, 0.75);
+        }
+
+        #login .panel {
+            padding: 28px 32px;
+            border: 1px solid #3a6dd8;
+            border-radius: 8px;
+            background: rgba(10, 20, 50, 0.9);
+            text-align: center;
+            min-width: 320px;
+        }
+
+        #login h1 {
+            margin: 0 0 6px;
+            font-size: 26px;
+            letter-spacing: 2px;
+        }
+
+        #login p {
+            margin: 4px 0 16px;
+            font-size: 12px;
+            color: #9fb3d9;
+        }
+
+        #login input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            border-radius: 4px;
+            border: 1px solid #3a6dd8;
+            background: #050a1a;
+            color: #fff;
+        }
+
+        #login button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            border: none;
+            border-radius: 4px;
+            background: #3a6dd8;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #login button:disabled {
+            background: #555;
+            cursor: default;
+        }
+
+        #login .status {
+            margin-top: 10px;
+            min-height: 16px;
+            font-size: 12px;
+            color: #ffcc66;
+        }
+
+        #login .help {
+            margin-top: 14px;
+            font-size: 11px;
+            color: #7f93b9;
+            text-align: left;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="login">
+    <div class="panel">
+        <h1>SPACE SHOOTER 3D</h1>
+        <p>game-box MMOVirtualWorld + MMOOcTreeRoom test</p>
+        <input id="player-name" maxlength="16" placeholder="Your name" autocomplete="off">
+        <button id="play-button">PLAY</button>
+        <div class="status" id="login-status"></div>
+        <div class="help">
+            WASD / Arrows: move<br>
+            Q / E: climb / descend, Mouse wheel: gun pitch<br>
+            Mouse: aim, Click / Space: fire<br>
+            G: toggle grid overlay, M: toggle music
+        </div>
+    </div>
+</div>
+<script src="ezyclient-1.0.5.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

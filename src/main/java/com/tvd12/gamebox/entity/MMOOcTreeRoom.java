@@ -6,7 +6,10 @@ import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.gamebox.octree.SynchronizedOcTree;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MMOOcTreeRoom extends MMORoom {
     
@@ -16,8 +19,15 @@ public class MMOOcTreeRoom extends MMORoom {
     @Getter
     private final Vec3 rightTopFront;
     
+    @Getter
+    private final boolean updateNearbyOnTick;
+    @Getter
+    private final int nearbyUpdateIntervalTicks;
+    private long nearbyUpdateCount;
+    private final List<MMOPlayer> nearbyPlayerBuffer = new ArrayList<>();
     private final Bounds bounds;
     private final OcTree<MMOPlayer> ocTree;
+    private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
 
     public MMOOcTreeRoom(Builder builder) {
         super(builder);
@@ -30,6 +40,8 @@ public class MMOOcTreeRoom extends MMORoom {
         this.leftBottomBack = builder.leftBottomBack;
         this.rightTopFront = builder.rightTopFront;
         this.bounds = new Bounds(builder.leftBottomBack, builder.rightTopFront);
+        this.updateNearbyOnTick = builder.updateNearbyOnTick;
+        this.nearbyUpdateIntervalTicks = Math.max(1, builder.nearbyUpdateIntervalTicks);
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -39,48 +51,82 @@ public class MMOOcTreeRoom extends MMORoom {
             );
         }
         synchronized (this) {
-            boolean isSuccessful;
             if (!this.ocTree.contains(player)) {
-                isSuccessful = addNewPlayer(player, position);
-            } else {
-                isSuccessful = updateExistingPlayer(player, position);
+                if (!addNewPlayer(player, position)) {
+                    throw new IllegalArgumentException(
+                        "Can't set " + player.getName() + " to position=" + position
+                    );
+                }
+                if (updateNearbyOnTick) {
+                    return;
+                }
+                for (MMOPlayer nearbyPlayer : searchNearbyPlayers(player)) {
+                    MMOPlayer.link(player, nearbyPlayer);
+                }
+                return;
             }
-            if (!isSuccessful) {
+            if (updateNearbyOnTick) {
+                if (!updateExistingPlayer(player, position)) {
+                    throw new IllegalArgumentException(
+                        "Can't set " + player.getName() + " to position=" + position
+                    );
+                }
+                return;
+            }
+            List<MMOPlayer> oldNearbyPlayers = searchNearbyPlayers(player);
+            if (!updateExistingPlayer(player, position)) {
                 throw new IllegalArgumentException(
                     "Can't set " + player.getName() + " to position=" + position
                 );
             }
-            updateNearbyPlayers(player);
+            List<MMOPlayer> newNearbyPlayers = searchNearbyPlayers(player);
+            nearbyPlayerSet.clear();
+            nearbyPlayerSet.addAll(newNearbyPlayers);
+            for (MMOPlayer oldNearbyPlayer : oldNearbyPlayers) {
+                if (!nearbyPlayerSet.contains(oldNearbyPlayer)) {
+                    MMOPlayer.unlink(player, oldNearbyPlayer);
+                }
+            }
+            for (MMOPlayer currentNearbyPlayer : player.getNearbyPlayers()) {
+                if (!nearbyPlayerSet.contains(currentNearbyPlayer)) {
+                    MMOPlayer.unlink(player, currentNearbyPlayer);
+                }
+            }
+            for (MMOPlayer newNearbyPlayer : newNearbyPlayers) {
+                MMOPlayer.link(player, newNearbyPlayer);
+            }
+            nearbyPlayerSet.clear();
         }
     }
-    
-    private void updateNearbyPlayers(MMOPlayer player) {
-        clearCurrentNearbyPlayers(player);
-        addNewNearbyPlayers(player);
+
+    public List<MMOPlayer> searchPlayers(Vec3 center, float range) {
+        List<MMOPlayer> buffer = new ArrayList<>();
+        searchPlayers(center, range, buffer);
+        return buffer;
     }
-    
-    private void clearCurrentNearbyPlayers(MMOPlayer player) {
-        for (String otherPlayerName : player.getNearbyPlayerNames()) {
-            MMOPlayer otherPlayer = (MMOPlayer) playerManager
-                .getPlayer(otherPlayerName);
-            if (otherPlayer != null) {
-                otherPlayer.removeNearByPlayer(player);
+
+    public void searchPlayers(Vec3 center, float range, List<MMOPlayer> buffer) {
+        synchronized (this) {
+            int startIndex = buffer.size();
+            this.ocTree.search(center, range, buffer);
+            float rangeSquare = range * range;
+            int writeIndex = startIndex;
+            for (int i = startIndex; i < buffer.size(); ++i) {
+                MMOPlayer player = buffer.get(i);
+                if (center.distanceSquare(player.getPosition()) <= rangeSquare) {
+                    buffer.set(writeIndex++, player);
+                }
+            }
+            for (int i = buffer.size() - 1; i >= writeIndex; --i) {
+                buffer.remove(i);
             }
         }
-        player.clearNearByPlayers();
     }
-    
-    private void addNewNearbyPlayers(MMOPlayer player) {
-        List<MMOPlayer> nearByPlayers = this.ocTree.search(
-            player,
-            (float) this.distanceOfInterest
-        );
-        nearByPlayers.forEach(nearbyPlayer -> {
-            player.addNearbyPlayer(nearbyPlayer);
-            nearbyPlayer.addNearbyPlayer(player);
-        });
+
+    private List<MMOPlayer> searchNearbyPlayers(MMOPlayer player) {
+        return this.ocTree.search(player, (float) this.distanceOfInterest);
     }
-    
+
     private boolean addNewPlayer(MMOPlayer player, Vec3 newPosition) {
         super.addPlayer(player);
         player.setPosition(newPosition);
@@ -106,8 +152,17 @@ public class MMOOcTreeRoom extends MMORoom {
     public void removePlayer(Player player) {
         synchronized (this) {
             if (player instanceof MMOPlayer) {
-                this.ocTree.remove((MMOPlayer) player);
-                clearCurrentNearbyPlayers((MMOPlayer) player);
+                MMOPlayer mmoPlayer = (MMOPlayer) player;
+                if (this.ocTree.contains(mmoPlayer)) {
+                    for (MMOPlayer nearbyPlayer : searchNearbyPlayers(mmoPlayer)) {
+                        MMOPlayer.unlink(mmoPlayer, nearbyPlayer);
+                    }
+                    this.ocTree.remove(mmoPlayer);
+                }
+                for (MMOPlayer nearbyPlayer : mmoPlayer.getNearbyPlayers()) {
+                    MMOPlayer.unlink(mmoPlayer, nearbyPlayer);
+                }
+                mmoPlayer.clearNearByPlayers();
             }
             super.removePlayer(player);
         }
@@ -115,7 +170,25 @@ public class MMOOcTreeRoom extends MMORoom {
 
     @Override
     protected void updatePlayers() {
-        // do nothing
+        if (!updateNearbyOnTick) {
+            return;
+        }
+        synchronized (this) {
+            long updateCount = ++nearbyUpdateCount;
+            float range = (float) this.distanceOfInterest;
+            for (MMOPlayer player : playerBuffer) {
+                if (!player.isInterestEnabled()
+                    || !isNearbyUpdateTurn(player, updateCount, nearbyUpdateIntervalTicks)
+                    || !this.ocTree.contains(player)
+                ) {
+                    continue;
+                }
+                nearbyPlayerBuffer.clear();
+                this.ocTree.search(player.getPosition(), range, nearbyPlayerBuffer);
+                player.replaceNearbyPlayers(nearbyPlayerBuffer, nearbyPlayerSet);
+            }
+            nearbyPlayerBuffer.clear();
+        }
     }
     
     public static Builder builder() {
@@ -128,6 +201,18 @@ public class MMOOcTreeRoom extends MMORoom {
         private Vec3 rightTopFront;
         private int maxPointsPerNode;
         private float minNodeSize = 0.000001f;
+        private boolean updateNearbyOnTick;
+        private int nearbyUpdateIntervalTicks = 1;
+
+        public Builder updateNearbyOnTick(boolean updateNearbyOnTick) {
+            this.updateNearbyOnTick = updateNearbyOnTick;
+            return this;
+        }
+
+        public Builder nearbyUpdateIntervalTicks(int nearbyUpdateIntervalTicks) {
+            this.nearbyUpdateIntervalTicks = nearbyUpdateIntervalTicks;
+            return this;
+        }
 
         public Builder leftBottomBack(Vec3 leftBottomBack) {
             this.leftBottomBack = leftBottomBack;

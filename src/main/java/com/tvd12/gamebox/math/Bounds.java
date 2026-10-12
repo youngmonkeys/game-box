@@ -53,6 +53,22 @@ public class Bounds {
             || position.z > this.rightTopFront.z);
     }
     
+    public boolean doesOverlap(
+        float minX,
+        float minY,
+        float minZ,
+        float maxX,
+        float maxY,
+        float maxZ
+    ) {
+        return !(maxX < this.leftBottomBack.x
+            || minX > this.rightTopFront.x
+            || maxY < this.leftBottomBack.y
+            || minY > this.rightTopFront.y
+            || maxZ < this.leftBottomBack.z
+            || minZ > this.rightTopFront.z);
+    }
+
     public boolean doesOverlap(Bounds other) {
         return !(other.rightTopFront.x < this.leftBottomBack.x
             || other.leftBottomBack.x > this.rightTopFront.x

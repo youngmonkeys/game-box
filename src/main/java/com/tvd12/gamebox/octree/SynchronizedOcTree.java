@@ -33,6 +33,20 @@ public class SynchronizedOcTree<T extends PositionAware> extends OcTree<T> {
             return super.search(item, range);
         }
     }
+
+    @Override
+    public List<T> search(Vec3 center, float range) {
+        synchronized (this) {
+            return super.search(center, range);
+        }
+    }
+
+    @Override
+    public void search(Vec3 center, float range, List<T> matches) {
+        synchronized (this) {
+            super.search(center, range, matches);
+        }
+    }
     
     public boolean contains(T item) {
         synchronized (this) {
