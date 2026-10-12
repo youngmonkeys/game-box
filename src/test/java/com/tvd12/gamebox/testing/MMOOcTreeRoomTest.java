@@ -4,7 +4,9 @@ import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOOcTreeRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
+import com.tvd12.gamebox.entity.Player;
 import com.tvd12.gamebox.math.Vec3;
+import com.tvd12.gamebox.octree.OcTree;
 import com.tvd12.test.assertion.Asserts;
 import com.tvd12.test.performance.Performance;
 import com.tvd12.test.reflect.FieldUtil;
@@ -14,6 +16,8 @@ import org.testng.annotations.Test;
 
 import java.util.*;
 import java.util.stream.Stream;
+
+import static org.mockito.Mockito.*;
 
 public class MMOOcTreeRoomTest {
     
@@ -416,5 +420,86 @@ public class MMOOcTreeRoomTest {
 
         Asserts.assertTrue(player.getNearbyPlayerNames().isEmpty());
         Asserts.assertFalse(room.getPlayerManager().containsPlayer(player.getName()));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void setPositionForNewPlayerButInsertFailedTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        OcTree<MMOPlayer> ocTree = mock(OcTree.class);
+        when(ocTree.contains(any())).thenReturn(false);
+        when(ocTree.insert(any())).thenReturn(false);
+        FieldUtil.setFieldValue(room, "ocTree", ocTree);
+        MMOPlayer player = new MMOPlayer("player");
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player, new Vec3(1, 1, 1))
+        );
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        Asserts.assertFalse(room.getPlayerManager().containsPlayer(player));
+        verify(ocTree, times(1)).contains(player);
+        verify(ocTree, times(1)).insert(player);
+        verify(ocTree, never()).search(any(), anyFloat());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void setPositionForExistingPlayerButInsertFailedTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        MMOPlayer player = new MMOPlayer("player");
+        room.setPlayerPosition(player, new Vec3(1, 1, 1));
+
+        OcTree<MMOPlayer> ocTree = mock(OcTree.class);
+        when(ocTree.contains(any())).thenReturn(true);
+        when(ocTree.isItemRemainingAtSameNode(any(), any())).thenReturn(false);
+        when(ocTree.insert(any())).thenReturn(false);
+        FieldUtil.setFieldValue(room, "ocTree", ocTree);
+
+        // when
+        Throwable e = Asserts.assertThrows(() ->
+            room.setPlayerPosition(player, new Vec3(9, 9, 9))
+        );
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
+        verify(ocTree, times(1)).remove(player);
+        verify(ocTree, times(1)).insert(player);
+        verify(ocTree, never()).search(any(), anyFloat());
+    }
+
+    @Test
+    public void removeNotMMOPlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(10, 10, 10))
+            .maxPointsPerNode(3)
+            .maxPlayer(2)
+            .distanceOfInterest(5)
+            .build();
+        Player player = new Player("player");
+
+        // when
+        Throwable e = Asserts.assertThrows(() -> room.removePlayer(player));
+
+        // then
+        Asserts.assertEquals(IllegalArgumentException.class, e.getClass());
     }
 }
