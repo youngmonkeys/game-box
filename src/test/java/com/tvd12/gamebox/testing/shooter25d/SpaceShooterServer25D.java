@@ -134,6 +134,7 @@ public class SpaceShooterServer25D {
             .build();
         this.room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
             .cellSize(CELL_SIZE)
+            .updateNearbyOnTick(true)
             .distanceOfInterest(INTEREST_RADIUS)
             .maxPlayer(100000)
             .addRoomUpdatedHandler(this::onRoomUpdated)

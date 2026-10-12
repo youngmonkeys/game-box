@@ -386,4 +386,79 @@ public class MMOUniformGridRoomTest {
         // then
         Asserts.assertEquals(buffer, Collections.singletonList(player1), false);
     }
+
+    @Test
+    public void updateNearbyOnTickTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+        room.setPlayerPosition(item, new Vec3(5, 0, 0));
+
+        // then
+        Asserts.assertTrue(room.isUpdateNearbyOnTick());
+        Asserts.assertEquals(observer.getNearbyPlayerCount(), 0);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+
+        // when
+        room.setPlayerPosition(item, new Vec3(50, 0, 0));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+    }
+
+    @Test
+    public void updateNearbyOnTickRemovePlayerTest() {
+        // given
+        MMOUniformGridRoom room = (MMOUniformGridRoom) MMOUniformGridRoom.builder()
+            .updateNearbyOnTick(true)
+            .distanceOfInterest(10)
+            .maxPlayer(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer other = new MMOPlayer("other");
+        room.setPlayerPosition(observer, new Vec3(0, 0, 0));
+        room.setPlayerPosition(other, new Vec3(5, 0, 0));
+        room.update();
+
+        // when
+        room.removePlayer(other);
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+        Asserts.assertEquals(other.getNearbyPlayerCount(), 0);
+    }
 }

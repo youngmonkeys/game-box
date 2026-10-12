@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -63,6 +64,20 @@ public class MMOPlayer extends Player implements PositionAware {
         if (otherPlayer.interestEnabled) {
             otherPlayer.removeNearByPlayer(player);
         }
+    }
+
+    void replaceNearbyPlayers(List<MMOPlayer> players, Set<MMOPlayer> buffer) {
+        buffer.clear();
+        buffer.addAll(players);
+        for (MMOPlayer currentPlayer : nearbyPlayers.values()) {
+            if (!buffer.contains(currentPlayer)) {
+                nearbyPlayers.remove(currentPlayer.getName());
+            }
+        }
+        for (MMOPlayer player : players) {
+            nearbyPlayers.put(player.getName(), player);
+        }
+        buffer.clear();
     }
 
     void addNearbyPlayer(MMOPlayer otherPlayer) {

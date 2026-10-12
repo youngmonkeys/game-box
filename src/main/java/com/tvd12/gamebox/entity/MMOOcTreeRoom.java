@@ -19,6 +19,8 @@ public class MMOOcTreeRoom extends MMORoom {
     @Getter
     private final Vec3 rightTopFront;
     
+    @Getter
+    private final boolean updateNearbyOnTick;
     private final Bounds bounds;
     private final OcTree<MMOPlayer> ocTree;
     private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
@@ -34,6 +36,7 @@ public class MMOOcTreeRoom extends MMORoom {
         this.leftBottomBack = builder.leftBottomBack;
         this.rightTopFront = builder.rightTopFront;
         this.bounds = new Bounds(builder.leftBottomBack, builder.rightTopFront);
+        this.updateNearbyOnTick = builder.updateNearbyOnTick;
     }
 
     public void setPlayerPosition(MMOPlayer player, Vec3 position) {
@@ -49,8 +52,19 @@ public class MMOOcTreeRoom extends MMORoom {
                         "Can't set " + player.getName() + " to position=" + position
                     );
                 }
+                if (updateNearbyOnTick) {
+                    return;
+                }
                 for (MMOPlayer nearbyPlayer : searchNearbyPlayers(player)) {
                     MMOPlayer.link(player, nearbyPlayer);
+                }
+                return;
+            }
+            if (updateNearbyOnTick) {
+                if (!updateExistingPlayer(player, position)) {
+                    throw new IllegalArgumentException(
+                        "Can't set " + player.getName() + " to position=" + position
+                    );
                 }
                 return;
             }
@@ -151,7 +165,17 @@ public class MMOOcTreeRoom extends MMORoom {
 
     @Override
     protected void updatePlayers() {
-        // do nothing
+        if (!updateNearbyOnTick) {
+            return;
+        }
+        synchronized (this) {
+            for (MMOPlayer player : playerBuffer) {
+                if (!player.isInterestEnabled() || !this.ocTree.contains(player)) {
+                    continue;
+                }
+                player.replaceNearbyPlayers(searchNearbyPlayers(player), nearbyPlayerSet);
+            }
+        }
     }
     
     public static Builder builder() {
@@ -164,6 +188,12 @@ public class MMOOcTreeRoom extends MMORoom {
         private Vec3 rightTopFront;
         private int maxPointsPerNode;
         private float minNodeSize = 0.000001f;
+        private boolean updateNearbyOnTick;
+
+        public Builder updateNearbyOnTick(boolean updateNearbyOnTick) {
+            this.updateNearbyOnTick = updateNearbyOnTick;
+            return this;
+        }
 
         public Builder leftBottomBack(Vec3 leftBottomBack) {
             this.leftBottomBack = leftBottomBack;

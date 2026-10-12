@@ -5,19 +5,25 @@ import com.tvd12.gamebox.math.Vec3;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MMOUniformGridRoom extends MMORoom {
 
     @Getter
     private final float cellSize;
+    @Getter
+    private final boolean updateNearbyOnTick;
     private final UniformGrid<MMOPlayer> grid;
+    private final Set<MMOPlayer> nearbyPlayerSet = new HashSet<>();
     private final List<MMOPlayer> nearbyPlayerBuffer = new ArrayList<>();
     private final List<MMOPlayer> oldNearbyPlayerBuffer = new ArrayList<>();
 
     public MMOUniformGridRoom(Builder builder) {
         super(builder);
         this.cellSize = builder.cellSize;
+        this.updateNearbyOnTick = builder.updateNearbyOnTick;
         this.grid = new UniformGrid<>(builder.cellSize);
     }
 
@@ -30,7 +36,7 @@ public class MMOUniformGridRoom extends MMORoom {
         synchronized (this) {
             super.addPlayer(player);
             MMOPlayer mmoPlayer = (MMOPlayer) player;
-            if (this.grid.insert(mmoPlayer)) {
+            if (this.grid.insert(mmoPlayer) && !updateNearbyOnTick) {
                 linkNearbyPlayers(mmoPlayer);
             }
         }
@@ -56,6 +62,11 @@ public class MMOUniformGridRoom extends MMORoom {
             if (!this.grid.contains(player)) {
                 player.setPosition(position);
                 addPlayer(player);
+                return;
+            }
+            if (updateNearbyOnTick) {
+                player.setPosition(position);
+                this.grid.update(player);
                 return;
             }
             oldNearbyPlayerBuffer.clear();
@@ -123,11 +134,36 @@ public class MMOUniformGridRoom extends MMORoom {
     }
 
     @Override
-    protected void updatePlayers() {}
+    protected void updatePlayers() {
+        if (!updateNearbyOnTick) {
+            return;
+        }
+        synchronized (this) {
+            for (MMOPlayer player : playerBuffer) {
+                if (!player.isInterestEnabled() || !this.grid.contains(player)) {
+                    continue;
+                }
+                nearbyPlayerBuffer.clear();
+                this.grid.search(
+                    player.getPosition(),
+                    (float) this.distanceOfInterest,
+                    nearbyPlayerBuffer
+                );
+                player.replaceNearbyPlayers(nearbyPlayerBuffer, nearbyPlayerSet);
+            }
+            nearbyPlayerBuffer.clear();
+        }
+    }
 
     public static class Builder extends MMORoom.Builder {
 
         private float cellSize;
+        private boolean updateNearbyOnTick;
+
+        public Builder updateNearbyOnTick(boolean updateNearbyOnTick) {
+            this.updateNearbyOnTick = updateNearbyOnTick;
+            return this;
+        }
 
         public Builder cellSize(float cellSize) {
             this.cellSize = cellSize;

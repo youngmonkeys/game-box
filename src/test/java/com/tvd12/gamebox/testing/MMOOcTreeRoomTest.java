@@ -645,4 +645,85 @@ public class MMOOcTreeRoomTest {
             .distanceOfInterest(5)
             .build();
     }
+
+    @Test
+    public void updateNearbyOnTickTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer item = new MMOPlayer("item", false);
+
+        // when
+        room.setPlayerPosition(observer, new Vec3(1, 1, 1));
+        room.setPlayerPosition(item, new Vec3(5, 1, 1));
+
+        // then
+        Asserts.assertTrue(room.isUpdateNearbyOnTick());
+        Asserts.assertEquals(observer.getNearbyPlayerCount(), 0);
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+        Asserts.assertEquals(item.getNearbyPlayerCount(), 0);
+
+        // when
+        room.setPlayerPosition(item, new Vec3(80, 80, 80));
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            new HashSet<>(Arrays.asList("observer", "item"))
+        );
+
+        // when
+        room.update();
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+    }
+
+    @Test
+    public void updateNearbyOnTickRemovePlayerTest() {
+        // given
+        final MMOOcTreeRoom room = (MMOOcTreeRoom) MMOOcTreeRoom.builder()
+            .leftBottomBack(new Vec3(0, 0, 0))
+            .rightTopFront(new Vec3(100, 100, 100))
+            .maxPointsPerNode(2)
+            .updateNearbyOnTick(true)
+            .maxPlayer(10)
+            .distanceOfInterest(10)
+            .build();
+        MMOPlayer observer = new MMOPlayer("observer");
+        MMOPlayer other = new MMOPlayer("other");
+        room.setPlayerPosition(observer, new Vec3(1, 1, 1));
+        room.setPlayerPosition(other, new Vec3(5, 1, 1));
+        room.update();
+
+        // when
+        room.removePlayer(other);
+
+        // then
+        Asserts.assertEquals(
+            new HashSet<>(observer.getNearbyPlayerNames()),
+            Collections.singleton("observer"),
+            false
+        );
+        Asserts.assertEquals(other.getNearbyPlayerCount(), 0);
+    }
 }

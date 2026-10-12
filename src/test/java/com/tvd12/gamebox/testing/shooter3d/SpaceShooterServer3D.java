@@ -138,6 +138,7 @@ public class SpaceShooterServer3D {
             .leftBottomBack(new Vec3(0, 0, 0))
             .rightTopFront(new Vec3(WORLD_WIDTH, WORLD_HEIGHT, WORLD_DEPTH))
             .maxPointsPerNode(OCTREE_MAX_POINTS_PER_NODE)
+            .updateNearbyOnTick(true)
             .distanceOfInterest(INTEREST_RADIUS)
             .maxPlayer(100000)
             .addRoomUpdatedHandler(this::onRoomUpdated)
