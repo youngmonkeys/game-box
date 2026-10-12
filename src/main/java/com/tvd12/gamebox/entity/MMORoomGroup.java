@@ -61,7 +61,11 @@ class MMORoomGroup extends EzyLoggable {
                     timeTickMillis
                 );
             }
-            nextTickNanos += timeTickNanos;
+            nextTickNanos = computeNextTickNanos(
+                nextTickNanos,
+                now,
+                timeTickNanos
+            );
             long remainingNanos = nextTickNanos - now;
             if (remainingNanos > 0) {
                 try {
@@ -70,10 +74,20 @@ class MMORoomGroup extends EzyLoggable {
                     Thread.currentThread().interrupt();
                     break;
                 }
-            } else if (-remainingNanos > timeTickNanos) {
-                nextTickNanos = now;
             }
         }
+    }
+
+    static long computeNextTickNanos(
+        long previousTickNanos,
+        long nowNanos,
+        long timeTickNanos
+    ) {
+        long nextTickNanos = previousTickNanos + timeTickNanos;
+        if (nowNanos - nextTickNanos > timeTickNanos) {
+            return nowNanos;
+        }
+        return nextTickNanos;
     }
 
     private void updateRooms() {

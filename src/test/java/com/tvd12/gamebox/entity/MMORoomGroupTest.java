@@ -12,6 +12,7 @@ import org.testng.annotations.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.*;
@@ -345,11 +346,13 @@ public class MMORoomGroupTest {
             MMORoomGroup.builder().timeTickMillis(100)
         );
         List<Long> updateStartNanos = new ArrayList<>();
+        EzyWrap<Long> firstUpdateEndNanos = new EzyWrap<>();
         MMORoom room = mockRoom(1L, "room1");
         doAnswer(it -> {
             updateStartNanos.add(System.nanoTime());
             if (updateStartNanos.size() == 1) {
                 Thread.sleep(150);
+                firstUpdateEndNanos.setValue(System.nanoTime());
             }
             if (updateStartNanos.size() == 3) {
                 FieldUtil.setFieldValue(sut, "active", false);
@@ -363,10 +366,11 @@ public class MMORoomGroupTest {
         ReflectMethodUtil.invokeMethod("loop", sut);
 
         // then
-        long firstGapMillis = (updateStartNanos.get(1) - updateStartNanos.get(0)) / 1_000_000;
-        long secondGapMillis = (updateStartNanos.get(2) - updateStartNanos.get(1)) / 1_000_000;
-        Asserts.assertTrue(firstGapMillis >= 150 && firstGapMillis < 180);
-        Asserts.assertTrue(secondGapMillis >= 40 && secondGapMillis < 80);
+        long secondUpdateDelayMillis = TimeUnit.NANOSECONDS.toMillis(
+            updateStartNanos.get(1) - firstUpdateEndNanos.getValue()
+        );
+        Asserts.assertEquals(updateStartNanos.size(), 3);
+        Asserts.assertTrue(secondUpdateDelayMillis < 40);
     }
 
     @Test
@@ -376,11 +380,13 @@ public class MMORoomGroupTest {
             MMORoomGroup.builder().timeTickMillis(100)
         );
         List<Long> updateStartNanos = new ArrayList<>();
+        EzyWrap<Long> firstUpdateEndNanos = new EzyWrap<>();
         MMORoom room = mockRoom(1L, "room1");
         doAnswer(it -> {
             updateStartNanos.add(System.nanoTime());
             if (updateStartNanos.size() == 1) {
                 Thread.sleep(350);
+                firstUpdateEndNanos.setValue(System.nanoTime());
             }
             if (updateStartNanos.size() == 3) {
                 FieldUtil.setFieldValue(sut, "active", false);
@@ -394,10 +400,71 @@ public class MMORoomGroupTest {
         ReflectMethodUtil.invokeMethod("loop", sut);
 
         // then
-        long firstGapMillis = (updateStartNanos.get(1) - updateStartNanos.get(0)) / 1_000_000;
-        long secondGapMillis = (updateStartNanos.get(2) - updateStartNanos.get(1)) / 1_000_000;
-        Asserts.assertTrue(firstGapMillis >= 350 && firstGapMillis < 380);
-        Asserts.assertTrue(secondGapMillis >= 90);
+        long firstUpdateEnd = firstUpdateEndNanos.getValue();
+        long secondUpdateDelayMillis = TimeUnit.NANOSECONDS.toMillis(
+            updateStartNanos.get(1) - firstUpdateEnd
+        );
+        long thirdUpdateGapMillis = TimeUnit.NANOSECONDS.toMillis(
+            updateStartNanos.get(2) - firstUpdateEnd
+        );
+        Asserts.assertTrue(secondUpdateDelayMillis < 40);
+        Asserts.assertTrue(thirdUpdateGapMillis >= 90);
+    }
+
+    @Test
+    public void computeNextTickNanosOnTimeTest() {
+        // given
+        long timeTick = TimeUnit.MILLISECONDS.toNanos(100);
+        long now = TimeUnit.MILLISECONDS.toNanos(30);
+
+        // when
+        long nextTick = MMORoomGroup.computeNextTickNanos(0, now, timeTick);
+
+        // then
+        Asserts.assertEquals(nextTick, timeTick);
+    }
+
+    @Test
+    public void computeNextTickNanosBehindLessThanOneTickTest() {
+        // given
+        long timeTick = TimeUnit.MILLISECONDS.toNanos(100);
+        long now = TimeUnit.MILLISECONDS.toNanos(150);
+
+        // when
+        long nextTick = MMORoomGroup.computeNextTickNanos(0, now, timeTick);
+        long nextNextTick = MMORoomGroup.computeNextTickNanos(nextTick, now, timeTick);
+
+        // then
+        Asserts.assertEquals(nextTick, timeTick);
+        Asserts.assertEquals(nextNextTick, 2 * timeTick);
+    }
+
+    @Test
+    public void computeNextTickNanosBehindExactlyOneTickTest() {
+        // given
+        long timeTick = TimeUnit.MILLISECONDS.toNanos(100);
+        long now = TimeUnit.MILLISECONDS.toNanos(200);
+
+        // when
+        long nextTick = MMORoomGroup.computeNextTickNanos(0, now, timeTick);
+
+        // then
+        Asserts.assertEquals(nextTick, timeTick);
+    }
+
+    @Test
+    public void computeNextTickNanosBehindMoreThanOneTickTest() {
+        // given
+        long timeTick = TimeUnit.MILLISECONDS.toNanos(100);
+        long now = TimeUnit.MILLISECONDS.toNanos(350);
+
+        // when
+        long nextTick = MMORoomGroup.computeNextTickNanos(0, now, timeTick);
+        long nextNextTick = MMORoomGroup.computeNextTickNanos(nextTick, now, timeTick);
+
+        // then
+        Asserts.assertEquals(nextTick, now);
+        Asserts.assertEquals(nextNextTick, now + timeTick);
     }
 
     private static MMORoom mockRoom(long id, String name) {
