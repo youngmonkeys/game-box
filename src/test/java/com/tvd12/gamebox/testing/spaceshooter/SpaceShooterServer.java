@@ -35,6 +35,7 @@ import com.tvd12.gamebox.entity.MMOGridRoom;
 import com.tvd12.gamebox.entity.MMOPlayer;
 import com.tvd12.gamebox.entity.MMORoom;
 import com.tvd12.gamebox.entity.MMOVirtualWorld;
+import com.tvd12.gamebox.grid.UniformGrid;
 import com.tvd12.gamebox.math.Vec3;
 
 import org.slf4j.Logger;
@@ -56,15 +57,15 @@ public class SpaceShooterServer {
 
     private static final float WORLD_WIDTH = 4000;
     private static final float WORLD_HEIGHT = 4000;
-    private static final float CELL_SIZE = 400;
-    private static final int CELL_RANGE_OF_INTEREST = 2;
+    private static final float CELL_SIZE = 650;
+    private static final int CELL_RANGE_OF_INTEREST = 1;
+    private static final float COLLISION_CELL_SIZE = 128;
     private static final int TIME_TICK_MILLIS = 50;
     private static final int ASTEROID_COUNT = 160;
     private static final int MAX_ASTEROID_SPAWN_PER_TICK = 3;
 
     private static final int KIND_SHIP = 1;
     private static final int KIND_ASTEROID = 2;
-    private static final int KIND_BULLET = 3;
     private static final int KIND_POWERUP = 4;
 
     private static final int SHIP_MAX_HP = 100;
@@ -77,17 +78,22 @@ public class SpaceShooterServer {
     private static final float BULLET_RADIUS = 6;
     private static final float BULLET_TTL_SECONDS = 1.1f;
     private static final int BULLET_DAMAGE = 10;
+    private static final int BULLET_SUB_STEPS = 2;
+    private static final float MAX_TARGET_RADIUS = 56;
     private static final float POWERUP_RADIUS = 20;
     private static final float POWERUP_TTL_SECONDS = 20;
     private static final int POWERUP_HEAL = 40;
     private static final float POWERUP_DROP_RATE = 0.08f;
     private static final float EVENT_DISTANCE = 1600;
+    private static final String EVENT_BULLET_SPAWNED = "b";
+    private static final String EVENT_BULLET_HIT = "h";
     private static final long PERFORMANCE_LOG_INTERVAL_NANOS = 5_000_000_000L;
 
     private static final String WEB_ROOT = "space-shooter";
 
     private final int httpPort;
     private final int webSocketPort;
+    private final boolean botState;
     private final MMOVirtualWorld world;
     private final MMOGridRoom room;
     private final Map<String, GameEntity> entities = new HashMap<>();
@@ -95,6 +101,9 @@ public class SpaceShooterServer {
     private final List<Ship> ships = new ArrayList<>();
     private final List<GameEntity> removedEntities = new ArrayList<>();
     private final List<GameEvent> events = new ArrayList<>();
+    private final List<Bullet> bullets = new ArrayList<>();
+    private final UniformGrid<GameEntity> collisionGrid = new UniformGrid<>(COLLISION_CELL_SIZE);
+    private final Vec3 searchCenter = new Vec3();
     private final List<String> nearbyBuffer = new ArrayList<>();
     private final Queue<Runnable> commands = new ConcurrentLinkedQueue<>();
     private final AtomicLong idGenerator = new AtomicLong();
@@ -107,9 +116,15 @@ public class SpaceShooterServer {
     private final PerformanceStats stats = new PerformanceStats();
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public SpaceShooterServer(int httpPort, int webSocketPort, int botCount) {
+    public SpaceShooterServer(
+        int httpPort,
+        int webSocketPort,
+        int botCount,
+        boolean botState
+    ) {
         this.httpPort = httpPort;
         this.webSocketPort = webSocketPort;
+        this.botState = botState;
         this.world = MMOVirtualWorld.builder()
             .roomGroupCount(1)
             .timeTickMillis(TIME_TICK_MILLIS)
@@ -140,7 +155,8 @@ public class SpaceShooterServer {
         new SpaceShooterServer(
             Integer.getInteger("httpPort", 8080),
             Integer.getInteger("webSocketPort", 2208),
-            Integer.getInteger("bots", 10)
+            Integer.getInteger("bots", 200),
+            Boolean.parseBoolean(System.getProperty("botState", "true"))
         ).start();
     }
 
@@ -327,16 +343,13 @@ public class SpaceShooterServer {
         long updateEnd = System.nanoTime();
         for (MMOPlayer player : players) {
             GameEntity entity = (GameEntity) player;
-            if (!isActive(entity)) {
-                continue;
-            }
-            if (entity.kind == KIND_BULLET) {
-                handleBulletCollisions(entity);
-            } else if (entity.kind == KIND_SHIP) {
+            if (isActive(entity) && entity.kind == KIND_SHIP) {
                 handleShipCollisions((Ship) entity);
             }
         }
         long collisionEnd = System.nanoTime();
+        updateBullets(dt);
+        long bulletsEnd = System.nanoTime();
         for (GameEntity entity : removedEntities) {
             removeFromRoom(entity);
             entities.remove(entity.getName());
@@ -353,7 +366,8 @@ public class SpaceShooterServer {
         stats.commandsNanos += commandsEnd - now;
         stats.updateNanos += updateEnd - commandsEnd;
         stats.collisionNanos += collisionEnd - updateEnd;
-        stats.removeNanos += removeEnd - collisionEnd;
+        stats.bulletsNanos += bulletsEnd - collisionEnd;
+        stats.removeNanos += removeEnd - bulletsEnd;
         stats.spawnNanos += spawnEnd - removeEnd;
         stats.broadcastNanos += broadcastEnd - spawnEnd;
         stats.tickNanos += broadcastEnd - now;
@@ -366,7 +380,6 @@ public class SpaceShooterServer {
     private void logPerformance(long now) {
         int shipCount = 0;
         int asteroids = 0;
-        int bullets = 0;
         int powerups = 0;
         int users = 0;
         for (GameEntity entity : entities.values()) {
@@ -377,8 +390,6 @@ public class SpaceShooterServer {
                 }
             } else if (entity.kind == KIND_ASTEROID) {
                 asteroids += 1;
-            } else if (entity.kind == KIND_BULLET) {
-                bullets += 1;
             } else {
                 powerups += 1;
             }
@@ -388,10 +399,11 @@ public class SpaceShooterServer {
         Runtime runtime = Runtime.getRuntime();
         logger.info(
             "perf {}s: ticks={} ({}/s), tick avg={}ms max={}ms, interval max={}ms | " +
-                "phase avg(ms) commands={} update={} collision={} remove={} spawn={} broadcast={} | " +
+                "phase avg(ms) commands={} update={} collision={} bullets={} remove={} spawn={} broadcast={} | " +
                 "grid ops/s move={} add={} remove={}, avg(us) move={} add={} remove={} | " +
+                "collision checks/s={} | " +
                 "entities={} (ships={}, users={}, asteroids={}, bullets={}, powerups={}) | " +
-                "messages={}/s, entities per message avg={} max={} | heap={}MB",
+                "messages built={}/s sent={}/s, entities per message avg={} max={} | heap={}MB",
             format(seconds),
             stats.ticks,
             format(stats.ticks / seconds),
@@ -401,6 +413,7 @@ public class SpaceShooterServer {
             toMillis(stats.commandsNanos / ticks),
             toMillis(stats.updateNanos / ticks),
             toMillis(stats.collisionNanos / ticks),
+            toMillis(stats.bulletsNanos / ticks),
             toMillis(stats.removeNanos / ticks),
             toMillis(stats.spawnNanos / ticks),
             toMillis(stats.broadcastNanos / ticks),
@@ -410,13 +423,15 @@ public class SpaceShooterServer {
             toMicros(stats.gridMoveNanos, stats.gridMoves),
             toMicros(stats.gridAddNanos, stats.gridAdds),
             toMicros(stats.gridRemoveNanos, stats.gridRemoves),
+            format(stats.collisionChecks / seconds),
             entities.size(),
             shipCount,
             users,
             asteroids,
-            bullets,
+            bullets.size(),
             powerups,
             format(stats.messages / seconds),
+            format(stats.sentMessages / seconds),
             format(stats.messages == 0 ? 0 : (double) stats.sentEntities / stats.messages),
             stats.sentEntitiesMax,
             (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
@@ -443,9 +458,6 @@ public class SpaceShooterServer {
                 break;
             case KIND_ASTEROID:
                 updateAsteroid(entity, dt);
-                break;
-            case KIND_BULLET:
-                updateBullet(entity, dt);
                 break;
             default:
                 updatePowerup(entity, dt);
@@ -559,20 +571,6 @@ public class SpaceShooterServer {
         moveEntity(asteroid);
     }
 
-    private void updateBullet(GameEntity bullet, float dt) {
-        bullet.ttl -= dt;
-        bullet.x += bullet.vx * dt;
-        bullet.y += bullet.vy * dt;
-        if (bullet.ttl <= 0
-            || bullet.x < 0 || bullet.x > WORLD_WIDTH
-            || bullet.y < 0 || bullet.y > WORLD_HEIGHT
-        ) {
-            removeEntity(bullet);
-            return;
-        }
-        moveEntity(bullet);
-    }
-
     private void updatePowerup(GameEntity powerup, float dt) {
         powerup.ttl -= dt;
         powerup.angle += powerup.spin * dt;
@@ -581,36 +579,67 @@ public class SpaceShooterServer {
         }
     }
 
-    private void handleBulletCollisions(GameEntity bullet) {
-        nearbyBuffer.clear();
-        bullet.getNearbyPlayerNames(nearbyBuffer);
-        for (String name : nearbyBuffer) {
-            GameEntity other = entities.get(name);
-            if (other == null || other == bullet || !isActive(other) || !isColliding(bullet, other)) {
+    private void updateBullets(float dt) {
+        float stepDt = dt / BULLET_SUB_STEPS;
+        for (Bullet bullet : bullets) {
+            for (int i = 0; i < BULLET_SUB_STEPS && !bullet.removed; ++i) {
+                bullet.x += bullet.vx * stepDt;
+                bullet.y += bullet.vy * stepDt;
+                bullet.removed = handleBulletCollision(bullet);
+            }
+            bullet.ttl -= dt;
+            if (bullet.ttl <= 0
+                || bullet.x < 0 || bullet.x > WORLD_WIDTH
+                || bullet.y < 0 || bullet.y > WORLD_HEIGHT
+            ) {
+                bullet.removed = true;
+            }
+        }
+        bullets.removeIf(bullet -> bullet.removed);
+    }
+
+    private boolean handleBulletCollision(Bullet bullet) {
+        searchCenter.set(bullet.x, bullet.y, 0);
+        List<GameEntity> candidates = collisionGrid.search(
+            searchCenter,
+            BULLET_RADIUS + MAX_TARGET_RADIUS
+        );
+        stats.collisionChecks += candidates.size();
+        for (GameEntity other : candidates) {
+            if (other == bullet.owner
+                || !isActive(other)
+                || (other.kind != KIND_ASTEROID && other.kind != KIND_SHIP)
+            ) {
                 continue;
             }
-            if (other.kind == KIND_ASTEROID) {
-                removeEntity(bullet);
-                damageAsteroid(other, bullet.owner);
-                return;
+            float dx = other.x - bullet.x;
+            float dy = other.y - bullet.y;
+            float radius = BULLET_RADIUS + other.radius;
+            if (dx * dx + dy * dy > radius * radius) {
+                continue;
             }
-            if (other.kind == KIND_SHIP && other != bullet.owner) {
-                removeEntity(bullet);
+            events.add(GameEvent.bulletHit(bullet));
+            if (other.kind == KIND_ASTEROID) {
+                damageAsteroid(other, bullet.owner);
+            } else {
                 Ship ship = (Ship) other;
                 if (ship.invulnerableIn <= 0) {
                     damageShip(ship, BULLET_DAMAGE, bullet.owner);
                 }
-                return;
             }
+            return true;
         }
+        return false;
     }
 
     private void handleShipCollisions(Ship ship) {
-        nearbyBuffer.clear();
-        ship.getNearbyPlayerNames(nearbyBuffer);
-        for (String name : nearbyBuffer) {
-            GameEntity other = entities.get(name);
-            if (other == null || other == ship || !isActive(other) || !isColliding(ship, other)) {
+        List<GameEntity> candidates = collisionGrid.search(
+            ship.getPosition(),
+            SHIP_RADIUS + MAX_TARGET_RADIUS
+        );
+        stats.collisionChecks += candidates.size();
+        for (GameEntity other : candidates) {
+            if (other == ship || !isActive(other) || !isColliding(ship, other)) {
                 continue;
             }
             if (other.kind == KIND_ASTEROID) {
@@ -760,19 +789,16 @@ public class SpaceShooterServer {
     }
 
     private void spawnBullet(Ship ship) {
-        GameEntity bullet = new GameEntity("b" + idGenerator.incrementAndGet(), KIND_BULLET);
+        Bullet bullet = new Bullet(idGenerator.incrementAndGet(), ship);
         float cos = (float) Math.cos(ship.angle);
         float sin = (float) Math.sin(ship.angle);
-        bullet.owner = ship;
-        bullet.radius = BULLET_RADIUS;
         bullet.ttl = BULLET_TTL_SECONDS;
-        bullet.angle = ship.angle;
-        bullet.x = clamp(ship.x + cos * (SHIP_RADIUS + 10), 0, WORLD_WIDTH);
-        bullet.y = clamp(ship.y + sin * (SHIP_RADIUS + 10), 0, WORLD_HEIGHT);
+        bullet.x = ship.x + cos * (SHIP_RADIUS + 10);
+        bullet.y = ship.y + sin * (SHIP_RADIUS + 10);
         bullet.vx = cos * BULLET_SPEED + ship.vx * 0.3f;
         bullet.vy = sin * BULLET_SPEED + ship.vy * 0.3f;
-        addEntity(bullet);
-        addEvent("f", ship.x, ship.y, 0);
+        bullets.add(bullet);
+        events.add(GameEvent.bulletSpawned(bullet));
     }
 
     private void spawnPowerup(float x, float y) {
@@ -792,6 +818,7 @@ public class SpaceShooterServer {
         room.addPlayer(entity);
         stats.gridAddNanos += System.nanoTime() - start;
         stats.gridAdds += 1;
+        collisionGrid.insert(entity);
     }
 
     private void removeEntity(GameEntity entity) {
@@ -811,6 +838,7 @@ public class SpaceShooterServer {
         room.setPlayerPosition(entity, positionBuffer);
         stats.gridMoveNanos += System.nanoTime() - start;
         stats.gridMoves += 1;
+        collisionGrid.update(entity);
     }
 
     private void removeFromRoom(GameEntity entity) {
@@ -818,6 +846,7 @@ public class SpaceShooterServer {
         room.removePlayer(entity);
         stats.gridRemoveNanos += System.nanoTime() - start;
         stats.gridRemoves += 1;
+        collisionGrid.remove(entity);
     }
 
     private void addEvent(String type, float x, float y, float size) {
@@ -836,6 +865,9 @@ public class SpaceShooterServer {
         for (Ship ship : ships) {
             if (ship.user != null) {
                 send(ship.user, "state", buildState(ship, leaderboard));
+                stats.sentMessages += 1;
+            } else if (botState) {
+                buildState(ship, leaderboard);
             }
         }
     }
@@ -891,14 +923,7 @@ public class SpaceShooterServer {
             float dx = event.x - ship.x;
             float dy = event.y - ship.y;
             if (dx * dx + dy * dy <= EVENT_DISTANCE * EVENT_DISTANCE) {
-                EzyArray item = EzyEntityFactory.newArray();
-                item.add(
-                    event.type,
-                    Math.round(event.x),
-                    Math.round(event.y),
-                    Math.round(event.size)
-                );
-                eventArray.add(item);
+                eventArray.add(toEventArray(event));
             }
         }
         EzyObject me = EzyEntityFactory.newObjectBuilder()
@@ -922,6 +947,26 @@ public class SpaceShooterServer {
             .append("ev", eventArray)
             .append("lb", leaderboard)
             .build();
+    }
+
+    private static EzyArray toEventArray(GameEvent event) {
+        EzyArray item = EzyEntityFactory.newArray();
+        item.add(event.type, Math.round(event.x), Math.round(event.y));
+        if (event.bullet == null) {
+            item.add(Math.round(event.size));
+        } else if (EVENT_BULLET_SPAWNED.equals(event.type)) {
+            Bullet bullet = event.bullet;
+            item.add(
+                bullet.id,
+                Math.round(bullet.vx),
+                Math.round(bullet.vy),
+                Math.round(bullet.ttl * 1000),
+                bullet.owner.getName()
+            );
+        } else {
+            item.add(event.bullet.id);
+        }
+        return item;
     }
 
     private int toCellIndex(float value, float max) {
@@ -997,7 +1042,6 @@ public class SpaceShooterServer {
         float ttl;
         int hp;
         int level;
-        Ship owner;
         boolean removed;
 
         GameEntity(String name, int kind) {
@@ -1039,6 +1083,7 @@ public class SpaceShooterServer {
         long commandsNanos;
         long updateNanos;
         long collisionNanos;
+        long bulletsNanos;
         long removeNanos;
         long spawnNanos;
         long broadcastNanos;
@@ -1048,7 +1093,9 @@ public class SpaceShooterServer {
         long gridAddNanos;
         long gridRemoves;
         long gridRemoveNanos;
+        long collisionChecks;
         long messages;
+        long sentMessages;
         long sentEntities;
         int sentEntitiesMax;
 
@@ -1061,6 +1108,7 @@ public class SpaceShooterServer {
             commandsNanos = 0;
             updateNanos = 0;
             collisionNanos = 0;
+            bulletsNanos = 0;
             removeNanos = 0;
             spawnNanos = 0;
             broadcastNanos = 0;
@@ -1070,9 +1118,27 @@ public class SpaceShooterServer {
             gridAddNanos = 0;
             gridRemoves = 0;
             gridRemoveNanos = 0;
+            collisionChecks = 0;
             messages = 0;
+            sentMessages = 0;
             sentEntities = 0;
             sentEntitiesMax = 0;
+        }
+    }
+
+    private static class Bullet {
+        final long id;
+        final Ship owner;
+        float x;
+        float y;
+        float vx;
+        float vy;
+        float ttl;
+        boolean removed;
+
+        Bullet(long id, Ship owner) {
+            this.id = id;
+            this.owner = owner;
         }
     }
 
@@ -1081,12 +1147,26 @@ public class SpaceShooterServer {
         final float x;
         final float y;
         final float size;
+        final Bullet bullet;
 
         GameEvent(String type, float x, float y, float size) {
+            this(type, x, y, size, null);
+        }
+
+        GameEvent(String type, float x, float y, float size, Bullet bullet) {
             this.type = type;
             this.x = x;
             this.y = y;
             this.size = size;
+            this.bullet = bullet;
+        }
+
+        static GameEvent bulletSpawned(Bullet bullet) {
+            return new GameEvent(EVENT_BULLET_SPAWNED, bullet.x, bullet.y, 0, bullet);
+        }
+
+        static GameEvent bulletHit(Bullet bullet) {
+            return new GameEvent(EVENT_BULLET_HIT, bullet.x, bullet.y, 0, bullet);
         }
     }
 }

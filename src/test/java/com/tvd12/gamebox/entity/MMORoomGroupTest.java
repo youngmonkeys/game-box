@@ -338,6 +338,68 @@ public class MMORoomGroupTest {
         Asserts.assertFalse(Thread.currentThread().isInterrupted());
     }
 
+    @Test
+    public void loopCatchUpWhenBehindLessThanOneTickTest() {
+        // given
+        MMORoomGroup sut = new MMORoomGroup(
+            MMORoomGroup.builder().timeTickMillis(100)
+        );
+        List<Long> updateStartNanos = new ArrayList<>();
+        MMORoom room = mockRoom(1L, "room1");
+        doAnswer(it -> {
+            updateStartNanos.add(System.nanoTime());
+            if (updateStartNanos.size() == 1) {
+                Thread.sleep(150);
+            }
+            if (updateStartNanos.size() == 3) {
+                FieldUtil.setFieldValue(sut, "active", false);
+            }
+            return null;
+        }).when(room).update();
+        sut.addRoom(room);
+        FieldUtil.setFieldValue(sut, "active", true);
+
+        // when
+        ReflectMethodUtil.invokeMethod("loop", sut);
+
+        // then
+        long firstGapMillis = (updateStartNanos.get(1) - updateStartNanos.get(0)) / 1_000_000;
+        long secondGapMillis = (updateStartNanos.get(2) - updateStartNanos.get(1)) / 1_000_000;
+        Asserts.assertTrue(firstGapMillis >= 150 && firstGapMillis < 180);
+        Asserts.assertTrue(secondGapMillis >= 40 && secondGapMillis < 80);
+    }
+
+    @Test
+    public void loopResetDeadlineWhenBehindMoreThanOneTickTest() {
+        // given
+        MMORoomGroup sut = new MMORoomGroup(
+            MMORoomGroup.builder().timeTickMillis(100)
+        );
+        List<Long> updateStartNanos = new ArrayList<>();
+        MMORoom room = mockRoom(1L, "room1");
+        doAnswer(it -> {
+            updateStartNanos.add(System.nanoTime());
+            if (updateStartNanos.size() == 1) {
+                Thread.sleep(350);
+            }
+            if (updateStartNanos.size() == 3) {
+                FieldUtil.setFieldValue(sut, "active", false);
+            }
+            return null;
+        }).when(room).update();
+        sut.addRoom(room);
+        FieldUtil.setFieldValue(sut, "active", true);
+
+        // when
+        ReflectMethodUtil.invokeMethod("loop", sut);
+
+        // then
+        long firstGapMillis = (updateStartNanos.get(1) - updateStartNanos.get(0)) / 1_000_000;
+        long secondGapMillis = (updateStartNanos.get(2) - updateStartNanos.get(1)) / 1_000_000;
+        Asserts.assertTrue(firstGapMillis >= 350 && firstGapMillis < 380);
+        Asserts.assertTrue(secondGapMillis >= 90);
+    }
+
     private static MMORoom mockRoom(long id, String name) {
         MMORoom room = mock(MMORoom.class);
         when(room.getId()).thenReturn(id);

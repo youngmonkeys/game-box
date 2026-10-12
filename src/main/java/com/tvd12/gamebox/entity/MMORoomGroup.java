@@ -47,11 +47,22 @@ class MMORoomGroup extends EzyLoggable {
         long timeTickNanos = TimeUnit
             .MILLISECONDS
             .toNanos(timeTickMillis);
+        long nextTickNanos = System.nanoTime();
         while (active) {
             long start = System.nanoTime();
             this.updateRooms();
-            long timeElapsed = System.nanoTime() - start;
-            long remainingNanos = timeTickNanos - timeElapsed;
+            long now = System.nanoTime();
+            long timeElapsed = now - start;
+            if (timeElapsed > timeTickNanos) {
+                logger.warn(
+                    "Room group update took: {}ms, " +
+                        "exceeded time tick: {}ms",
+                    TimeUnit.NANOSECONDS.toMillis(timeElapsed),
+                    timeTickMillis
+                );
+            }
+            nextTickNanos += timeTickNanos;
+            long remainingNanos = nextTickNanos - now;
             if (remainingNanos > 0) {
                 try {
                     TimeUnit.NANOSECONDS.sleep(remainingNanos);
@@ -59,13 +70,8 @@ class MMORoomGroup extends EzyLoggable {
                     Thread.currentThread().interrupt();
                     break;
                 }
-            } else {
-                logger.warn(
-                    "Room group update took: {}ms, " +
-                        "exceeded time tick: {}ms",
-                    TimeUnit.NANOSECONDS.toMillis(timeElapsed),
-                    timeTickMillis
-                );
+            } else if (-remainingNanos > timeTickNanos) {
+                nextTickNanos = now;
             }
         }
     }

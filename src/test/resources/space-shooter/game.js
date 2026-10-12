@@ -7,7 +7,6 @@
 
     var KIND_SHIP = 1;
     var KIND_ASTEROID = 2;
-    var KIND_BULLET = 3;
     var KIND_POWERUP = 4;
 
     var canvas = document.getElementById('game');
@@ -26,7 +25,9 @@
     var app = null;
     var joined = false;
     var me = null;
+    var myId = null;
     var entities = {};
+    var bullets = {};
     var particles = [];
     var leaderboard = [];
     var stats = {total: 0, ships: 0, tick: 0, nearby: 0, cx: 0, cy: 0};
@@ -199,9 +200,11 @@
 
     function onJoined(accessedApp, data) {
         config = data;
+        myId = data.id;
         me = null;
         joined = true;
         entities = {};
+        bullets = {};
         particles = [];
         loginPanel.style.display = 'none';
         canvas.focus();
@@ -282,9 +285,15 @@
                 playSound('explosion_large.wav', event[1], event[2]);
             } else if (event[0] === 'p') {
                 spawnPickup(event[1], event[2]);
-            } else if (event[0] === 'f' && laserPlayed < 3) {
-                laserPlayed += 1;
-                playSound('laser_ship.wav', event[1], event[2]);
+            } else if (event[0] === 'b') {
+                spawnBullet(event);
+                if (laserPlayed < 3) {
+                    laserPlayed += 1;
+                    playSound('laser_ship.wav', event[1], event[2]);
+                }
+            } else if (event[0] === 'h') {
+                delete bullets[event[3]];
+                spawnHit(event[1], event[2]);
             }
         }
     }
@@ -306,6 +315,36 @@
             });
         }
         particles.push({x: x, y: y, vx: 0, vy: 0, life: 0.25, maxLife: 0.25, size: size * 1.4, color: '255,240,200', flash: true});
+    }
+
+    function spawnBullet(event) {
+        var vx = event[4];
+        var vy = event[5];
+        bullets[event[3]] = {
+            x: event[1],
+            y: event[2],
+            vx: vx,
+            vy: vy,
+            a: Math.atan2(vy, vx),
+            ttl: event[6] / 1000,
+            mine: event[7] === myId
+        };
+    }
+
+    function spawnHit(x, y) {
+        for (var i = 0; i < 6; ++i) {
+            var angle = Math.random() * Math.PI * 2;
+            particles.push({
+                x: x,
+                y: y,
+                vx: Math.cos(angle) * 120,
+                vy: Math.sin(angle) * 120,
+                life: 0.2,
+                maxLife: 0.2,
+                size: 2,
+                color: '255,220,160'
+            });
+        }
     }
 
     function spawnPickup(x, y) {
@@ -346,10 +385,19 @@
         }
         for (var key in entities) {
             var entity = entities[key];
-            var factor = entity.kind === KIND_BULLET ? Math.min(1, dt * 20) : t;
-            entity.x += (entity.tx - entity.x) * factor;
-            entity.y += (entity.ty - entity.y) * factor;
-            entity.a = lerpAngle(entity.a, entity.ta, factor);
+            entity.x += (entity.tx - entity.x) * t;
+            entity.y += (entity.ty - entity.y) * t;
+            entity.a = lerpAngle(entity.a, entity.ta, t);
+        }
+        for (var id in bullets) {
+            var bullet = bullets[id];
+            bullet.ttl -= dt;
+            if (bullet.ttl <= 0) {
+                delete bullets[id];
+                continue;
+            }
+            bullet.x += bullet.vx * dt;
+            bullet.y += bullet.vy * dt;
         }
         for (var i = particles.length - 1; i >= 0; --i) {
             var particle = particles[i];
@@ -552,8 +600,6 @@
             if (entity.kind === KIND_ASTEROID) {
                 var size = entity.r * 2.3;
                 drawSprite('asteroid.png', entity.x, entity.y, size, size, entity.a);
-            } else if (entity.kind === KIND_BULLET) {
-                drawSprite('laserbeam_red.png', entity.x, entity.y, 30, 12, entity.a);
             } else if (entity.kind === KIND_POWERUP) {
                 var pulse = 1 + Math.sin(now / 150) * 0.12;
                 drawSprite('powerup.png', entity.x, entity.y, 58 * pulse, 32 * pulse, Math.sin(entity.a) * 0.3);
@@ -586,6 +632,18 @@
             drawShipInfo(me.x, me.y, config ? config.name : '', me.hp, maxHp, '#9fd1ff');
         }
 
+        for (var id in bullets) {
+            var bullet = bullets[id];
+            if (!isOnScreen(bullet.x, bullet.y, 40)) {
+                continue;
+            }
+            if (bullet.mine) {
+                drawSprite('laserbeam_blue.png', bullet.x, bullet.y, 36, 9, bullet.a);
+            } else {
+                drawSprite('laserbeam_red.png', bullet.x, bullet.y, 30, 12, bullet.a);
+            }
+        }
+
         for (var p = 0; p < particles.length; ++p) {
             var particle = particles[p];
             var alpha = particle.life / particle.maxLife;
@@ -616,7 +674,7 @@
             'HP       ' + Math.max(0, me.hp) + ' / ' + config.maxHp,
             'POSITION ' + Math.round(me.tx) + ', ' + Math.round(me.ty),
             'CELL     ' + stats.cx + ', ' + stats.cy + '  (size ' + config.cellSize + ', range ' + config.cellRange + ')',
-            'NEARBY   ' + stats.nearby + '  (rendered ' + rendered + ')',
+            'NEARBY   ' + stats.nearby + '  (rendered ' + rendered + ', bullets ' + Object.keys(bullets).length + ')',
             'WORLD    ' + stats.total + ' entities, ' + stats.ships + ' ships',
             'TICK     ' + stats.tick + '  (' + statesPerSecond + ' states/s, ' + fps + ' fps)'
         ];
@@ -690,9 +748,6 @@
 
         for (var key in entities) {
             var entity = entities[key];
-            if (entity.kind === KIND_BULLET) {
-                continue;
-            }
             ctx.fillStyle = entity.kind === KIND_SHIP ? '#ff6060' : (entity.kind === KIND_POWERUP ? '#60ff90' : '#8a8a8a');
             var dotSize = entity.kind === KIND_SHIP ? 3 : 2;
             ctx.fillRect(x + entity.x * scale - 1, y + entity.y * scale - 1, dotSize, dotSize);
