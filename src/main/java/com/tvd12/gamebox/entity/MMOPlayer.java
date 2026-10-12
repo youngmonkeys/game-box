@@ -95,6 +95,16 @@ public class MMOPlayer extends Player implements PositionAware {
         return new ArrayList<>(nearbyPlayers.keySet());
     }
 
+    public void getNearbyPlayers(List<MMOPlayer> buffer) {
+        for (MMOPlayer nearbyPlayer : nearbyPlayers.values()) {
+            buffer.add(nearbyPlayer);
+        }
+    }
+
+    public int getNearbyPlayerCount() {
+        return nearbyPlayers.size();
+    }
+
     public static class Builder extends Player.Builder<Builder> {
 
         @Override

@@ -63,4 +63,39 @@ public class MMOPlayerTest {
             buffer
         );
     }
+
+    @Test
+    public void getNearbyPlayersTest() {
+        // given
+        MMOPlayer sut = new MMOPlayer("a");
+        MMOPlayer player1 = new MMOPlayer("b");
+        MMOPlayer player2 = new MMOPlayer("c");
+        ReflectMethodUtil.invokeMethod("addNearbyPlayer", sut, player1);
+        ReflectMethodUtil.invokeMethod("addNearbyPlayer", sut, player2);
+        List<MMOPlayer> buffer = new ArrayList<>();
+
+        // when
+        sut.getNearbyPlayers(buffer);
+
+        // then
+        buffer.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+        Asserts.assertEquals(buffer.size(), 2);
+        Asserts.assertTrue(buffer.get(0) == player1);
+        Asserts.assertTrue(buffer.get(1) == player2);
+        Asserts.assertEquals(sut.getNearbyPlayerCount(), 2);
+    }
+
+    @Test
+    public void getNearbyPlayersEmptyTest() {
+        // given
+        MMOPlayer sut = new MMOPlayer("a");
+        List<MMOPlayer> buffer = new ArrayList<>();
+
+        // when
+        sut.getNearbyPlayers(buffer);
+
+        // then
+        Asserts.assertTrue(buffer.isEmpty());
+        Asserts.assertEquals(sut.getNearbyPlayerCount(), 0);
+    }
 }

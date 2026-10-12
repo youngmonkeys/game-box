@@ -104,7 +104,7 @@ public class SpaceShooterServer {
     private final List<Bullet> bullets = new ArrayList<>();
     private final UniformGrid<GameEntity> collisionGrid = new UniformGrid<>(COLLISION_CELL_SIZE);
     private final Vec3 searchCenter = new Vec3();
-    private final List<String> nearbyBuffer = new ArrayList<>();
+    private final List<MMOPlayer> nearbyBuffer = new ArrayList<>();
     private final Queue<Runnable> commands = new ConcurrentLinkedQueue<>();
     private final AtomicLong idGenerator = new AtomicLong();
     private final Random random = new Random();
@@ -403,7 +403,7 @@ public class SpaceShooterServer {
                 "grid ops/s move={} add={} remove={}, avg(us) move={} add={} remove={} | " +
                 "collision checks/s={} | " +
                 "entities={} (ships={}, users={}, asteroids={}, bullets={}, powerups={}) | " +
-                "messages built={}/s sent={}/s, entities per message avg={} max={} | heap={}MB",
+                "messages built={}/s sent={}/s, entities per message avg={} max={}, snapshots/s={} | heap={}MB",
             format(seconds),
             stats.ticks,
             format(stats.ticks / seconds),
@@ -434,6 +434,7 @@ public class SpaceShooterServer {
             format(stats.sentMessages / seconds),
             format(stats.messages == 0 ? 0 : (double) stats.sentEntities / stats.messages),
             stats.sentEntitiesMax,
+            format(stats.snapshots / seconds),
             (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
         );
         stats.reset(now);
@@ -537,11 +538,10 @@ public class SpaceShooterServer {
         GameEntity nearest = null;
         float nearestDistance = maxDistance * maxDistance;
         nearbyBuffer.clear();
-        bot.getNearbyPlayerNames(nearbyBuffer);
-        for (String name : nearbyBuffer) {
-            GameEntity other = entities.get(name);
-            if (other == null
-                || other == bot
+        bot.getNearbyPlayers(nearbyBuffer);
+        for (MMOPlayer player : nearbyBuffer) {
+            GameEntity other = (GameEntity) player;
+            if (other == bot
                 || !isActive(other)
                 || (other.kind != KIND_ASTEROID && other.kind != KIND_SHIP)
             ) {
@@ -892,28 +892,14 @@ public class SpaceShooterServer {
 
     private EzyObject buildState(Ship ship, EzyArray leaderboard) {
         nearbyBuffer.clear();
-        ship.getNearbyPlayerNames(nearbyBuffer);
+        ship.getNearbyPlayers(nearbyBuffer);
         EzyArray entityArray = EzyEntityFactory.newArray();
-        for (String name : nearbyBuffer) {
-            GameEntity other = entities.get(name);
-            if (other == null || other == ship || !isActive(other)) {
+        for (MMOPlayer player : nearbyBuffer) {
+            GameEntity other = (GameEntity) player;
+            if (other == ship || !isActive(other)) {
                 continue;
             }
-            EzyArray item = EzyEntityFactory.newArray();
-            item.add(
-                other.getName(),
-                other.kind,
-                Math.round(other.x),
-                Math.round(other.y),
-                Math.round(other.angle * 1000),
-                Math.round(other.radius),
-                other.hp
-            );
-            if (other.kind == KIND_SHIP) {
-                Ship otherShip = (Ship) other;
-                item.add(otherShip.displayName, otherShip.invulnerableIn > 0 ? 1 : 0);
-            }
-            entityArray.add(item);
+            entityArray.add(snapshotOf(other));
         }
         stats.messages += 1;
         stats.sentEntities += entityArray.size();
@@ -923,7 +909,7 @@ public class SpaceShooterServer {
             float dx = event.x - ship.x;
             float dy = event.y - ship.y;
             if (dx * dx + dy * dy <= EVENT_DISTANCE * EVENT_DISTANCE) {
-                eventArray.add(toEventArray(event));
+                eventArray.add(snapshotOf(event));
             }
         }
         EzyObject me = EzyEntityFactory.newObjectBuilder()
@@ -947,6 +933,37 @@ public class SpaceShooterServer {
             .append("ev", eventArray)
             .append("lb", leaderboard)
             .build();
+    }
+
+    private EzyArray snapshotOf(GameEntity entity) {
+        if (entity.snapshotTick == tick) {
+            return entity.snapshot;
+        }
+        EzyArray snapshot = EzyEntityFactory.newArray();
+        snapshot.add(
+            entity.getName(),
+            entity.kind,
+            Math.round(entity.x),
+            Math.round(entity.y),
+            Math.round(entity.angle * 1000),
+            Math.round(entity.radius),
+            entity.hp
+        );
+        if (entity.kind == KIND_SHIP) {
+            Ship ship = (Ship) entity;
+            snapshot.add(ship.displayName, ship.invulnerableIn > 0 ? 1 : 0);
+        }
+        entity.snapshot = snapshot;
+        entity.snapshotTick = tick;
+        stats.snapshots += 1;
+        return snapshot;
+    }
+
+    private static EzyArray snapshotOf(GameEvent event) {
+        if (event.snapshot == null) {
+            event.snapshot = toEventArray(event);
+        }
+        return event.snapshot;
     }
 
     private static EzyArray toEventArray(GameEvent event) {
@@ -1043,6 +1060,8 @@ public class SpaceShooterServer {
         int hp;
         int level;
         boolean removed;
+        EzyArray snapshot;
+        long snapshotTick = -1;
 
         GameEntity(String name, int kind) {
             super(name);
@@ -1094,6 +1113,7 @@ public class SpaceShooterServer {
         long gridRemoves;
         long gridRemoveNanos;
         long collisionChecks;
+        long snapshots;
         long messages;
         long sentMessages;
         long sentEntities;
@@ -1119,6 +1139,7 @@ public class SpaceShooterServer {
             gridRemoves = 0;
             gridRemoveNanos = 0;
             collisionChecks = 0;
+            snapshots = 0;
             messages = 0;
             sentMessages = 0;
             sentEntities = 0;
@@ -1148,6 +1169,7 @@ public class SpaceShooterServer {
         final float y;
         final float size;
         final Bullet bullet;
+        EzyArray snapshot;
 
         GameEvent(String type, float x, float y, float size) {
             this(type, x, y, size, null);
