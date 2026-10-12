@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SynchronizedOcTreeTest {
@@ -99,7 +100,8 @@ public class SynchronizedOcTreeTest {
         Asserts.assertTrue(isPlayer2Added);
         Asserts.assertTrue(isPlayer3Added);
         Asserts.assertTrue(isPlayer1Removed);
-        Asserts.assertFalse(isPlayer3Removed);
+        Asserts.assertTrue(isPlayer3Removed);
+        Asserts.assertFalse(ocTree.contains(player3));
         Asserts.assertFalse(isPlayer4Removed);
     }
     
@@ -135,7 +137,44 @@ public class SynchronizedOcTreeTest {
         // then
         Asserts.assertTrue(isPlayer1Added);
         Asserts.assertTrue(isPlayer2Added);
-        Asserts.assertFalse(isPlayer1Removed);
+        Asserts.assertTrue(isPlayer1Removed);
+        Asserts.assertFalse(ocTree.contains(player1));
+        Asserts.assertEquals(
+            ocTree.search(player2, 0.1f),
+            Collections.singletonList(player2),
+            false
+        );
+    }
+
+    @Test
+    public void insertDuplicateTest() {
+        // given
+        OcTree<MMOPlayer> ocTree = new SynchronizedOcTree<>(
+            new Vec3(0, 0, 0),
+            new Vec3(2, 2, 2),
+            1,
+            0.01f
+        );
+        MMOPlayer player1 = MMOPlayer.builder()
+            .name("player1")
+            .build();
+        player1.setPosition(new Vec3(0.3f, 0.3f, 0.3f));
+
+        // when
+        boolean isPlayer1Added = ocTree.insert(player1);
+        player1.setPosition(new Vec3(1.5f, 1.5f, 1.5f));
+        boolean isPlayer1AddedAgain = ocTree.insert(player1);
+        boolean isPlayer1Removed = ocTree.remove(player1);
+
+        // then
+        Asserts.assertTrue(isPlayer1Added);
+        Asserts.assertFalse(isPlayer1AddedAgain);
+        Asserts.assertTrue(isPlayer1Removed);
+        Asserts.assertEquals(
+            ocTree.search(player1, 2),
+            Collections.emptyList(),
+            false
+        );
     }
     
     @Test

@@ -88,6 +88,18 @@ public class OcTreeNode<T extends PositionAware> {
         return removeFromChildren(item);
     }
 
+    boolean removeFromAnyNode(T item) {
+        if (isLeaf()) {
+            return removeItemFromThisLeaf(item);
+        }
+        for (OcTreeNode<T> child : this.children) {
+            if (child.removeFromAnyNode(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean removeItemFromThisLeaf(T item) {
         if (!this.items.contains(item)) {
             return false;
